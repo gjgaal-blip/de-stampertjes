@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v0.2</title>
+<title>De Stampertjes v0.3</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -23,7 +23,7 @@ button:active{background:#fff;color:#111}
 </head>
 <body>
 <div id="wrap">
-  <div id="title">DE STAMPERTJES — v0.2</div>
+  <div id="title">DE STAMPERTJES — v0.3</div>
   <canvas id="game" width="480" height="320"></canvas>
   <div id="controls">
     <button id="left">◀</button>
@@ -32,7 +32,7 @@ button:active{background:#fff;color:#111}
     <button id="down">▼</button>
     <button id="right">▶</button>
   </div>
-  <div class="small">Tik één keer op het scherm voor geluid. Vang een appel en stamp hem omlaag.</div>
+  <div class="small">Stamp 3× op de vloer. Stamp daarna 2–3× op een gevangen appel.</div>
 </div>
 <script>
 const c=document.getElementById('game'),ctx=c.getContext('2d');
@@ -40,6 +40,7 @@ ctx.imageSmoothingEnabled=false;
 
 const W=c.width,H=c.height;
 const floorYs=[70,130,190,250,305];
+const FLOOR_HITS=3;
 const ladders=[
   {x:85,top:70,bottom:130},{x:310,top:70,bottom:130},
   {x:180,top:130,bottom:190},{x:395,top:130,bottom:190},
@@ -49,15 +50,12 @@ const ladders=[
 
 let keys={left:false,right:false,up:false,down:false};
 let state='play',score=0,level=1,lives=3,frame=0;
-let holes=[],enemies=[];
-let shake=0;
+let holes=[],cracks=[],enemies=[],shake=0;
 let player={x:35,y:287,w:16,h:18,onLadder:false,dir:1,cool:0};
 
 let audioCtx=null;
 function ensureAudio(){
-  if(!audioCtx){
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  }
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state==='suspended')audioCtx.resume();
 }
 function beep(freq=220,dur=.08,type='square',vol=.05,slide=0){
@@ -69,12 +67,13 @@ function beep(freq=220,dur=.08,type='square',vol=.05,slide=0){
   g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
   o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur);
 }
-function sfxStamp(){beep(90,.12,'square',.08,-35)}
-function sfxTrap(){beep(330,.08,'square',.05,-80)}
-function sfxDrop(){beep(120,.18,'sawtooth',.07,-70)}
-function sfxHit(){beep(520,.08,'square',.06,-180)}
-function sfxHurt(){beep(160,.22,'sawtooth',.08,-100)}
-function sfxLevel(){beep(440,.08,'square',.05,100);setTimeout(()=>beep(660,.12,'square',.05,130),90)}
+const sfxCrack=()=>beep(135,.09,'square',.06,-25);
+const sfxBreak=()=>beep(75,.16,'sawtooth',.09,-35);
+const sfxTrap=()=>beep(330,.08,'square',.05,-80);
+const sfxAppleHit=()=>beep(220,.09,'square',.07,-70);
+const sfxDrop=()=>beep(110,.20,'sawtooth',.08,-75);
+const sfxHurt=()=>beep(160,.22,'sawtooth',.08,-100);
+const sfxLevel=()=>{beep(440,.08,'square',.05,100);setTimeout(()=>beep(660,.12,'square',.05,130),90)};
 
 ['pointerdown','touchstart','click'].forEach(ev=>window.addEventListener(ev,ensureAudio,{once:true}));
 
@@ -86,13 +85,15 @@ function floorIndexForY(y){
 function ladderNear(x,y){
   return ladders.find(l=>x+8>l.x-10&&x+8<l.x+26&&y+18>=l.top-4&&y<=l.bottom+4);
 }
+function tileXAt(x){ return Math.max(20,Math.min(W-60,Math.floor((x+8)/40)*40)); }
 
 function spawnLevel(){
-  holes=[]; enemies=[];
+  holes=[];cracks=[];enemies=[];
   player.x=35;player.y=287;player.onLadder=false;player.cool=0;
   const count=Math.min(2+level,7);
   for(let i=0;i<count;i++){
     const fi=i%4;
+    const requiredHits=level>=4?3:2;
     enemies.push({
       x:430-(i*53)%360,
       y:floorYs[fi]-16,
@@ -100,7 +101,8 @@ function spawnLevel(){
       dir:i%2?1:-1,
       speed:0.50+level*0.06+(i%3)*0.06,
       trapped:0,
-      hp:1+Math.floor((level-1)/3),
+      requiredHits,
+      hitsLeft:requiredHits,
       blink:0,
       dead:false
     });
@@ -108,20 +110,69 @@ function spawnLevel(){
 }
 spawnLevel();
 
-function createHole(){
+function trappedEnemyUnderPlayer(){
+  const pCenter=player.x+8;
+  return enemies.find(e =>
+    e.trapped>0 &&
+    Math.abs((player.y+player.h)-floorYs[e.floor])<7 &&
+    Math.abs(pCenter-(e.x+8))<20
+  );
+}
+
+function doStamp(){
   ensureAudio();
-  if(player.cool>0||player.onLadder)return;
+  if(player.cool>0||player.onLadder||state!=='play')return;
+
+  const enemy=trappedEnemyUnderPlayer();
+  if(enemy){
+    enemy.hitsLeft--;
+    player.cool=15;
+    shake=7;
+    sfxAppleHit();
+
+    if(enemy.hitsLeft<=0){
+      score+=300;
+      const h=holes.find(h=>h.floor===enemy.floor&&enemy.x+8>h.x&&enemy.x+8<h.x+40);
+      if(enemy.floor>=floorYs.length-2){
+        enemy.dead=true;
+      }else{
+        enemy.floor++;
+        enemy.y=floorYs[enemy.floor]-16;
+        enemy.x=h?h.x+12:enemy.x;
+        enemy.trapped=0;
+        enemy.hitsLeft=enemy.requiredHits;
+      }
+      sfxDrop();
+    }
+    return;
+  }
+
   const fi=floorIndexForY(player.y+player.h);
   if(fi===floorYs.length-1)return;
   const fy=floorYs[fi];
   if(Math.abs((player.y+player.h)-fy)>6)return;
-  const gx=Math.max(20,Math.min(W-60,Math.floor((player.x+8)/40)*40));
+
+  const gx=tileXAt(player.x);
   if(ladders.some(l=>Math.abs(l.x-gx)<30&&(l.top===fy||l.bottom===fy)))return;
-  if(!holes.some(h=>h.floor===fi&&Math.abs(h.x-gx)<8)){
-    holes.push({x:gx,floor:fi,timer:420});
-    player.cool=18;
-    shake=5;
-    sfxStamp();
+  if(holes.some(h=>h.floor===fi&&Math.abs(h.x-gx)<8))return;
+
+  let crack=cracks.find(cr=>cr.floor===fi&&cr.x===gx);
+  if(!crack){
+    crack={x:gx,floor:fi,hits:0,timer:600};
+    cracks.push(crack);
+  }
+
+  crack.hits++;
+  crack.timer=600;
+  player.cool=15;
+  shake=3+crack.hits;
+  sfxCrack();
+
+  if(crack.hits>=FLOOR_HITS){
+    holes.push({x:gx,floor:fi,timer:480});
+    cracks=cracks.filter(cr=>cr!==crack);
+    shake=9;
+    sfxBreak();
   }
 }
 
@@ -131,7 +182,12 @@ function bind(id,key){
   ['pointerup','pointercancel','pointerleave','touchend'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[key]=false}));
 }
 bind('left','left');bind('right','right');bind('up','up');bind('down','down');
-document.getElementById('stamp').addEventListener('pointerdown',e=>{e.preventDefault();createHole()});
+document.getElementById('stamp').addEventListener('pointerdown',e=>{e.preventDefault();doStamp()});
+document.getElementById('stamp').addEventListener('pointerup',()=>{
+  if(state==='gameover'){
+    score=0;level=1;lives=3;state='play';spawnLevel();sfxLevel();
+  }
+});
 
 window.addEventListener('keydown',e=>{
   ensureAudio();
@@ -139,7 +195,7 @@ window.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')keys.right=true;
   if(e.key==='ArrowUp')keys.up=true;
   if(e.key==='ArrowDown')keys.down=true;
-  if(e.key===' ')createHole();
+  if(e.key===' ')doStamp();
 });
 window.addEventListener('keyup',e=>{
   if(e.key==='ArrowLeft')keys.left=false;
@@ -152,7 +208,7 @@ function updatePlayer(){
   if(player.cool>0)player.cool--;
   const lad=ladderNear(player.x,player.y);
 
-  if(lad && (keys.up||keys.down||player.onLadder)){
+  if(lad&&(keys.up||keys.down||player.onLadder)){
     player.onLadder=true;
     player.x+=(lad.x-player.x)*0.35;
     if(keys.up)player.y-=2.35;
@@ -181,21 +237,10 @@ function updateEnemies(){
   enemies.forEach(e=>{
     if(e.trapped>0){
       e.trapped--;e.blink++;
-      const pCenter=player.x+8,eCenter=e.x+8;
-      const sameFloor=Math.abs((player.y+player.h)-floorYs[e.floor])<6;
-      if(sameFloor&&Math.abs(pCenter-eCenter)<18&&player.cool===0){
-        e.hp--;score+=100;shake=8;sfxHit();
-        const h=holes.find(h=>h.floor===e.floor&&eCenter>h.x&&eCenter<h.x+40);
-        if(e.hp<=0||e.floor>=floorYs.length-2){
-          e.dead=true;score+=200;sfxDrop();
-        }else{
-          e.floor++;e.y=floorYs[e.floor]-16;e.trapped=0;e.x=h?h.x+12:e.x;sfxDrop();
-        }
-        player.cool=16;
-      }
       if(e.trapped===0&&!e.dead){
         e.y=floorYs[e.floor]-16;
         e.x+=e.dir*14;
+        e.hitsLeft=e.requiredHits;
       }
       return;
     }
@@ -214,7 +259,8 @@ function updateEnemies(){
     const h=holes.find(h=>h.floor===e.floor&&e.x+8>h.x+3&&e.x+8<h.x+37);
     if(h){
       e.x=h.x+12;e.y=floorYs[e.floor]-6;
-      e.trapped=300-Math.min(level*8,80);
+      e.trapped=330-Math.min(level*8,80);
+      e.hitsLeft=e.requiredHits;
       sfxTrap();
     }else{
       e.y=floorYs[e.floor]-16;
@@ -238,7 +284,9 @@ function update(){
   if(state!=='play')return;
   frame++;updatePlayer();updateEnemies();
   holes.forEach(h=>h.timer--);
+  cracks.forEach(cr=>cr.timer--);
   holes=holes.filter(h=>h.timer>0);
+  cracks=cracks.filter(cr=>cr.timer>0);
   if(shake>0)shake--;
 }
 
@@ -261,7 +309,19 @@ function drawApple(e){
   ctx.fillStyle='#fff';
   ctx.fillRect(e.x+4,e.y+4,2,2);ctx.fillRect(e.x+10,e.y+4,2,2);
   ctx.fillStyle='#111';
-  if(e.hp>1)ctx.strokeRect(e.x-2,e.y-5,20,24);
+
+  if(e.trapped>0){
+    for(let i=0;i<e.hitsLeft;i++)ctx.fillRect(e.x+i*6,e.y-9,4,3);
+  }
+}
+
+function drawFloorSegment(a,b,fy){
+  ctx.fillRect(a,fy-3,b-a,7);
+  for(let x=a+8;x<b;x+=18){
+    ctx.fillStyle='#fff';
+    ctx.fillRect(x,fy-1,7,2);
+    ctx.fillStyle='#111';
+  }
 }
 
 function draw(){
@@ -269,12 +329,12 @@ function draw(){
   if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
 
   ctx.fillStyle='#fff';ctx.fillRect(-10,-10,W+20,H+20);
-  ctx.fillStyle='#111';ctx.strokeStyle='#111';ctx.lineWidth=3;
+  ctx.fillStyle='#111';ctx.strokeStyle='#111';
   ctx.font='12px monospace';
   ctx.fillText(`SCORE ${String(score).padStart(5,'0')}`,12,18);
   ctx.fillText(`LEVEL ${level}`,205,18);
   ctx.fillText(`LEVENS ${lives}`,385,18);
-  ctx.strokeRect(8,28,W-16,H-34);
+  ctx.lineWidth=3;ctx.strokeRect(8,28,W-16,H-34);
 
   floorYs.forEach((fy,fi)=>{
     let segments=[[12,W-12]];
@@ -289,7 +349,20 @@ function draw(){
       });
       segments=next;
     });
-    segments.forEach(([a,b])=>{ctx.beginPath();ctx.moveTo(a,fy);ctx.lineTo(b,fy);ctx.stroke()});
+    segments.forEach(([a,b])=>drawFloorSegment(a,b,fy));
+  });
+
+  cracks.forEach(cr=>{
+    const y=floorYs[cr.floor];
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    if(cr.hits===1){
+      ctx.moveTo(cr.x+18,y-6);ctx.lineTo(cr.x+22,y+2);ctx.lineTo(cr.x+16,y+6);
+    }else{
+      ctx.moveTo(cr.x+8,y-6);ctx.lineTo(cr.x+17,y+1);ctx.lineTo(cr.x+12,y+6);
+      ctx.moveTo(cr.x+30,y-6);ctx.lineTo(cr.x+22,y);ctx.lineTo(cr.x+29,y+6);
+    }
+    ctx.stroke();
   });
 
   ladders.forEach(l=>{
@@ -299,13 +372,12 @@ function draw(){
     for(let y=l.top+8;y<l.bottom;y+=9){
       ctx.beginPath();ctx.moveTo(l.x,y);ctx.lineTo(l.x+18,y);ctx.stroke();
     }
-    ctx.lineWidth=3;
   });
 
   holes.forEach(h=>{
     if(h.timer<120){
       ctx.font='10px monospace';
-      ctx.fillText('!',h.x+17,floorYs[h.floor]-8);
+      ctx.fillText('!',h.x+17,floorYs[h.floor]-10);
     }
   });
 
@@ -319,12 +391,6 @@ function draw(){
   }
   ctx.restore();
 }
-
-document.getElementById('stamp').addEventListener('pointerup',()=>{
-  if(state==='gameover'){
-    score=0;level=1;lives=3;state='play';spawnLevel();sfxLevel();
-  }
-});
 
 function loop(){update();draw();requestAnimationFrame(loop)}
 loop();
