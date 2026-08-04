@@ -1,0 +1,273 @@
+
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>De Stampertjes v0.1</title>
+<style>
+:root{--bg:#111;--fg:#fff;--line:#111}
+*{box-sizing:border-box;touch-action:none}
+html,body{margin:0;height:100%;background:var(--bg);font-family:ui-monospace,Menlo,monospace;color:var(--fg);overflow:hidden}
+#wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px}
+#title{font-size:16px;letter-spacing:2px}
+canvas{background:#fff;border:4px solid #fff;image-rendering:pixelated;max-width:100%;height:auto}
+#controls{display:grid;grid-template-columns:70px 70px 90px 70px 70px;gap:8px;width:min(460px,100%)}
+button{appearance:none;border:2px solid #fff;background:#111;color:#fff;border-radius:10px;font:700 18px ui-monospace,monospace;padding:14px 4px;user-select:none}
+button:active{background:#fff;color:#111}
+.small{font-size:13px;opacity:.8;text-align:center}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="title">DE STAMPERTJES</div>
+  <canvas id="game" width="480" height="320"></canvas>
+  <div id="controls">
+    <button id="left">◀</button>
+    <button id="up">▲</button>
+    <button id="stamp">STAMP</button>
+    <button id="down">▼</button>
+    <button id="right">▶</button>
+  </div>
+  <div class="small">Vang de wandelende appels in een gat en stamp ze omlaag.</div>
+</div>
+<script>
+const c=document.getElementById('game'),ctx=c.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+
+const W=c.width,H=c.height;
+const floorYs=[70,130,190,250,305];
+const ladders=[
+  {x:85,top:70,bottom:130},{x:310,top:70,bottom:130},
+  {x:180,top:130,bottom:190},{x:395,top:130,bottom:190},
+  {x:75,top:190,bottom:250},{x:290,top:190,bottom:250},
+  {x:210,top:250,bottom:305},{x:420,top:250,bottom:305}
+];
+
+let keys={left:false,right:false,up:false,down:false};
+let state='play',score=0,level=1,lives=3,frame=0;
+let holes=[],enemies=[];
+let player={x:35,y:288,w:16,h:18,vy:0,onLadder:false,dir:1,cool:0};
+
+function floorIndexForY(y){
+  let best=0,dist=1e9;
+  floorYs.forEach((fy,i)=>{let d=Math.abs(y-fy);if(d<dist){dist=d;best=i;}});
+  return best;
+}
+function floorYAtPlayer(){ return floorYs[floorIndexForY(player.y+player.h)];}
+function ladderNear(x,y){
+  return ladders.find(l=>x+8>l.x-8&&x+8<l.x+24&&y+18>=l.top&&y<=l.bottom);
+}
+function spawnLevel(){
+  holes=[]; enemies=[];
+  player.x=35; player.y=287; player.vy=0;
+  let count=Math.min(2+level,7);
+  for(let i=0;i<count;i++){
+    let fi=i%4;
+    enemies.push({
+      x:430-(i*53)%360,
+      y:floorYs[fi]-16,
+      floor:fi,
+      dir:i%2?1:-1,
+      speed:0.55+level*0.08+(i%3)*0.08,
+      trapped:0,
+      hp:1+Math.floor((level-1)/3),
+      blink:0
+    });
+  }
+}
+spawnLevel();
+
+function createHole(){
+  if(player.cool>0||player.onLadder)return;
+  const fi=floorIndexForY(player.y+player.h);
+  if(fi===floorYs.length-1)return;
+  const fy=floorYs[fi];
+  if(Math.abs((player.y+player.h)-fy)>5)return;
+  const gx=Math.max(20,Math.min(W-60,Math.floor((player.x+8)/40)*40));
+  if(ladders.some(l=>Math.abs(l.x-gx)<30&&l.top===fy))return;
+  if(!holes.some(h=>h.floor===fi&&Math.abs(h.x-gx)<8)){
+    holes.push({x:gx,floor:fi,timer:240});
+    player.cool=28;
+  }
+}
+
+function bind(id,key){
+  const el=document.getElementById(id);
+  ['pointerdown','touchstart'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[key]=true;}));
+  ['pointerup','pointercancel','pointerleave','touchend'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[key]=false;}));
+}
+bind('left','left');bind('right','right');bind('up','up');bind('down','down');
+document.getElementById('stamp').addEventListener('pointerdown',e=>{e.preventDefault();createHole();});
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft')keys.left=true;if(e.key==='ArrowRight')keys.right=true;
+  if(e.key==='ArrowUp')keys.up=true;if(e.key==='ArrowDown')keys.down=true;
+  if(e.key===' ')createHole();
+});
+window.addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft')keys.left=false;if(e.key==='ArrowRight')keys.right=false;
+  if(e.key==='ArrowUp')keys.up=false;if(e.key==='ArrowDown')keys.down=false;
+});
+
+function updatePlayer(){
+  if(player.cool>0)player.cool--;
+  const lad=ladderNear(player.x,player.y);
+  player.onLadder=!!lad && (keys.up||keys.down||player.onLadder);
+  if(player.onLadder&&lad){
+    player.x+=(lad.x-player.x)*0.25;
+    if(keys.up)player.y-=1.8;
+    if(keys.down)player.y+=1.8;
+    if(player.y<lad.top-18){player.y=lad.top-18;player.onLadder=false;}
+    if(player.y>lad.bottom-18){player.y=lad.bottom-18;player.onLadder=false;}
+  }else{
+    if(keys.left){player.x-=1.8;player.dir=-1}
+    if(keys.right){player.x+=1.8;player.dir=1}
+    player.x=Math.max(12,Math.min(W-player.w-12,player.x));
+    let fi=floorIndexForY(player.y+player.h);
+    let fy=floorYs[fi];
+    let under=holes.find(h=>h.floor===fi&&player.x+8>h.x&&player.x+8<h.x+40);
+    if(under){
+      player.y+=3.2;
+      if(player.y+player.h>floorYs[fi+1])player.y=floorYs[fi+1]-player.h;
+    }else{
+      player.y=fy-player.h;
+    }
+  }
+}
+
+function updateEnemies(){
+  enemies.forEach(e=>{
+    if(e.trapped>0){
+      e.trapped--; e.blink++;
+      const pCenter=player.x+8, eCenter=e.x+8;
+      const sameFloor=Math.abs((player.y+player.h)-floorYs[e.floor])<5;
+      if(sameFloor && Math.abs(pCenter-eCenter)<17 && player.cool===0){
+        e.hp--; score+=100;
+        const h=holes.find(h=>h.floor===e.floor&&eCenter>h.x&&eCenter<h.x+40);
+        if(e.hp<=0 || e.floor>=floorYs.length-2){
+          e.dead=true; score+=200;
+        }else{
+          e.floor++; e.y=floorYs[e.floor]-16; e.trapped=0; e.x=h?h.x+12:e.x;
+        }
+        player.cool=20;
+      }
+      if(e.trapped===0 && !e.dead){
+        e.y=floorYs[e.floor]-16;
+        e.x+=e.dir*12;
+      }
+      return;
+    }
+    e.x+=e.dir*e.speed;
+    if(e.x<15){e.x=15;e.dir=1}
+    if(e.x>W-31){e.x=W-31;e.dir=-1}
+
+    // occasional ladder use
+    for(const l of ladders){
+      if(Math.abs(e.x-l.x)<2 && e.floor<floorYs.length-1 && Math.random()<0.0025+level*0.0004){
+        if(l.top===floorYs[e.floor] && e.floor<4){e.floor++;e.y=floorYs[e.floor]-16;}
+        else if(l.bottom===floorYs[e.floor] && e.floor>0){e.floor--;e.y=floorYs[e.floor]-16;}
+      }
+    }
+
+    const h=holes.find(h=>h.floor===e.floor&&e.x+8>h.x+3&&e.x+8<h.x+37);
+    if(h){
+      e.x=h.x+12;e.y=floorYs[e.floor]-6;e.trapped=150-Math.min(level*6,60);
+    }else{
+      e.y=floorYs[e.floor]-16;
+    }
+
+    const collide=Math.abs((player.x+8)-(e.x+8))<14 && Math.abs((player.y+9)-(e.y+8))<15;
+    if(collide){
+      lives--; player.x=35;player.y=287;player.onLadder=false;
+      e.x=430;e.dir=-1;
+      if(lives<=0)state='gameover';
+    }
+  });
+  enemies=enemies.filter(e=>!e.dead);
+  if(enemies.length===0){level++;score+=500;spawnLevel();}
+}
+
+function update(){
+  if(state!=='play')return;
+  frame++; updatePlayer(); updateEnemies();
+  holes.forEach(h=>h.timer--);
+  holes=holes.filter(h=>h.timer>0);
+}
+
+function drawPixelPerson(x,y){
+  ctx.fillRect(x+4,y,8,6);
+  ctx.fillRect(x+2,y+6,12,10);
+  ctx.fillRect(x,y+16,5,2);
+  ctx.fillRect(x+11,y+16,5,2);
+}
+function drawApple(e){
+  if(e.trapped>0 && Math.floor(e.blink/8)%2===0)return;
+  ctx.beginPath();ctx.arc(e.x+8,e.y+7,8,0,Math.PI*2);ctx.fill();
+  ctx.fillRect(e.x+7,e.y-3,3,5);
+  ctx.fillRect(e.x+2,e.y+14,3,5);
+  ctx.fillRect(e.x+11,e.y+14,3,5);
+  if(e.hp>1){
+    ctx.strokeRect(e.x-2,e.y-5,20,24);
+  }
+}
+function draw(){
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#111';ctx.strokeStyle='#111';ctx.lineWidth=3;
+
+  ctx.font='12px monospace';
+  ctx.fillText(`SCORE ${String(score).padStart(5,'0')}`,12,18);
+  ctx.fillText(`LEVEL ${level}`,205,18);
+  ctx.fillText(`LEVENS ${lives}`,385,18);
+
+  // castle walls
+  ctx.strokeRect(8,28,W-16,H-34);
+
+  // floors with holes
+  floorYs.forEach((fy,fi)=>{
+    let segments=[[12,W-12]];
+    holes.filter(h=>h.floor===fi).forEach(h=>{
+      const next=[];
+      segments.forEach(([a,b])=>{
+        if(h.x>b||h.x+40<a)next.push([a,b]);
+        else{
+          if(a<h.x)next.push([a,h.x]);
+          if(h.x+40<b)next.push([h.x+40,b]);
+        }
+      });
+      segments=next;
+    });
+    segments.forEach(([a,b])=>{ctx.beginPath();ctx.moveTo(a,fy);ctx.lineTo(b,fy);ctx.stroke();});
+  });
+
+  ladders.forEach(l=>{
+    ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(l.x,l.top);ctx.lineTo(l.x,l.bottom);ctx.moveTo(l.x+18,l.top);ctx.lineTo(l.x+18,l.bottom);ctx.stroke();
+    for(let y=l.top+8;y<l.bottom;y+=9){ctx.beginPath();ctx.moveTo(l.x,y);ctx.lineTo(l.x+18,y);ctx.stroke();}
+    ctx.lineWidth=3;
+  });
+
+  holes.forEach(h=>{
+    ctx.font='10px monospace';
+    if(h.timer<75)ctx.fillText('!',h.x+17,floorYs[h.floor]-8);
+  });
+
+  drawPixelPerson(Math.round(player.x),Math.round(player.y));
+  enemies.forEach(drawApple);
+
+  if(state==='gameover'){
+    ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillRect(70,105,340,90);
+    ctx.fillStyle='#111';ctx.font='bold 22px monospace';ctx.fillText('GAME OVER',170,140);
+    ctx.font='13px monospace';ctx.fillText('Tik STAMP om opnieuw te beginnen',110,168);
+  }
+}
+
+document.getElementById('stamp').addEventListener('pointerup',()=>{
+  if(state==='gameover'){score=0;level=1;lives=3;state='play';spawnLevel();}
+});
+
+function loop(){update();draw();requestAnimationFrame(loop)}
+loop();
+</script>
+</body>
+</html>
