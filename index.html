@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v1.9</title>
+<title>De Stampertjes v2.0</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -56,15 +56,90 @@ button:active{background:#fff;color:#111}
 }
 #levelCard h2{font-size:28px;letter-spacing:2px;margin:0 0 10px}
 #levelCard p{font-size:15px;margin:0}
+
+.menuGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px
+}
+.menuGrid button{
+  width:100%;
+  min-height:48px;
+}
+.menuSection{
+  margin-top:14px;
+  border-top:2px solid #fff;
+  padding-top:14px;
+}
+.menuSection h2{
+  margin:0 0 10px;
+}
+.menuSection p{
+  text-align:left;
+  font-size:13px;
+  line-height:1.5;
+}
+#scoreList{
+  max-height:245px;
+  overflow:auto;
+  padding-right:4px;
+}
+.backBtn{
+  width:100%;
+  margin-top:12px;
+}
 </style>
 </head>
 <body>
 <div id="overlay">
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
-    <h1>DE STAMPERTJES</h1><div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v1.9</div>
+    <h1>DE STAMPERTJES</h1>
+    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.0</div>
     <p id="introText">In een oud kasteel zijn de Appelieten ontsnapt. Ze zoeken langzaam jouw verdieping op.</p>
-    <button id="startBtn">START SPEL</button>
+
+    <div id="mainMenu" class="menuGrid">
+      <button id="playMenuBtn">SPELEN</button>
+      <button id="scoresMenuBtn">HIGHSCORES</button>
+      <button id="helpMenuBtn">UITLEG</button>
+      <button id="historyMenuBtn">HISTORIE</button>
+    </div>
+
+    <div id="scoresSection" class="menuSection hidden">
+      <h2>WERELDWIJDE TOP 20</h2>
+      <div id="scoreList"></div>
+      <button class="backBtn" data-back>TERUG</button>
+    </div>
+
+    <div id="helpSection" class="menuSection hidden">
+      <h2>HOE SPEEL JE?</h2>
+      <p>
+        Stamp drie keer op dezelfde vloer om een gat te maken. Lok daarna een Appeliet in het gat.
+        Zodra hij vastzit, kun je veilig over hem heen lopen. Ga erboven staan en stamp hem twee of
+        drie keer weg. Versla alle Appelieten om het volgende level te bereiken.
+      </p>
+      <p>
+        Gebruik ◀ en ▶ om te lopen, ▲ en ▼ voor ladders en STAMP om vloeren en vijanden te raken.
+      </p>
+      <button class="backBtn" data-back>TERUG</button>
+    </div>
+
+    <div id="historySection" class="menuSection hidden">
+      <h2>DE HISTORIE</h2>
+      <p>
+        Lang geleden werd het kasteel bewaakt door de Stampertjes. Die hielden de ondergrondse
+        Appelieten opgesloten in de kelder. Tijdens een onweersnacht sloeg de bliksem in de oude
+        toren. De kerker brak open en de Appelieten ontsnapten naar alle verdiepingen.
+      </p>
+      <p>
+        Zonder wapens moet de laatste Stampertjeswachter het kasteel terugveroveren door de vloer
+        zelf als valstrik te gebruiken.
+      </p>
+      <button class="backBtn" data-back>TERUG</button>
+    </div>
+
+    <button id="startBtn" class="hidden">START SPEL</button>
 
     <div id="highscoreEntry" class="hidden">
       <h2>NIEUWE HIGHSCORE</h2>
@@ -73,13 +148,12 @@ button:active{background:#fff;color:#111}
       <button id="saveScoreBtn">SCORE OPSLAAN</button>
     </div>
 
-    <div id="highscoreBox">
+    <div id="highscoreBox" class="hidden">
       <h2>WERELDWIJDE HIGHSCORES</h2>
-      <div id="scoreList"></div>
+      <div id="scoreListLegacy"></div>
     </div>
   </div>
 </div>
-
 <div id="levelOverlay" class="hidden">
   <div id="levelCard">
     <h2 id="levelTitle">LEVEL VOLTOOID</h2>
@@ -110,6 +184,14 @@ const highscoreEntry=document.getElementById("highscoreEntry");
 const nameInput=document.getElementById("nameInput");
 const saveScoreBtn=document.getElementById("saveScoreBtn");
 const scoreList=document.getElementById("scoreList");
+const mainMenu=document.getElementById("mainMenu");
+const scoresSection=document.getElementById("scoresSection");
+const helpSection=document.getElementById("helpSection");
+const historySection=document.getElementById("historySection");
+const playMenuBtn=document.getElementById("playMenuBtn");
+const scoresMenuBtn=document.getElementById("scoresMenuBtn");
+const helpMenuBtn=document.getElementById("helpMenuBtn");
+const historyMenuBtn=document.getElementById("historyMenuBtn");
 const levelOverlay=document.getElementById("levelOverlay");
 const levelTitle=document.getElementById("levelTitle");
 const levelSubtitle=document.getElementById("levelSubtitle");
@@ -154,18 +236,18 @@ function saveLocalHighscores(scores){
 function normalizeScores(rows){
   const best=new Map();
   (rows||[]).forEach(row=>{
-    const name=String(row.name||"SPELER").toUpperCase().slice(0,10);
+    const name=String(row.name||"SPELER").toUpperCase().slice(0,20);
     const score=Number(row.score)||0;
     const level=Number(row.level)||1;
     if(!best.has(name)||score>best.get(name).score)best.set(name,{name,score,level});
   });
-  return [...best.values()].sort((a,b)=>b.score-a.score).slice(0,10);
+  return [...best.values()].sort((a,b)=>b.score-a.score).slice(0,20);
 }
 async function loadOnlineHighscores(){
   scoreList.innerHTML="<div>Online scores laden…</div>";
   try{
     const response=await fetch(
-      `${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=100`,
+      `${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=200`,
       {
         headers:{
           "apikey":SUPABASE_KEY,
@@ -211,19 +293,56 @@ function renderHighscores(useLocalFallback=false){
 }
 function qualifiesForHighscore(value){
   const scores=onlineScores;
-  return value>0 && (scores.length<10 || value>scores[scores.length-1].score);
+  return value>0 && (scores.length<20 || value>scores[scores.length-1].score);
 }
+function showMainMenu(){
+  mainMenu.classList.remove("hidden");
+  scoresSection.classList.add("hidden");
+  helpSection.classList.add("hidden");
+  historySection.classList.add("hidden");
+  highscoreEntry.classList.add("hidden");
+  document.getElementById("highscoreBox").classList.add("hidden");
+  introText.textContent="In een oud kasteel zijn de Appelieten ontsnapt. Ze zoeken langzaam jouw verdieping op.";
+}
+function showMenuSection(section){
+  mainMenu.classList.add("hidden");
+  scoresSection.classList.add("hidden");
+  helpSection.classList.add("hidden");
+  historySection.classList.add("hidden");
+  section.classList.remove("hidden");
+}
+playMenuBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  startGame();
+});
+scoresMenuBtn.addEventListener("pointerdown",async e=>{
+  e.preventDefault();
+  showMenuSection(scoresSection);
+  await loadOnlineHighscores();
+});
+helpMenuBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  showMenuSection(helpSection);
+});
+historyMenuBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  showMenuSection(historySection);
+});
+document.querySelectorAll("[data-back]").forEach(btn=>{
+  btn.addEventListener("pointerdown",e=>{
+    e.preventDefault();
+    showMainMenu();
+  });
+});
+
 function openIntro(){
   state="intro";
-  highscoreEntry.classList.add("hidden");
-  document.getElementById("highscoreBox").classList.remove("hidden");
-  startBtn.classList.remove("hidden");
-  document.getElementById("introText").textContent=
-    "In een oud kasteel zijn de Appelieten ontsnapt. Ze zoeken langzaam jouw verdieping op.";
+  startBtn.classList.add("hidden");
   overlay.classList.remove("hidden");
-  loadOnlineHighscores();
+  showMainMenu();
 }
 function startGame(){
+  playMenuBtn.textContent="SPELEN";
   audio();
   score=0;level=1;lives=3;state="play";
   spawnLevel();
@@ -232,6 +351,10 @@ function startGame(){
 function showGameOverPanel(){
   pendingScore=score;
   overlay.classList.remove("hidden");
+  mainMenu.classList.add("hidden");
+  scoresSection.classList.add("hidden");
+  helpSection.classList.add("hidden");
+  historySection.classList.add("hidden");
   startBtn.classList.add("hidden");
   document.getElementById("introText").textContent=`Je eindscore: ${score}`;
   document.getElementById("highscoreBox").classList.toggle("hidden",qualifiesForHighscore(score));
@@ -240,8 +363,8 @@ function showGameOverPanel(){
     nameInput.focus();
     nameInput.select();
   }else{
-    startBtn.textContent="OPNIEUW";
-    startBtn.classList.remove("hidden");
+    mainMenu.classList.remove("hidden");
+    playMenuBtn.textContent="OPNIEUW SPELEN";
   }
 }
 startBtn.addEventListener("pointerdown",e=>{
@@ -251,7 +374,7 @@ startBtn.addEventListener("pointerdown",e=>{
 });
 saveScoreBtn.addEventListener("pointerdown",async e=>{
   e.preventDefault();
-  const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,10);
+  const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,20);
   saveScoreBtn.disabled=true;
   saveScoreBtn.textContent="OPSLAAN…";
 
@@ -277,8 +400,8 @@ saveScoreBtn.addEventListener("pointerdown",async e=>{
   }finally{
     saveScoreBtn.disabled=false;
     saveScoreBtn.textContent="SCORE OPSLAAN";
-    startBtn.textContent="OPNIEUW";
-    startBtn.classList.remove("hidden");
+    mainMenu.classList.remove("hidden");
+    playMenuBtn.textContent="OPNIEUW SPELEN";
   }
 });
 
@@ -327,7 +450,7 @@ function drawIntro(){
 
   requestAnimationFrame(drawIntro);
 }
-loadOnlineHighscores();
+openIntro();
 drawIntro();
 ctx.imageSmoothingEnabled=false;
 const W=c.width,H=c.height;
