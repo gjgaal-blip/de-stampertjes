@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.05</title>
+<title>De Stampertjes v2.06</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -82,21 +82,48 @@ button:active{background:#fff;color:#111}
   line-height:1.5;
 }
 #scoreList{
-  max-height:330px;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  padding:4px 6px 4px 0;
+  width:100%;
+  overflow:visible;
+  padding:2px 0;
 }
 .scoreRow{
   display:grid;
-  grid-template-columns:34px minmax(86px,1fr) 62px 38px;
-  gap:6px;
+  grid-template-columns:32px minmax(80px,1fr) 60px 36px;
+  gap:5px;
   align-items:center;
-  min-height:29px;
+  min-height:25px;
   border-bottom:1px dotted rgba(255,255,255,.35);
-  font-size:14px;
+  font-size:13px;
 }
 .emptyScore{opacity:.45}
+body.scoreMode #introCanvas,
+body.scoreMode #gameTitle,
+body.scoreMode #versionLabel,
+body.scoreMode #introText{
+  display:none!important;
+}
+body.scoreMode #panel{
+  max-height:none;
+  overflow:visible;
+  padding:14px;
+}
+body.scoreMode #scoresSection{
+  margin-top:0;
+  border-top:0;
+  padding-top:0;
+}
+#teddyEgg{
+  margin:8px 0 4px;
+  padding:8px;
+  border:2px dashed #fff;
+  font-size:12px;
+  animation:teddyPop .35s steps(2,end);
+}
+.teddyCat{font-size:28px;margin-bottom:3px}
+@keyframes teddyPop{
+  from{transform:scale(.5);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
 .backBtn{
   width:100%;
   margin-top:12px;
@@ -107,10 +134,14 @@ button:active{background:#fff;color:#111}
 <div id="overlay">
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
-    <h1>DE STAMPERTJES</h1>
-    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.05</div>
+    <h1 id="gameTitle">DE STAMPERTJES</h1>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.06</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
+    <div id="teddyEgg" class="hidden" aria-hidden="true">
+      <div class="teddyCat">ᓚᘏᗢ</div>
+      <div>TEDDY WAS HERE +100</div>
+    </div>
     <div id="mainMenu" class="menuGrid">
       <button id="playMenuBtn">SPELEN</button>
       <button id="scoresMenuBtn">HIGHSCORES</button>
@@ -208,6 +239,9 @@ const playMenuBtn=document.getElementById("playMenuBtn");
 const scoresMenuBtn=document.getElementById("scoresMenuBtn");
 const helpMenuBtn=document.getElementById("helpMenuBtn");
 const historyMenuBtn=document.getElementById("historyMenuBtn");
+const gameTitle=document.getElementById("gameTitle");
+const versionLabel=document.getElementById("versionLabel");
+const teddyEgg=document.getElementById("teddyEgg");
 const levelOverlay=document.getElementById("levelOverlay");
 const levelTitle=document.getElementById("levelTitle");
 const levelSubtitle=document.getElementById("levelSubtitle");
@@ -333,6 +367,7 @@ function qualifiesForHighscore(value){
   return value>0 && (scores.length<10 || value>scores[scores.length-1].score);
 }
 function showMainMenu(){
+  document.body.classList.remove("scoreMode");
   mainMenu.classList.remove("hidden");
   scoresSection.classList.add("hidden");
   helpSection.classList.add("hidden");
@@ -356,6 +391,7 @@ playMenuBtn.addEventListener("click",handlePlay);
 playMenuBtn.addEventListener("pointerup",handlePlay);
 scoresMenuBtn.addEventListener("pointerdown",async e=>{
   e.preventDefault();
+  document.body.classList.add("scoreMode");
   showMenuSection(scoresSection);
   await loadOnlineHighscores();
 });
@@ -367,6 +403,24 @@ historyMenuBtn.addEventListener("pointerdown",e=>{
   e.preventDefault();
   showMenuSection(historySection);
 });
+
+let teddyTapCount=0;
+let teddyTapTimer=null;
+versionLabel.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  teddyTapCount++;
+  clearTimeout(teddyTapTimer);
+  teddyTapTimer=setTimeout(()=>{teddyTapCount=0},1800);
+  if(teddyTapCount>=5){
+    teddyTapCount=0;
+    teddyEgg.classList.remove("hidden");
+    tone(330,.08,"square",.04,440);
+    setTimeout(()=>tone(440,.08,"square",.04,660),90);
+    setTimeout(()=>tone(660,.12,"square",.04,880),180);
+    setTimeout(()=>teddyEgg.classList.add("hidden"),3500);
+  }
+});
+
 document.querySelectorAll("[data-back]").forEach(btn=>{
   btn.addEventListener("pointerdown",e=>{
     e.preventDefault();
@@ -382,6 +436,7 @@ function openIntro(){
 }
 let startingGame=false;
 function startGame(){
+  document.body.classList.remove("scoreMode");
   if(startingGame||state==="play")return;
   startingGame=true;
   playMenuBtn.textContent="SPELEN";
