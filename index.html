@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.03</title>
+<title>De Stampertjes v2.04</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -97,7 +97,7 @@ button:active{background:#fff;color:#111}
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1>DE STAMPERTJES</h1>
-    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.03</div>
+    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.04</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="mainMenu" class="menuGrid">
@@ -108,7 +108,7 @@ button:active{background:#fff;color:#111}
     </div>
 
     <div id="scoresSection" class="menuSection hidden">
-      <h2>WERELDWIJDE TOP 20</h2>
+      <h2>WERELDWIJDE TOP 10</h2>
       <div id="scoreList"></div>
       <button class="backBtn" data-back>TERUG</button>
     </div>
@@ -150,7 +150,7 @@ button:active{background:#fff;color:#111}
     </div>
 
     <div id="highscoreBox" class="hidden">
-      <h2>WERELDWIJDE HIGHSCORES</h2>
+      <h2>WERELDWIJDE TOP 10</h2>
       <div id="scoreListLegacy"></div>
     </div>
   </div>
@@ -241,12 +241,12 @@ function saveLocalHighscores(scores){
 function normalizeScores(rows){
   const best=new Map();
   (rows||[]).forEach(row=>{
-    const name=String(row.name||"SPELER").toUpperCase().slice(0,20);
+    const name=String(row.name||"SPELER").toUpperCase().slice(0,10);
     const score=Number(row.score)||0;
     const level=Number(row.level)||1;
     if(!best.has(name)||score>best.get(name).score)best.set(name,{name,score,level});
   });
-  return [...best.values()].sort((a,b)=>b.score-a.score).slice(0,20);
+  return [...best.values()].sort((a,b)=>b.score-a.score).slice(0,10);
 }
 async function loadOnlineHighscores(){
   scoreList.innerHTML="<div>Online scores laden…</div>";
@@ -287,18 +287,29 @@ async function submitOnlineScore(name,value,reachedLevel){
   }
 }
 function renderHighscores(useLocalFallback=false){
-  const scores=useLocalFallback ? getLocalHighscores().slice(0,20) : onlineScores;
+  const scores=useLocalFallback ? getLocalHighscores().slice(0,10) : onlineScores.slice(0,10);
   if(!scores.length){
     scoreList.innerHTML="<div>Nog geen online scores</div>";
     return;
   }
-  scoreList.innerHTML=scores.map((s,i)=>
-    `<div>${i+1}. ${String(s.name||"---").padEnd(10," ")} ${String(s.score).padStart(5,"0")}</div>`
-  ).join("");
+
+  const medals=["🥇","🥈","🥉"];
+  scoreList.innerHTML=scores.map((s,i)=>{
+    const rank=i<3?medals[i]:`${i+1}.`;
+    const name=String(s.name||"---").toUpperCase().slice(0,10);
+    const scoreText=String(s.score||0).padStart(5,"0");
+    const levelText=`Lv${Number(s.level)||1}`;
+    return `<div style="display:grid;grid-template-columns:34px 1fr auto auto;gap:7px;align-items:center">
+      <span>${rank}</span>
+      <span>${name}</span>
+      <span>${scoreText}</span>
+      <span>${levelText}</span>
+    </div>`;
+  }).join("");
 }
 function qualifiesForHighscore(value){
   const scores=onlineScores;
-  return value>0 && (scores.length<20 || value>scores[scores.length-1].score);
+  return value>0 && (scores.length<10 || value>scores[scores.length-1].score);
 }
 function showMainMenu(){
   mainMenu.classList.remove("hidden");
@@ -387,7 +398,7 @@ startBtn.addEventListener("pointerdown",e=>{
 });
 saveScoreBtn.addEventListener("pointerdown",async e=>{
   e.preventDefault();
-  const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,20);
+  const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,10);
   saveScoreBtn.disabled=true;
   saveScoreBtn.textContent="OPSLAAN…";
 
