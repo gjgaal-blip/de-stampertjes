@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.0</title>
+<title>De Stampertjes v2.01</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -96,7 +96,7 @@ button:active{background:#fff;color:#111}
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1>DE STAMPERTJES</h1>
-    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.0</div>
+    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.01</div>
     <p id="introText">In een oud kasteel zijn de Appelieten ontsnapt. Ze zoeken langzaam jouw verdieping op.</p>
 
     <div id="mainMenu" class="menuGrid">
@@ -184,6 +184,7 @@ const highscoreEntry=document.getElementById("highscoreEntry");
 const nameInput=document.getElementById("nameInput");
 const saveScoreBtn=document.getElementById("saveScoreBtn");
 const scoreList=document.getElementById("scoreList");
+const introText=document.getElementById("introText");
 const mainMenu=document.getElementById("mainMenu");
 const scoresSection=document.getElementById("scoresSection");
 const helpSection=document.getElementById("helpSection");
@@ -282,7 +283,7 @@ async function submitOnlineScore(name,value,reachedLevel){
   }
 }
 function renderHighscores(useLocalFallback=false){
-  const scores=useLocalFallback ? getLocalHighscores().slice(0,10) : onlineScores;
+  const scores=useLocalFallback ? getLocalHighscores().slice(0,20) : onlineScores;
   if(!scores.length){
     scoreList.innerHTML="<div>Nog geen online scores</div>";
     return;
@@ -311,10 +312,12 @@ function showMenuSection(section){
   historySection.classList.add("hidden");
   section.classList.remove("hidden");
 }
-playMenuBtn.addEventListener("pointerdown",e=>{
-  e.preventDefault();
+function handlePlay(e){
+  if(e)e.preventDefault();
   startGame();
-});
+}
+playMenuBtn.addEventListener("click",handlePlay);
+playMenuBtn.addEventListener("pointerup",handlePlay);
 scoresMenuBtn.addEventListener("pointerdown",async e=>{
   e.preventDefault();
   showMenuSection(scoresSection);
@@ -341,12 +344,16 @@ function openIntro(){
   overlay.classList.remove("hidden");
   showMainMenu();
 }
+let startingGame=false;
 function startGame(){
+  if(startingGame||state==="play")return;
+  startingGame=true;
   playMenuBtn.textContent="SPELEN";
   audio();
   score=0;level=1;lives=3;state="play";
   spawnLevel();
   overlay.classList.add("hidden");
+  setTimeout(()=>{startingGame=false},250);
 }
 function showGameOverPanel(){
   pendingScore=score;
@@ -450,8 +457,10 @@ function drawIntro(){
 
   requestAnimationFrame(drawIntro);
 }
-openIntro();
-drawIntro();
+window.addEventListener("load",()=>{
+  openIntro();
+  drawIntro();
+});
 ctx.imageSmoothingEnabled=false;
 const W=c.width,H=c.height;
 const floors=[74,136,198,260,310];
