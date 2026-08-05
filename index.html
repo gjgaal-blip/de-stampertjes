@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v1.4</title>
+<title>De Stampertjes v1.5</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -62,7 +62,7 @@ button:active{background:#fff;color:#111}
 <div id="overlay">
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
-    <h1>DE STAMPERTJES</h1>
+    <h1>DE STAMPERTJES</h1><div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v1.5</div>
     <p id="introText">In een oud kasteel zijn de Appelieten ontsnapt. Stamp gaten, lok ze in de val en maak het kasteel weer veilig.</p>
     <button id="startBtn">START SPEL</button>
 
@@ -414,7 +414,12 @@ function stamp(){
   if(fi===floors.length-1)return;
   if(Math.abs((player.y+player.h)-floors[fi])>7)return;
   const gx=tileX(player.x);
-  if(ladders.some(l=>Math.abs(l.x-gx)<30&&(l.top===floors[fi]||l.bottom===floors[fi])))return;
+  if(ladders.some(l=>{
+    const sameFloor=(l.top===floors[fi]||l.bottom===floors[fi]);
+    const ladderCenter=l.x+10;
+    const holeCenter=gx+20;
+    return sameFloor && Math.abs(ladderCenter-holeCenter)<9;
+  }))return;
   if(holes.some(h=>h.floor===fi&&h.x===gx))return;
 
   let cr=cracks.find(q=>q.floor===fi&&q.x===gx);
