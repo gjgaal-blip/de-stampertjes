@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v1.0</title>
+<title>De Stampertjes v1.1</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -22,7 +22,7 @@ button:active{background:#fff;color:#111}
 </head>
 <body>
 <div id="wrap">
-  <div id="title">DE STAMPERTJES — v1.0</div>
+  <div id="title">DE STAMPERTJES — v1.1</div>
   <canvas id="game" width="480" height="320"></canvas>
   <div id="controls">
     <button id="left">◀</button>
@@ -31,7 +31,8 @@ button:active{background:#fff;color:#111}
     <button id="down">▼</button>
     <button id="right">▶</button>
   </div>
-  <div class="small">3× stampen voor een gat. Loop over een gevangen appel en stamp hem weg.</div>
+  <button id="musicToggle" style="padding:8px 18px;font-size:13px">MUZIEK: UIT</button>
+  <div class="small">3× stampen voor een gat. De appels kiezen soms jou en soms hun eigen route.</div>
 </div>
 <script>
 const c=document.getElementById('game'),ctx=c.getContext('2d');
@@ -71,6 +72,51 @@ const sfxTrap=()=>tone(360,.09,"square",.05,210);
 const sfxHit=()=>tone(240,.09,"square",.07,120);
 const sfxKill=()=>{tone(120,.2,"sawtooth",.08,45);setTimeout(()=>tone(520,.1,"square",.05,720),100)};
 const sfxHurt=()=>tone(170,.22,"sawtooth",.08,70);
+
+let musicOn=false;
+let musicTimer=null;
+let musicStep=0;
+const melody=[220,262,294,330,294,262,196,220,247,294,330,392,330,294,247,196];
+const bass=[110,110,98,98,87,87,98,98];
+
+function playMusicStep(){
+  if(!musicOn)return;
+  audio();
+  const now=audioCtx.currentTime;
+  const f=melody[musicStep%melody.length];
+  const b=bass[Math.floor(musicStep/2)%bass.length];
+
+  const o1=audioCtx.createOscillator(),g1=audioCtx.createGain();
+  o1.type="square";o1.frequency.setValueAtTime(f,now);
+  g1.gain.setValueAtTime(.018,now);g1.gain.exponentialRampToValueAtTime(.001,now+.13);
+  o1.connect(g1);g1.connect(audioCtx.destination);o1.start(now);o1.stop(now+.14);
+
+  if(musicStep%2===0){
+    const o2=audioCtx.createOscillator(),g2=audioCtx.createGain();
+    o2.type="triangle";o2.frequency.setValueAtTime(b,now);
+    g2.gain.setValueAtTime(.012,now);g2.gain.exponentialRampToValueAtTime(.001,now+.24);
+    o2.connect(g2);g2.connect(audioCtx.destination);o2.start(now);o2.stop(now+.25);
+  }
+
+  musicStep++;
+  musicTimer=setTimeout(playMusicStep,165);
+}
+function setMusic(on){
+  musicOn=on;
+  document.getElementById("musicToggle").textContent="MUZIEK: "+(musicOn?"AAN":"UIT");
+  localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
+  if(musicOn){
+    audio();
+    if(!musicTimer)playMusicStep();
+  }else{
+    clearTimeout(musicTimer);
+    musicTimer=null;
+  }
+}
+document.getElementById("musicToggle").addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  setMusic(!musicOn);
+});
 ['pointerdown','touchstart','click'].forEach(ev=>window.addEventListener(ev,audio,{once:true}));
 
 function floorIndex(y){
@@ -91,7 +137,10 @@ function spawnLevel(){
     enemies.push({
       x:410-(i*58)%330,y:floors[fi]-24,floor:fi,dir:i%2?1:-1,
       speed:.45+level*.055+(i%3)*.04,trapped:0,hitsNeeded:level>=4?3:2,
-      hitsLeft:level>=4?3:2,blink:0,dead:false
+      hitsLeft:level>=4?3:2,blink:0,dead:false,
+      think:30+Math.random()*110,
+      mood:Math.random(),
+      ladderCooldown:0
     });
   }
 }
@@ -204,10 +253,46 @@ function updateEnemies(){
     }
 
     const pc=player.x+12;
-    if(Math.abs(pc-(e.x+14))>8)e.dir=pc>e.x?1:-1;
+    if(e.ladderCooldown>0)e.ladderCooldown--;
+    e.think--;
+
+    // Iedere appel bedenkt regelmatig opnieuw wat hij gaat doen.
+    // Soms jaagt hij op de speler, soms loopt hij bewust de andere kant op,
+    // en soms kiest hij volledig willekeurig.
+    if(e.think<=0){
+      const roll=Math.random();
+      if(roll<0.42){
+        e.dir=pc>(e.x+14)?1:-1;
+      }else if(roll<0.68){
+        e.dir=pc>(e.x+14)?-1:1;
+      }else{
+        e.dir=Math.random()<.5?-1:1;
+      }
+      e.think=35+Math.random()*125;
+    }
+
+    // Kleine kans om spontaan om te draaien.
+    if(Math.random()<0.0025)e.dir*=-1;
+
+    // Af en toe een ladder nemen, ook als de speler daar niet staat.
+    if(e.ladderCooldown===0){
+      for(const l of ladders){
+        if(Math.abs((e.x+14)-(l.x+10))<10){
+          const r=Math.random();
+          if(r<0.012){
+            if(l.top===floors[e.floor]&&e.floor<floors.length-1){
+              e.floor++;e.y=floors[e.floor]-24;e.ladderCooldown=100;
+            }else if(l.bottom===floors[e.floor]&&e.floor>0){
+              e.floor--;e.y=floors[e.floor]-24;e.ladderCooldown=100;
+            }
+          }
+        }
+      }
+    }
+
     e.x+=e.dir*e.speed;
-    if(e.x<14)e.x=14;
-    if(e.x>W-42)e.x=W-42;
+    if(e.x<14){e.x=14;e.dir=1}
+    if(e.x>W-42){e.x=W-42;e.dir=-1}
 
     const h=holes.find(h=>h.floor===e.floor&&e.x+14>h.x+2&&e.x+14<h.x+38);
     if(h){
@@ -336,6 +421,12 @@ function draw(){
 }
 function loop(){update();draw();requestAnimationFrame(loop)}
 loop();
+
+if(localStorage.getItem("stampertjesMusic")==="1"){
+  document.getElementById("musicToggle").textContent="MUZIEK: AAN";
+  const startSavedMusic=()=>{setMusic(true);window.removeEventListener("pointerdown",startSavedMusic)};
+  window.addEventListener("pointerdown",startSavedMusic);
+}
 </script>
 </body>
 </html>
