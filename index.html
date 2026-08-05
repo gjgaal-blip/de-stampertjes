@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v1.5</title>
+<title>De Stampertjes v1.6</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -62,7 +62,7 @@ button:active{background:#fff;color:#111}
 <div id="overlay">
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
-    <h1>DE STAMPERTJES</h1><div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v1.5</div>
+    <h1>DE STAMPERTJES</h1><div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v1.6</div>
     <p id="introText">In een oud kasteel zijn de Appelieten ontsnapt. Stamp gaten, lok ze in de val en maak het kasteel weer veilig.</p>
     <button id="startBtn">START SPEL</button>
 
@@ -74,7 +74,7 @@ button:active{background:#fff;color:#111}
     </div>
 
     <div id="highscoreBox">
-      <h2>HIGHSCORES</h2>
+      <h2>WERELDWIJDE HIGHSCORES</h2>
       <div id="scoreList"></div>
     </div>
   </div>
@@ -138,19 +138,71 @@ function showLevelTransition(completedLevel,nextLevel){
 let introFrame=0;
 let pendingScore=0;
 
-function getHighscores(){
+const SUPABASE_URL="https://rtmnlirxnalqxrdhussk.supabase.co";
+const SUPABASE_KEY="sb_publishable__lQ_g5HZ0fXy1aWzJuoexA_D-8QNqty";
+let onlineScores=[];
+
+function getLocalHighscores(){
   try{
     const data=JSON.parse(localStorage.getItem("stampertjesHighscores")||"[]");
     return Array.isArray(data)?data:[];
   }catch{return []}
 }
-function saveHighscores(scores){
+function saveLocalHighscores(scores){
   localStorage.setItem("stampertjesHighscores",JSON.stringify(scores));
 }
-function renderHighscores(){
-  const scores=getHighscores().slice(0,5);
+function normalizeScores(rows){
+  const best=new Map();
+  (rows||[]).forEach(row=>{
+    const name=String(row.name||"SPELER").toUpperCase().slice(0,10);
+    const score=Number(row.score)||0;
+    const level=Number(row.level)||1;
+    if(!best.has(name)||score>best.get(name).score)best.set(name,{name,score,level});
+  });
+  return [...best.values()].sort((a,b)=>b.score-a.score).slice(0,10);
+}
+async function loadOnlineHighscores(){
+  scoreList.innerHTML="<div>Online scores laden…</div>";
+  try{
+    const response=await fetch(
+      `${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=100`,
+      {
+        headers:{
+          "apikey":SUPABASE_KEY,
+          "Authorization":`Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    onlineScores=normalizeScores(await response.json());
+    renderHighscores();
+  }catch(err){
+    console.warn("Online highscores niet bereikbaar:",err);
+    onlineScores=[];
+    renderHighscores(true);
+  }
+}
+async function submitOnlineScore(name,value,reachedLevel){
+  const body={name,score:value,level:reachedLevel};
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/highscores`,{
+    method:"POST",
+    headers:{
+      "apikey":SUPABASE_KEY,
+      "Authorization":`Bearer ${SUPABASE_KEY}`,
+      "Content-Type":"application/json",
+      "Prefer":"return=minimal"
+    },
+    body:JSON.stringify(body)
+  });
+  if(!response.ok){
+    const text=await response.text();
+    throw new Error(`Score opslaan mislukt (${response.status}): ${text}`);
+  }
+}
+function renderHighscores(useLocalFallback=false){
+  const scores=useLocalFallback ? getLocalHighscores().slice(0,10) : onlineScores;
   if(!scores.length){
-    scoreList.innerHTML="<div>1. --- 00000</div>";
+    scoreList.innerHTML="<div>Nog geen online scores</div>";
     return;
   }
   scoreList.innerHTML=scores.map((s,i)=>
@@ -158,8 +210,8 @@ function renderHighscores(){
   ).join("");
 }
 function qualifiesForHighscore(value){
-  const scores=getHighscores();
-  return value>0 && (scores.length<5 || value>scores[scores.length-1].score);
+  const scores=onlineScores;
+  return value>0 && (scores.length<10 || value>scores[scores.length-1].score);
 }
 function openIntro(){
   state="intro";
@@ -169,7 +221,7 @@ function openIntro(){
   document.getElementById("introText").textContent=
     "In een oud kasteel zijn de Appelieten ontsnapt. Stamp gaten, lok ze in de val en maak het kasteel weer veilig.";
   overlay.classList.remove("hidden");
-  renderHighscores();
+  loadOnlineHighscores();
 }
 function startGame(){
   audio();
@@ -197,18 +249,37 @@ startBtn.addEventListener("pointerdown",e=>{
   startBtn.textContent="START SPEL";
   startGame();
 });
-saveScoreBtn.addEventListener("pointerdown",e=>{
+saveScoreBtn.addEventListener("pointerdown",async e=>{
   e.preventDefault();
   const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,10);
-  const scores=getHighscores();
-  scores.push({name,score:pendingScore});
-  scores.sort((a,b)=>b.score-a.score);
-  saveHighscores(scores.slice(0,5));
-  highscoreEntry.classList.add("hidden");
-  document.getElementById("highscoreBox").classList.remove("hidden");
-  renderHighscores();
-  startBtn.textContent="OPNIEUW";
-  startBtn.classList.remove("hidden");
+  saveScoreBtn.disabled=true;
+  saveScoreBtn.textContent="OPSLAAN…";
+
+  // Lokale reservekopie
+  const local=getLocalHighscores();
+  local.push({name,score:pendingScore,level});
+  local.sort((a,b)=>b.score-a.score);
+  saveLocalHighscores(normalizeScores(local));
+
+  try{
+    await submitOnlineScore(name,pendingScore,level);
+    highscoreEntry.classList.add("hidden");
+    document.getElementById("highscoreBox").classList.remove("hidden");
+    await loadOnlineHighscores();
+    document.getElementById("introText").textContent="Je score staat online!";
+  }catch(err){
+    console.error(err);
+    highscoreEntry.classList.add("hidden");
+    document.getElementById("highscoreBox").classList.remove("hidden");
+    renderHighscores(true);
+    document.getElementById("introText").textContent=
+      "Online opslaan lukte niet. De score is wel lokaal bewaard.";
+  }finally{
+    saveScoreBtn.disabled=false;
+    saveScoreBtn.textContent="SCORE OPSLAAN";
+    startBtn.textContent="OPNIEUW";
+    startBtn.classList.remove("hidden");
+  }
 });
 
 function drawIntro(){
@@ -256,7 +327,7 @@ function drawIntro(){
 
   requestAnimationFrame(drawIntro);
 }
-renderHighscores();
+loadOnlineHighscores();
 drawIntro();
 ctx.imageSmoothingEnabled=false;
 const W=c.width,H=c.height;
