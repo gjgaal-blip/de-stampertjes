@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v1.8</title>
+<title>De Stampertjes v1.9</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -62,7 +62,7 @@ button:active{background:#fff;color:#111}
 <div id="overlay">
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
-    <h1>DE STAMPERTJES</h1><div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v1.8</div>
+    <h1>DE STAMPERTJES</h1><div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v1.9</div>
     <p id="introText">In een oud kasteel zijn de Appelieten ontsnapt. Ze zoeken langzaam jouw verdieping op.</p>
     <button id="startBtn">START SPEL</button>
 
@@ -371,21 +371,47 @@ let currentLayoutIndex=0;
 let keys={left:false,right:false,up:false,down:false};
 let frame=0,score=0,level=1,lives=3,state="intro",shake=0;
 let holes=[],cracks=[],enemies=[],effects=[];
-let player={x:30,y:282,w:24,h:28,onLadder:false,cool:0,dir:1};
+let player={x:30,y:282,w:24,h:28,onLadder:false,cool:0,dir:1,invulnerable:0};
 
 let audioCtx=null;
-function audio(){
-  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==="suspended") audioCtx.resume();
+let audioUnlocked=false;
+
+async function audio(){
+  try{
+    if(!audioCtx){
+      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    }
+    if(audioCtx.state==="suspended"){
+      await audioCtx.resume();
+    }
+
+    // Een vrijwel onhoorbaar tikje ontgrendelt WebAudio op iPhone.
+    if(!audioUnlocked){
+      const buffer=audioCtx.createBuffer(1,1,22050);
+      const source=audioCtx.createBufferSource();
+      source.buffer=buffer;
+      source.connect(audioCtx.destination);
+      source.start(0);
+      audioUnlocked=true;
+    }
+    return true;
+  }catch(err){
+    console.warn("Audio kon niet worden gestart:",err);
+    return false;
+  }
 }
-function tone(f,d=.08,t="square",v=.05,end=f){
-  audio();
+async function tone(f,d=.08,t="square",v=.05,end=f){
+  const ready=await audio();
+  if(!ready||!audioCtx)return;
+  const now=audioCtx.currentTime;
   const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-  o.type=t;o.frequency.setValueAtTime(f,audioCtx.currentTime);
-  o.frequency.linearRampToValueAtTime(end,audioCtx.currentTime+d);
-  g.gain.setValueAtTime(v,audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+d);
-  o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d);
+  o.type=t;
+  o.frequency.setValueAtTime(f,now);
+  o.frequency.linearRampToValueAtTime(end,now+d);
+  g.gain.setValueAtTime(Math.max(v,.001),now);
+  g.gain.exponentialRampToValueAtTime(.001,now+d);
+  o.connect(g);g.connect(audioCtx.destination);
+  o.start(now);o.stop(now+d);
 }
 const sfxCrack=()=>tone(140,.09,"square",.06,95);
 const sfxBreak=()=>tone(85,.18,"sawtooth",.09,45);
@@ -407,9 +433,10 @@ const melody=[
 ];
 const bass=[98,null,87,null,82,null,73,null];
 
-function playMusicStep(){
+async function playMusicStep(){
   if(!musicOn)return;
-  audio();
+  const ready=await audio();
+  if(!ready||!audioCtx||!musicOn)return;
   const now=audioCtx.currentTime;
   const f=melody[musicStep%melody.length];
   const b=bass[Math.floor(musicStep/4)%bass.length];
@@ -449,11 +476,14 @@ function setMusic(on){
     musicTimer=null;
   }
 }
-document.getElementById("musicToggle").addEventListener("pointerdown",e=>{
+document.getElementById("musicToggle").addEventListener("pointerdown",async e=>{
   e.preventDefault();
+  await audio();
   setMusic(!musicOn);
 });
-['pointerdown','touchstart','click'].forEach(ev=>window.addEventListener(ev,audio,{once:true}));
+['pointerdown','touchstart','click'].forEach(ev=>{
+  window.addEventListener(ev,()=>audio(),{passive:true});
+});
 
 function floorIndex(y){
   let bi=0,bd=999;
@@ -481,10 +511,34 @@ function chooseLayoutForLevel(levelNumber){
   ladders=ladderLayouts[currentLayoutIndex].map(l=>({...l}));
 }
 
+function clearStartZone(){
+  // Linksonder moet na een leven altijd vrij zijn.
+  enemies.forEach((e,i)=>{
+    const inStartZone=e.floor===floors.length-1 && e.x<145;
+    if(inStartZone){
+      e.x=300+(i%3)*48;
+      e.dir=-1;
+      e.think=80+Math.random()*100;
+      e.onLadder=false;
+      e.ladder=null;
+      e.trapped=0;
+    }
+  });
+}
+
+function resetPlayerSafely(){
+  player.x=30;
+  player.y=floors[4]-player.h;
+  player.onLadder=false;
+  player.cool=0;
+  player.invulnerable=150; // ongeveer 2,5 seconde bescherming
+  clearStartZone();
+}
+
 function spawnLevel(){
   chooseLayoutForLevel(level);
   holes=[];cracks=[];enemies=[];effects=[];
-  player.x=30;player.y=floors[4]-player.h;player.onLadder=false;player.cool=0;
+  player.x=30;player.y=floors[4]-player.h;player.onLadder=false;player.cool=0;player.invulnerable=120;
   const count=Math.min(3+level,7);
   for(let i=0;i<count;i++){
     const fi=i%4;
@@ -500,6 +554,7 @@ function spawnLevel(){
       ladderTargetFloor:null
     });
   }
+  clearStartZone();
 }
 spawnLevel();
 
@@ -560,7 +615,7 @@ document.getElementById("stamp").addEventListener("pointerdown",e=>{e.preventDef
 
 
 function updatePlayer(){
-  if(player.cool>0)player.cool--;
+  if(player.cool>0)player.cool--;if(player.invulnerable>0)player.invulnerable--;
   const lad=ladderNear(player.x,player.y);
   if(lad&&(keys.up||keys.down||player.onLadder)){
     player.onLadder=true;
@@ -715,9 +770,17 @@ function updateEnemies(){
     }
 
     const collide=Math.abs((player.x+12)-(e.x+14))<20&&Math.abs((player.y+14)-(e.y+12))<21;
-    if(collide&&e.trapped<=0){
-      lives--;player.x=30;player.y=floors[4]-player.h;shake=11;sfxHurt();e.x=420;
-      if(lives<=0){state="gameover";setTimeout(showGameOverPanel,500)}
+    if(collide&&e.trapped<=0&&player.invulnerable<=0){
+      lives--;
+      shake=11;
+      sfxHurt();
+
+      if(lives<=0){
+        state="gameover";
+        setTimeout(showGameOverPanel,500);
+      }else{
+        resetPlayerSafely();
+      }
     }
   });
 
@@ -789,6 +852,11 @@ function draw(){
   ctx.fillText(`LEVEL ${level}`,190,18);
   ctx.fillText(`ZAAL ${currentLayoutIndex+1}`,270,18);
   ctx.fillText(`LEVENS ${lives}`,385,18);
+  if(player.invulnerable>0){
+    ctx.font="10px monospace";
+    ctx.fillText("VEILIGE START",14,298);
+    ctx.font="12px monospace";
+  }
   ctx.lineWidth=3;ctx.strokeRect(8,28,W-16,H-32);
 
   floors.forEach((fy,fi)=>{
@@ -821,7 +889,9 @@ function draw(){
     }
   });
 
-  drawPlayer(Math.round(player.x),Math.round(player.y));
+  if(player.invulnerable<=0 || Math.floor(player.invulnerable/8)%2===0){
+    drawPlayer(Math.round(player.x),Math.round(player.y));
+  }
   enemies.forEach(drawApple);
   drawEffects();
 
