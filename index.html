@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.02</title>
+<title>De Stampertjes v2.03</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -14,6 +14,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:
 #wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px}
 #title{font-size:18px;letter-spacing:2px}
 canvas{background:#fff;border:4px solid #fff;image-rendering:pixelated;width:min(96vw,720px);height:auto;max-height:68vh}
+#controlLabels{display:grid;grid-template-columns:136px 96px 136px;gap:7px;width:min(450px,96vw);font-size:10px;text-align:center;letter-spacing:1px}
 #controls{display:grid;grid-template-columns:64px 64px 96px 64px 64px;gap:7px;width:min(450px,96vw)}
 button{appearance:none;border:2px solid #fff;background:#111;color:#fff;border-radius:10px;font:700 16px ui-monospace,monospace;padding:12px 3px;user-select:none}
 button:active{background:#fff;color:#111}
@@ -96,7 +97,7 @@ button:active{background:#fff;color:#111}
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1>DE STAMPERTJES</h1>
-    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.02</div>
+    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.03</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="mainMenu" class="menuGrid">
@@ -120,7 +121,7 @@ button:active{background:#fff;color:#111}
         drie keer weg. Versla alle Appelieten om het volgende level te bereiken.
       </p>
       <p>
-        Gebruik ◀ en ▶ om te lopen, ▲ en ▼ voor ladders en STAMP om vloeren en vijanden te raken.
+        Gebruik ▲ en ▼ links om te klimmen, ◀ en ▶ rechts om te lopen en STAMP in het midden.
       </p>
       <button class="backBtn" data-back>TERUG</button>
     </div>
@@ -163,11 +164,14 @@ button:active{background:#fff;color:#111}
 <div id="wrap">
   <div id="title">DE STAMPERTJES</div>
   <canvas id="game" width="480" height="320"></canvas>
+  <div id="controlLabels">
+    <span>KLIMMEN</span><span></span><span>LOPEN</span>
+  </div>
   <div id="controls">
-    <button id="left">◀</button>
     <button id="up">▲</button>
-    <button id="stamp">STAMP</button>
     <button id="down">▼</button>
+    <button id="stamp">STAMP</button>
+    <button id="left">◀</button>
     <button id="right">▶</button>
   </div>
   <button id="musicToggle" style="padding:8px 18px;font-size:13px">MUZIEK: UIT</button>
@@ -932,7 +936,7 @@ function updateEnemies(){
     }
 
     const collide=Math.abs((player.x+12)-(e.x+14))<20&&Math.abs((player.y+14)-(e.y+12))<21;
-    if(collide&&e.trapped<=0&&player.invulnerable<=0&&player.x>170){
+    if(collide&&e.trapped<=0&&player.invulnerable<=0){
       lives--;
       shake=11;
       sfxHurt();
