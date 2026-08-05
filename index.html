@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v1.1</title>
+<title>De Stampertjes v1.2</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -22,7 +22,7 @@ button:active{background:#fff;color:#111}
 </head>
 <body>
 <div id="wrap">
-  <div id="title">DE STAMPERTJES — v1.1</div>
+  <div id="title">DE STAMPERTJES — v1.2</div>
   <canvas id="game" width="480" height="320"></canvas>
   <div id="controls">
     <button id="left">◀</button>
@@ -32,7 +32,7 @@ button:active{background:#fff;color:#111}
     <button id="right">▶</button>
   </div>
   <button id="musicToggle" style="padding:8px 18px;font-size:13px">MUZIEK: UIT</button>
-  <div class="small">3× stampen voor een gat. De appels kiezen soms jou en soms hun eigen route.</div>
+  <div class="small">De appels lopen nu ook echt vloeiend de ladders op en af.</div>
 </div>
 <script>
 const c=document.getElementById('game'),ctx=c.getContext('2d');
@@ -76,30 +76,45 @@ const sfxHurt=()=>tone(170,.22,"sawtooth",.08,70);
 let musicOn=false;
 let musicTimer=null;
 let musicStep=0;
-const melody=[220,262,294,330,294,262,196,220,247,294,330,392,330,294,247,196];
-const bass=[110,110,98,98,87,87,98,98];
+
+// Rustiger, donkerder kasteelthema: langere noten, minder hoge piepjes.
+const melody=[
+  196,null,220,null,247,null,220,null,
+  175,null,196,null,220,null,196,null,
+  165,null,175,null,196,null,175,null,
+  147,null,165,null,175,null,147,null
+];
+const bass=[98,null,87,null,82,null,73,null];
 
 function playMusicStep(){
   if(!musicOn)return;
   audio();
   const now=audioCtx.currentTime;
   const f=melody[musicStep%melody.length];
-  const b=bass[Math.floor(musicStep/2)%bass.length];
+  const b=bass[Math.floor(musicStep/4)%bass.length];
 
-  const o1=audioCtx.createOscillator(),g1=audioCtx.createGain();
-  o1.type="square";o1.frequency.setValueAtTime(f,now);
-  g1.gain.setValueAtTime(.018,now);g1.gain.exponentialRampToValueAtTime(.001,now+.13);
-  o1.connect(g1);g1.connect(audioCtx.destination);o1.start(now);o1.stop(now+.14);
+  if(f){
+    const o1=audioCtx.createOscillator(),g1=audioCtx.createGain();
+    o1.type="triangle";
+    o1.frequency.setValueAtTime(f,now);
+    g1.gain.setValueAtTime(.012,now);
+    g1.gain.exponentialRampToValueAtTime(.001,now+.32);
+    o1.connect(g1);g1.connect(audioCtx.destination);
+    o1.start(now);o1.stop(now+.34);
+  }
 
-  if(musicStep%2===0){
+  if(b && musicStep%4===0){
     const o2=audioCtx.createOscillator(),g2=audioCtx.createGain();
-    o2.type="triangle";o2.frequency.setValueAtTime(b,now);
-    g2.gain.setValueAtTime(.012,now);g2.gain.exponentialRampToValueAtTime(.001,now+.24);
-    o2.connect(g2);g2.connect(audioCtx.destination);o2.start(now);o2.stop(now+.25);
+    o2.type="sine";
+    o2.frequency.setValueAtTime(b,now);
+    g2.gain.setValueAtTime(.008,now);
+    g2.gain.exponentialRampToValueAtTime(.001,now+.7);
+    o2.connect(g2);g2.connect(audioCtx.destination);
+    o2.start(now);o2.stop(now+.72);
   }
 
   musicStep++;
-  musicTimer=setTimeout(playMusicStep,165);
+  musicTimer=setTimeout(playMusicStep,280);
 }
 function setMusic(on){
   musicOn=on;
@@ -140,7 +155,10 @@ function spawnLevel(){
       hitsLeft:level>=4?3:2,blink:0,dead:false,
       think:30+Math.random()*110,
       mood:Math.random(),
-      ladderCooldown:0
+      ladderCooldown:0,
+      onLadder:false,
+      ladder:null,
+      ladderTargetFloor:null
     });
   }
 }
@@ -243,12 +261,46 @@ function updatePlayer(){
   }
 }
 
+function startEnemyLadder(e,l,targetFloor){
+  e.onLadder=true;
+  e.ladder=l;
+  e.ladderTargetFloor=targetFloor;
+  e.x=l.x-4;
+  e.ladderCooldown=120;
+}
+
 function updateEnemies(){
   enemies.forEach(e=>{
     if(e.dead)return;
+
     if(e.trapped>0){
       e.trapped--;e.blink++;
-      if(e.trapped===0){e.y=floors[e.floor]-24;e.x+=e.dir*16;e.hitsLeft=e.hitsNeeded}
+      if(e.trapped===0){
+        e.y=floors[e.floor]-24;
+        e.x+=e.dir*16;
+        e.hitsLeft=e.hitsNeeded;
+      }
+      return;
+    }
+
+    // Soepel ladderklimmen: eerst naar het midden van de ladder,
+    // daarna pixel voor pixel omhoog of omlaag.
+    if(e.onLadder && e.ladder){
+      const targetY=floors[e.ladderTargetFloor]-24;
+      e.x+=(e.ladder.x-4-e.x)*.28;
+      const dy=targetY-e.y;
+      const climbSpeed=1.25+Math.min(level*.03,.35);
+
+      if(Math.abs(dy)<=climbSpeed+1){
+        e.y=targetY;
+        e.floor=e.ladderTargetFloor;
+        e.onLadder=false;
+        e.ladder=null;
+        e.ladderTargetFloor=null;
+        e.think=45+Math.random()*90;
+      }else{
+        e.y+=Math.sign(dy)*climbSpeed;
+      }
       return;
     }
 
@@ -256,35 +308,39 @@ function updateEnemies(){
     if(e.ladderCooldown>0)e.ladderCooldown--;
     e.think--;
 
-    // Iedere appel bedenkt regelmatig opnieuw wat hij gaat doen.
-    // Soms jaagt hij op de speler, soms loopt hij bewust de andere kant op,
-    // en soms kiest hij volledig willekeurig.
     if(e.think<=0){
       const roll=Math.random();
-      if(roll<0.42){
+      if(roll<0.38){
         e.dir=pc>(e.x+14)?1:-1;
-      }else if(roll<0.68){
+      }else if(roll<0.64){
         e.dir=pc>(e.x+14)?-1:1;
       }else{
         e.dir=Math.random()<.5?-1:1;
       }
-      e.think=35+Math.random()*125;
+      e.think=40+Math.random()*135;
     }
 
-    // Kleine kans om spontaan om te draaien.
-    if(Math.random()<0.0025)e.dir*=-1;
+    if(Math.random()<0.0022)e.dir*=-1;
 
-    // Af en toe een ladder nemen, ook als de speler daar niet staat.
+    // Kies alleen een ladder wanneer de appel er echt vlakbij staat.
+    // De kans is hoger wanneer de speler op een andere verdieping staat.
     if(e.ladderCooldown===0){
       for(const l of ladders){
-        if(Math.abs((e.x+14)-(l.x+10))<10){
-          const r=Math.random();
-          if(r<0.012){
-            if(l.top===floors[e.floor]&&e.floor<floors.length-1){
-              e.floor++;e.y=floors[e.floor]-24;e.ladderCooldown=100;
-            }else if(l.bottom===floors[e.floor]&&e.floor>0){
-              e.floor--;e.y=floors[e.floor]-24;e.ladderCooldown=100;
-            }
+        const near=Math.abs((e.x+14)-(l.x+10))<8;
+        if(!near)continue;
+
+        const playerFloor=floorIndex(player.y+player.h);
+        const wantsOtherFloor=playerFloor!==e.floor;
+        const chance=wantsOtherFloor?0.032:0.010;
+
+        if(Math.random()<chance){
+          if(l.top===floors[e.floor] && e.floor<floors.length-1){
+            startEnemyLadder(e,l,e.floor+1);
+            return;
+          }
+          if(l.bottom===floors[e.floor] && e.floor>0){
+            startEnemyLadder(e,l,e.floor-1);
+            return;
           }
         }
       }
