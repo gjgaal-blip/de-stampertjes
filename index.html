@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.04</title>
+<title>De Stampertjes v2.05</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -26,8 +26,8 @@ button:active{background:#fff;color:#111}
   z-index:10;padding:18px
 }
 #panel{
-  width:min(470px,100%);text-align:center;border:3px solid #fff;
-  padding:18px;background:#111
+  width:min(470px,100%);max-height:94vh;overflow-y:auto;
+  text-align:center;border:3px solid #fff;padding:16px;background:#111
 }
 #introCanvas{
   width:100%;height:auto;background:#fff;border:3px solid #fff;
@@ -82,10 +82,21 @@ button:active{background:#fff;color:#111}
   line-height:1.5;
 }
 #scoreList{
-  max-height:245px;
-  overflow:auto;
-  padding-right:4px;
+  max-height:330px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:4px 6px 4px 0;
 }
+.scoreRow{
+  display:grid;
+  grid-template-columns:34px minmax(86px,1fr) 62px 38px;
+  gap:6px;
+  align-items:center;
+  min-height:29px;
+  border-bottom:1px dotted rgba(255,255,255,.35);
+  font-size:14px;
+}
+.emptyScore{opacity:.45}
 .backBtn{
   width:100%;
   margin-top:12px;
@@ -97,7 +108,7 @@ button:active{background:#fff;color:#111}
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1>DE STAMPERTJES</h1>
-    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.04</div>
+    <div style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.05</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="mainMenu" class="menuGrid">
@@ -287,25 +298,35 @@ async function submitOnlineScore(name,value,reachedLevel){
   }
 }
 function renderHighscores(useLocalFallback=false){
-  const scores=useLocalFallback ? getLocalHighscores().slice(0,10) : onlineScores.slice(0,10);
-  if(!scores.length){
-    scoreList.innerHTML="<div>Nog geen online scores</div>";
-    return;
-  }
-
+  const scores=(useLocalFallback ? getLocalHighscores() : onlineScores).slice(0,10);
   const medals=["🥇","🥈","🥉"];
-  scoreList.innerHTML=scores.map((s,i)=>{
+
+  const rows=Array.from({length:10},(_,i)=>{
+    const s=scores[i];
     const rank=i<3?medals[i]:`${i+1}.`;
+
+    if(!s){
+      return `<div class="scoreRow emptyScore">
+        <span>${rank}</span>
+        <span>---</span>
+        <span>-----</span>
+        <span>Lv-</span>
+      </div>`;
+    }
+
     const name=String(s.name||"---").toUpperCase().slice(0,10);
     const scoreText=String(s.score||0).padStart(5,"0");
     const levelText=`Lv${Number(s.level)||1}`;
-    return `<div style="display:grid;grid-template-columns:34px 1fr auto auto;gap:7px;align-items:center">
+
+    return `<div class="scoreRow">
       <span>${rank}</span>
       <span>${name}</span>
       <span>${scoreText}</span>
       <span>${levelText}</span>
     </div>`;
-  }).join("");
+  });
+
+  scoreList.innerHTML=rows.join("");
 }
 function qualifiesForHighscore(value){
   const scores=onlineScores;
