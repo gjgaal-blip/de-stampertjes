@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v0.3</title>
+<title>De Stampertjes v0.4</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -23,7 +23,7 @@ button:active{background:#fff;color:#111}
 </head>
 <body>
 <div id="wrap">
-  <div id="title">DE STAMPERTJES — v0.3</div>
+  <div id="title">DE STAMPERTJES — v0.4</div>
   <canvas id="game" width="480" height="320"></canvas>
   <div id="controls">
     <button id="left">◀</button>
@@ -32,7 +32,7 @@ button:active{background:#fff;color:#111}
     <button id="down">▼</button>
     <button id="right">▶</button>
   </div>
-  <div class="small">Stamp 3× op de vloer. Stamp daarna 2–3× op een gevangen appel.</div>
+  <div class="small">Een gevangen appel vormt een brug: loop erboven en druk 2–3× op STAMP.</div>
 </div>
 <script>
 const c=document.getElementById('game'),ctx=c.getContext('2d');
@@ -223,8 +223,19 @@ function updatePlayer(){
 
     const fi=floorIndexForY(player.y+player.h);
     const fy=floorYs[fi];
-    const under=holes.find(h=>h.floor===fi&&player.x+8>h.x&&player.x+8<h.x+40);
-    if(under){
+    const center=player.x+8;
+    const under=holes.find(h=>h.floor===fi&&center>h.x&&center<h.x+40);
+
+    // Een gevangen appel vult het gat tijdelijk op.
+    // Daardoor kan de speler eroverheen lopen en erboven stampen.
+    const trappedBridge=enemies.find(e =>
+      e.trapped>0 &&
+      e.floor===fi &&
+      center>e.x-4 &&
+      center<e.x+20
+    );
+
+    if(under && !trappedBridge){
       player.y+=3.3;
       if(player.y+player.h>floorYs[fi+1])player.y=floorYs[fi+1]-player.h;
     }else{
@@ -258,7 +269,7 @@ function updateEnemies(){
 
     const h=holes.find(h=>h.floor===e.floor&&e.x+8>h.x+3&&e.x+8<h.x+37);
     if(h){
-      e.x=h.x+12;e.y=floorYs[e.floor]-6;
+      e.x=h.x+12;e.y=floorYs[e.floor]-3;
       e.trapped=330-Math.min(level*8,80);
       e.hitsLeft=e.requiredHits;
       sfxTrap();
