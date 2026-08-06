@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.09</title>
+<title>De Stampertjes v2.09.1</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -16,7 +16,16 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:
 canvas{background:#fff;border:4px solid #fff;image-rendering:pixelated;width:min(96vw,720px);height:auto;max-height:68vh}
 #controlLabels{display:grid;grid-template-columns:136px 96px 136px;gap:7px;width:min(450px,96vw);font-size:10px;text-align:center;letter-spacing:1px}
 #controls{display:grid;grid-template-columns:64px 64px 96px 64px 64px;gap:7px;width:min(450px,96vw)}
-#gameOptions{position:relative;z-index:12;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(300px,90vw)}
+#gameOptions{
+  position:relative;
+  z-index:12;
+  display:none;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  width:min(300px,90vw)
+}
+body.gameplayActive #gameOptions{display:grid}
+body:not(.gameplayActive) #keyboardHint{display:none!important}
 #gameOptions button{padding:8px 12px;font-size:12px}
 button{appearance:none;border:2px solid #fff;background:#111;color:#fff;border-radius:10px;font:700 16px ui-monospace,monospace;padding:12px 3px;user-select:none}
 button:active{background:#fff;color:#111}
@@ -166,7 +175,7 @@ body:not(.keyboardMode) #keyboardHint{
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle">DE STAMPERTJES</h1>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.09</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.09.1</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
@@ -329,6 +338,7 @@ let levelTransitioning=false;
 function showLevelTransition(completedLevel,nextLevel){
   levelTransitioning=true;
   state="transition";
+  document.body.classList.remove("gameplayActive");
   levelTitle.textContent=`LEVEL ${completedLevel} VOLTOOID`;
   levelSubtitle.textContent=`NIEUWE ZAAL — LEVEL ${nextLevel}`;
   levelOverlay.classList.remove("hidden");
@@ -343,6 +353,7 @@ function showLevelTransition(completedLevel,nextLevel){
     levelTransitioning=false;
     state="play";
     spawnLevel();
+    document.body.classList.add("gameplayActive");
   },1900);
 }
 
@@ -447,6 +458,7 @@ function qualifiesForHighscore(value){
 }
 function showMainMenu(){
   document.body.classList.remove("scoreMode");
+  document.body.classList.remove("gameplayActive");
   mainMenu.classList.remove("hidden");
   scoresSection.classList.add("hidden");
   helpSection.classList.add("hidden");
@@ -514,6 +526,7 @@ document.querySelectorAll("[data-back]").forEach(btn=>{
 });
 
 function openIntro(){
+  document.body.classList.remove("gameplayActive");
   state="intro";
   keys.left=keys.right=keys.up=keys.down=false;
   pauseOverlay.classList.add("hidden");
@@ -525,6 +538,7 @@ function openIntro(){
 let startingGame=false;
 function startGame(){
   document.body.classList.remove("scoreMode");
+  document.body.classList.add("gameplayActive");
   if(startingGame||state==="play")return;
   startingGame=true;
   playMenuBtn.textContent="SPELEN";
@@ -537,6 +551,7 @@ function startGame(){
   setTimeout(()=>{startingGame=false},250);
 }
 function showGameOverPanel(){
+  document.body.classList.remove("gameplayActive");
   pendingScore=score;
   overlay.classList.remove("hidden");
   mainMenu.classList.add("hidden");
@@ -1046,6 +1061,7 @@ window.addEventListener("keydown",e=>{
     }
     if(state==="play"||state==="transition"){
       state="intro";
+      document.body.classList.remove("gameplayActive");
       keys.left=keys.right=keys.up=keys.down=false;
       pauseOverlay.classList.add("hidden");
       overlay.classList.remove("hidden");
