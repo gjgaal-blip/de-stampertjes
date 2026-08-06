@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.11.8</title>
+<title>De Stampertjes v2.11.9</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -485,12 +485,15 @@ body.attractMode #panel{max-width:520px}
 </style>
 </head>
 <body>
+<audio id="menuSoundtrack" preload="auto" loop playsinline>
+  <source src="the-castle-awakens.mp3" type="audio/mpeg">
+</audio>
 <div id="overlay">
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.11.8</div>
+    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.11.9</div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -693,7 +696,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.11.8</h2>
+    <h2>v2.11.9</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -948,6 +951,7 @@ function showMainMenu(){
   highscoreEntry.classList.add("hidden");
   document.getElementById("highscoreBox").classList.add("hidden");
   introText.innerHTML="<strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.";
+  if(musicOn&&musicUnlocked)startMenuMusic(false);
 }
 function showMenuSection(section){
   mainMenu.classList.add("hidden");
@@ -1603,6 +1607,7 @@ function openIntro(){
 }
 let startingGame=false;
 function startGame(){
+  stopMenuMusic(1000);
   stopAttractMode();
   document.body.classList.remove("scoreMode");
   document.body.classList.add("gameplayActive");
@@ -1622,6 +1627,7 @@ function startGame(){
 }
 function showGameOverPanel(){
   document.body.classList.remove("gameplayActive");
+  if(musicOn)startMenuMusic(false);
   pendingScore=score;
   overlay.classList.remove("hidden");
   mainMenu.classList.add("hidden");
@@ -1946,67 +1952,140 @@ const sfxHit=()=>tone(240,.09,"square",.07,120);
 const sfxKill=()=>{tone(120,.2,"sawtooth",.08,45);setTimeout(()=>tone(520,.1,"square",.05,720),100)};
 const sfxHurt=()=>tone(170,.22,"sawtooth",.08,70);
 
-let musicOn=false;
+const menuSoundtrack=document.getElementById("menuSoundtrack");
+const MUSIC_VOLUME=.38;
+let musicOn=localStorage.getItem("stampertjesMusic")!=="0";
+let musicUnlocked=false;
+let musicFadeFrame=null;
+let musicStartDelay=null;
+
+// Compatibility shims for older pause code.
 let musicTimer=null;
-let musicStep=0;
-
-// Rustiger, donkerder kasteelthema: langere noten, minder hoge piepjes.
-const melody=[
-  196,null,220,null,247,null,220,null,
-  175,null,196,null,220,null,196,null,
-  165,null,175,null,196,null,175,null,
-  147,null,165,null,175,null,147,null
-];
-const bass=[98,null,87,null,82,null,73,null];
-
-async function playMusicStep(){
-  if(!musicOn)return;
-  const ready=await audio();
-  if(!ready||!audioCtx||!musicOn)return;
-  const now=audioCtx.currentTime;
-  const f=melody[musicStep%melody.length];
-  const b=bass[Math.floor(musicStep/4)%bass.length];
-
-  if(f){
-    const o1=audioCtx.createOscillator(),g1=audioCtx.createGain();
-    o1.type="triangle";
-    o1.frequency.setValueAtTime(f,now);
-    g1.gain.setValueAtTime(.012,now);
-    g1.gain.exponentialRampToValueAtTime(.001,now+.32);
-    o1.connect(g1);g1.connect(audioCtx.destination);
-    o1.start(now);o1.stop(now+.34);
-  }
-
-  if(b && musicStep%4===0){
-    const o2=audioCtx.createOscillator(),g2=audioCtx.createGain();
-    o2.type="sine";
-    o2.frequency.setValueAtTime(b,now);
-    g2.gain.setValueAtTime(.008,now);
-    g2.gain.exponentialRampToValueAtTime(.001,now+.7);
-    o2.connect(g2);g2.connect(audioCtx.destination);
-    o2.start(now);o2.stop(now+.72);
-  }
-
-  musicStep++;
-  musicTimer=setTimeout(playMusicStep,280);
+function playMusicStep(){
+  return startMenuMusic(false);
 }
-function setMusic(on){
-  musicOn=on;
-  document.getElementById("musicToggle").textContent="MUZIEK: "+(musicOn?"AAN":"UIT");
-  localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
-  if(musicOn){
-    audio();
-    if(!musicTimer)playMusicStep();
-  }else{
-    clearTimeout(musicTimer);
-    musicTimer=null;
+
+function setMusicButton(){
+  musicToggle.textContent="MUZIEK: "+(musicOn?"AAN":"UIT");
+}
+
+function cancelMusicFade(){
+  if(musicFadeFrame){
+    cancelAnimationFrame(musicFadeFrame);
+    musicFadeFrame=null;
   }
 }
-document.getElementById("musicToggle").addEventListener("pointerdown",async e=>{
-  e.preventDefault();
+
+function fadeSoundtrack(target,duration=700,pauseAfter=false){
+  cancelMusicFade();
+  clearTimeout(musicStartDelay);
+
+  const startVolume=Number(menuSoundtrack.volume)||0;
+  const startTime=performance.now();
+
+  function step(now){
+    const progress=Math.min((now-startTime)/Math.max(duration,1),1);
+    menuSoundtrack.volume=startVolume+(target-startVolume)*progress;
+
+    if(progress<1){
+      musicFadeFrame=requestAnimationFrame(step);
+    }else{
+      musicFadeFrame=null;
+      menuSoundtrack.volume=target;
+      if(pauseAfter&&target<=.001)menuSoundtrack.pause();
+    }
+  }
+  musicFadeFrame=requestAnimationFrame(step);
+}
+
+async function unlockMenuMusic(){
   await audio();
+  if(musicUnlocked)return true;
+
+  try{
+    menuSoundtrack.volume=0;
+    const playPromise=menuSoundtrack.play();
+    if(playPromise)await playPromise;
+    menuSoundtrack.pause();
+    musicUnlocked=true;
+    return true;
+  }catch(err){
+    console.warn("Menu-muziek wacht op een gebruikersactie:",err);
+    return false;
+  }
+}
+
+function isMenuState(){
+  return state==="intro"||state==="gameover"||state==="results";
+}
+
+async function startMenuMusic(withDelay=true){
+  if(!musicOn||!isMenuState())return;
+
+  const unlocked=await unlockMenuMusic();
+  if(!unlocked)return;
+
+  clearTimeout(musicStartDelay);
+  const begin=async()=>{
+    if(!musicOn||!isMenuState())return;
+    cancelMusicFade();
+
+    try{
+      if(menuSoundtrack.ended||!Number.isFinite(menuSoundtrack.currentTime)){
+        menuSoundtrack.currentTime=0;
+      }
+      menuSoundtrack.volume=0;
+      await menuSoundtrack.play();
+      fadeSoundtrack(MUSIC_VOLUME,700,false);
+      musicTimer=true;
+    }catch(err){
+      console.warn("Menu-muziek kon niet starten:",err);
+    }
+  };
+
+  if(withDelay){
+    musicStartDelay=setTimeout(begin,500);
+  }else{
+    await begin();
+  }
+}
+
+function stopMenuMusic(duration=1000){
+  clearTimeout(musicStartDelay);
+  musicStartDelay=null;
+  musicTimer=null;
+
+  if(menuSoundtrack.paused){
+    menuSoundtrack.volume=0;
+    return;
+  }
+  fadeSoundtrack(0,duration,true);
+}
+
+function setMusic(on){
+  musicOn=Boolean(on);
+  localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
+  setMusicButton();
+
+  if(musicOn){
+    if(isMenuState())startMenuMusic(false);
+  }else{
+    stopMenuMusic(350);
+  }
+}
+
+musicToggle.addEventListener("pointerdown",async e=>{
+  e.preventDefault();
+  e.stopPropagation();
+  await unlockMenuMusic();
   setMusic(!musicOn);
 });
+
+menuSoundtrack.addEventListener("error",()=>{
+  console.warn("The Castle Awakens kon niet worden geladen.");
+});
+
+setMusicButton();
 
 const pauseToggle=document.getElementById("pauseToggle");
 const deathOverlay=document.getElementById("deathOverlay");
@@ -2029,13 +2108,12 @@ function togglePause(){
     state=(previousState&&previousState!=="paused")?previousState:"play";
     pauseOverlay.classList.add("hidden");
     pauseToggle.textContent="⏸ PAUZE";
-    if(musicOn && !musicTimer)playMusicStep();
+    // Gameplaymuziek is bewust uitgeschakeld; alleen geluidseffecten blijven actief.
   }else{
     previousState=state;
     state="paused";
     pauseOverlay.classList.remove("hidden");
     pauseToggle.textContent="▶ VERDER";
-    clearTimeout(musicTimer);
     musicTimer=null;
   }
 
@@ -2052,8 +2130,18 @@ pauseOverlay.addEventListener("pointerdown",e=>{
   togglePause();
 });
 
-['pointerdown','touchstart','click'].forEach(ev=>{
-  window.addEventListener(ev,()=>audio(),{passive:true});
+let firstAudioGestureHandled=false;
+async function handleFirstAudioGesture(){
+  await audio();
+  await unlockMenuMusic();
+
+  if(!firstAudioGestureHandled){
+    firstAudioGestureHandled=true;
+    if(musicOn&&isMenuState())startMenuMusic(true);
+  }
+}
+["pointerdown","touchstart","click","keydown"].forEach(ev=>{
+  window.addEventListener(ev,handleFirstAudioGesture,{passive:true});
 });
 
 function floorIndex(y){
@@ -2237,8 +2325,7 @@ window.addEventListener("keydown",e=>{
   }
 
   if((e.key==="m"||e.key==="M")&&!e.repeat){
-    audio();
-    setMusic(!musicOn);
+    unlockMenuMusic().then(()=>setMusic(!musicOn));
   }
 
   if(e.key==="Escape"&&!e.repeat){
@@ -2252,6 +2339,7 @@ window.addEventListener("keydown",e=>{
       pauseOverlay.classList.add("hidden");
       overlay.classList.remove("hidden");
       openIntro();
+      if(musicOn)startMenuMusic(false);
     }else if(state==="intro"){
       showMainMenu();
     }
@@ -2797,10 +2885,22 @@ function draw(){
 function loop(){update();draw();requestAnimationFrame(loop)}
 loop();
 
-if(localStorage.getItem("stampertjesMusic")==="1"){
-  document.getElementById("musicToggle").textContent="MUZIEK: AAN";
-  const startSavedMusic=()=>{setMusic(true);window.removeEventListener("pointerdown",startSavedMusic)};
-  window.addEventListener("pointerdown",startSavedMusic);
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){
+    cancelMusicFade();
+    menuSoundtrack.pause();
+  }else if(musicOn&&musicUnlocked&&isMenuState()){
+    startMenuMusic(false);
+  }
+});
+
+// Mobiele browsers starten audio pas na de eerste aanraking.
+if(musicOn){
+  setMusicButton();
+}else{
+  menuSoundtrack.volume=0;
+  menuSoundtrack.pause();
 }
 </script>
 </body>
