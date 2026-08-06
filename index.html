@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.09.3</title>
+<title>De Stampertjes v2.10</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -56,10 +56,12 @@ button:active{background:#fff;color:#111}
   touch-action:pan-y
 }
 #introCanvas{
-  width:100%;height:auto;background:#fff;border:3px solid #fff;
-  image-rendering:pixelated;margin-bottom:12px
+  width:100%;height:auto;max-height:150px;background:#fff;border:3px solid #fff;
+  image-rendering:pixelated;margin-bottom:8px
 }
-#panel h1{font-size:26px;letter-spacing:3px;margin:6px 0 10px}
+#panel h1{font-size:24px;letter-spacing:2px;margin:4px 0 4px}
+#studioLine{font-size:10px;letter-spacing:2px;opacity:.8;margin-bottom:6px}
+.titleBlock{font-size:.75em}
 #helpSection,#historySection,#roadmapSection,#scoresSection{
   padding-bottom:calc(16px + env(safe-area-inset-bottom));
 }
@@ -96,8 +98,13 @@ button:active{background:#fff;color:#111}
 .menuGrid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:12px
+  gap:8px;
+  margin-top:8px
+}
+.menuGrid button:first-child{
+  grid-column:1 / -1;
+  font-size:18px;
+  min-height:52px;
 }
 .menuGrid button{
   width:100%;
@@ -197,15 +204,29 @@ body:not(.keyboardMode) #keyboardHint{
   #panel{padding:12px}
   .menuSection p{font-size:12px;line-height:1.4}
 }
+#attractPrompt{
+  font-size:13px;
+  letter-spacing:2px;
+  margin-top:8px;
+  animation:blinkPrompt 1s steps(2,end) infinite;
+}
+@keyframes blinkPrompt{50%{opacity:.2}}
+body.attractMode #mainMenu{opacity:.2}
+body.attractMode #introCanvas{max-height:210px}
+body.attractMode #introText{display:none}
+body.attractMode #attractPrompt{display:block!important}
+body.attractMode #panel{max-width:520px}
 </style>
 </head>
 <body>
 <div id="overlay">
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
-    <h1 id="gameTitle">DE STAMPERTJES</h1>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.09.3</div>
+    <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
+    <div id="studioLine">A GJ STUDIOS GAME</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.10 – Arcade Edition</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
+    <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
       <div class="teddyCat">ᓚᘏᗢ</div>
@@ -279,8 +300,10 @@ body:not(.keyboardMode) #keyboardHint{
       <p><strong>v2.09 – Arcade Edition</strong><br>
       Laptopbediening, grotere desktopweergave en vernieuwd uitlegscherm.</p>
       <p><strong>v2.10 – Attract Mode</strong><br>
-      Demo-modus, fakkels, maanlicht, betere animaties en gezichtsuitdrukkingen.</p>
-      <p><strong>v2.11 – Rise of the Apple King</strong><br>
+      Correcte gameplaydemo, compacter hoofdmenu, attract mode en verbeterde Teddy-easteregg.</p>
+      <p><strong>v2.11 – Castle Life</strong><br>
+      Fakkels, maanlicht, betere animaties en gezichtsuitdrukkingen.</p>
+      <p><strong>v2.12 – Rise of the Apple King</strong><br>
       Eerste eindbaas en een speciale eindbaaslevel.</p>
       <p><strong>v3.0 – First Arcade Release</strong><br>
       Achievements, meerdere kastelen, Appelietengids en uitgebreidere spelstatistieken.</p>
@@ -359,6 +382,7 @@ const roadmapSection=document.getElementById("roadmapSection");
 const gameTitle=document.getElementById("gameTitle");
 const versionLabel=document.getElementById("versionLabel");
 const teddyEgg=document.getElementById("teddyEgg");
+const attractPrompt=document.getElementById("attractPrompt");
 const levelOverlay=document.getElementById("levelOverlay");
 const levelTitle=document.getElementById("levelTitle");
 const levelSubtitle=document.getElementById("levelSubtitle");
@@ -492,6 +516,10 @@ function qualifiesForHighscore(value){
 function showMainMenu(){
   document.body.classList.remove("scoreMode");
   document.body.classList.remove("gameplayActive");
+  if(!attractActive){
+    document.body.classList.remove("attractMode");
+    attractPrompt.classList.add("hidden");
+  }
   mainMenu.classList.remove("hidden");
   scoresSection.classList.add("hidden");
   helpSection.classList.add("hidden");
@@ -536,6 +564,7 @@ roadmapMenuBtn.addEventListener("pointerdown",e=>{
 
 let teddyTapCount=0;
 let teddyTapTimer=null;
+let teddyEggActive=false;
 versionLabel.addEventListener("pointerdown",e=>{
   e.preventDefault();
   teddyTapCount++;
@@ -543,11 +572,15 @@ versionLabel.addEventListener("pointerdown",e=>{
   teddyTapTimer=setTimeout(()=>{teddyTapCount=0},1800);
   if(teddyTapCount>=5){
     teddyTapCount=0;
+    teddyEggActive=true;
     teddyEgg.classList.remove("hidden");
     tone(330,.08,"square",.04,440);
     setTimeout(()=>tone(440,.08,"square",.04,660),90);
     setTimeout(()=>tone(660,.12,"square",.04,880),180);
-    setTimeout(()=>teddyEgg.classList.add("hidden"),3500);
+    setTimeout(()=>{
+      teddyEgg.classList.add("hidden");
+      teddyEggActive=false;
+    },5000);
   }
 });
 
@@ -556,6 +589,52 @@ document.querySelectorAll("[data-back]").forEach(btn=>{
     e.preventDefault();
     showMainMenu();
   });
+});
+
+let attractTimer=null;
+let attractActive=false;
+let attractCycleTimer=null;
+
+function stopAttractMode(){
+  clearTimeout(attractTimer);
+  clearTimeout(attractCycleTimer);
+  attractActive=false;
+  document.body.classList.remove("attractMode");
+  attractPrompt.classList.add("hidden");
+}
+function startAttractMode(){
+  if(state!=="intro")return;
+  attractActive=true;
+  document.body.classList.add("attractMode");
+  attractPrompt.classList.remove("hidden");
+
+  attractCycleTimer=setTimeout(async()=>{
+    if(!attractActive)return;
+    document.body.classList.add("scoreMode");
+    showMenuSection(scoresSection);
+    await loadOnlineHighscores();
+
+    attractCycleTimer=setTimeout(()=>{
+      if(!attractActive)return;
+      document.body.classList.remove("scoreMode");
+      showMainMenu();
+      document.body.classList.add("attractMode");
+      attractPrompt.classList.remove("hidden");
+    },5000);
+  },12000);
+}
+function armAttractMode(){
+  stopAttractMode();
+  attractTimer=setTimeout(startAttractMode,15000);
+}
+["pointerdown","touchstart","keydown"].forEach(ev=>{
+  window.addEventListener(ev,()=>{
+    if(state==="intro"){
+      stopAttractMode();
+      showMainMenu();
+      armAttractMode();
+    }
+  },{passive:true});
 });
 
 function openIntro(){
@@ -567,9 +646,11 @@ function openIntro(){
   startBtn.classList.add("hidden");
   overlay.classList.remove("hidden");
   showMainMenu();
+  armAttractMode();
 }
 let startingGame=false;
 function startGame(){
+  stopAttractMode();
   document.body.classList.remove("scoreMode");
   document.body.classList.add("gameplayActive");
   if(startingGame||state==="play")return;
@@ -642,22 +723,28 @@ saveScoreBtn.addEventListener("pointerdown",async e=>{
   }
 });
 
-function drawIntroPlayer(x,y){
+function drawIntroPlayer(x,y,pose="walk"){
   ictx.fillStyle="#111";
   ictx.fillRect(x+7,y,10,8);
   ictx.fillRect(x+3,y+8,18,13);
   ictx.fillRect(x,y+12,4,8);
   ictx.fillRect(x+20,y+12,4,8);
-  const step=Math.floor(introFrame/7)%2;
-  if(step===0){
-    ictx.fillRect(x+3,y+21,7,7);
-    ictx.fillRect(x+14,y+21,7,7);
+
+  if(pose==="stamp"){
+    ictx.fillRect(x+2,y+21,9,7);
+    ictx.fillRect(x+13,y+21,9,7);
   }else{
-    ictx.fillRect(x+6,y+21,7,7);
-    ictx.fillRect(x+11,y+21,7,7);
+    const step=Math.floor(introFrame/7)%2;
+    if(step===0){
+      ictx.fillRect(x+3,y+21,7,7);
+      ictx.fillRect(x+14,y+21,7,7);
+    }else{
+      ictx.fillRect(x+6,y+21,7,7);
+      ictx.fillRect(x+11,y+21,7,7);
+    }
   }
 }
-function drawIntroApple(x,y){
+function drawIntroApple(x,y,trapped=false,panic=false){
   ictx.fillStyle="#111";
   ictx.beginPath();
   ictx.arc(x+14,y+11,13,0,Math.PI*2);
@@ -665,18 +752,61 @@ function drawIntroApple(x,y){
   ictx.fillRect(x+12,y-5,4,7);
   ictx.fillRect(x+3,y+21,6,5);
   ictx.fillRect(x+19,y+21,6,5);
+
   ictx.fillStyle="#fff";
-  ictx.fillRect(x+7,y+7,3,3);
-  ictx.fillRect(x+18,y+7,3,3);
+  if(panic){
+    ictx.fillRect(x+5,y+6,5,5);
+    ictx.fillRect(x+18,y+6,5,5);
+  }else{
+    ictx.fillRect(x+7,y+7,3,3);
+    ictx.fillRect(x+18,y+7,3,3);
+  }
   ictx.fillStyle="#111";
+
+  if(trapped){
+    ictx.fillRect(x+1,y+24,26,3);
+  }
 }
 function drawIntroLadder(x,y1,y2){
   ictx.fillRect(x,y1,3,y2-y1);
   ictx.fillRect(x+20,y1,3,y2-y1);
   for(let y=y1+8;y<y2;y+=10)ictx.fillRect(x,y,23,2);
 }
+function drawIntroFloor(y,holeX=null,crackStage=0){
+  ictx.fillStyle="#111";
+  if(holeX===null){
+    ictx.fillRect(12,y-4,396,8);
+  }else{
+    ictx.fillRect(12,y-4,holeX-12,8);
+    ictx.fillRect(holeX+42,y-4,408-(holeX+42),8);
+  }
+
+  ictx.fillStyle="#fff";
+  for(let x=20;x<400;x+=22){
+    if(holeX!==null && x>holeX-8 && x<holeX+45)continue;
+    ictx.fillRect(x,y-1,10,2);
+  }
+  ictx.fillStyle="#111";
+
+  if(crackStage>0){
+    ictx.lineWidth=2;
+    ictx.beginPath();
+    ictx.moveTo(holeX+10,y-7);ictx.lineTo(holeX+20,y);ictx.lineTo(holeX+13,y+7);
+    if(crackStage>1){
+      ictx.moveTo(holeX+32,y-7);ictx.lineTo(holeX+23,y);ictx.lineTo(holeX+31,y+7);
+    }
+    ictx.stroke();
+  }
+}
+function drawIntroDust(x,y,size){
+  ictx.beginPath();ictx.arc(x-size,y,size*.45,0,Math.PI*2);ictx.fill();
+  ictx.beginPath();ictx.arc(x+size,y,size*.45,0,Math.PI*2);ictx.fill();
+  ictx.beginPath();ictx.arc(x,y-size*.35,size*.55,0,Math.PI*2);ictx.fill();
+}
 function drawIntro(){
   introFrame++;
+  const phase=introFrame%420;
+
   ictx.fillStyle="#fff";
   ictx.fillRect(0,0,420,180);
   ictx.fillStyle="#111";
@@ -684,27 +814,69 @@ function drawIntro(){
   ictx.lineWidth=4;
   ictx.strokeRect(6,6,408,168);
 
-  [48,96,144].forEach(y=>{
-    ictx.fillRect(12,y-4,396,8);
-    ictx.fillStyle="#fff";
-    for(let x=20;x<400;x+=22)ictx.fillRect(x,y-1,10,2);
-    ictx.fillStyle="#111";
-  });
+  drawIntroLadder(70,48,96);
+  drawIntroLadder(282,96,144);
 
-  drawIntroLadder(72,48,96);
-  drawIntroLadder(274,96,144);
+  let crackStage=0;
+  let holeOpen=false;
+  if(phase>=80&&phase<115)crackStage=1;
+  if(phase>=115&&phase<150)crackStage=2;
+  if(phase>=150)holeOpen=true;
 
-  const phase=introFrame%360;
-  drawIntroPlayer(25+Math.min(phase*1.15,250),116);
-  drawIntroApple(355-((phase*.85)%220),70);
-  drawIntroApple(40+((phase*.55)%250),22);
+  drawIntroFloor(48);
+  drawIntroFloor(96);
+  drawIntroFloor(144,holeOpen?274:null,crackStage);
 
-  if(phase>205&&phase<315){
-    ictx.fillStyle="#fff";
-    ictx.fillRect(278,137,42,15);
-    ictx.fillStyle="#111";
-    ictx.font="bold 12px monospace";
-    ictx.fillText(phase<250?"KRAK!":"BOEM!",270,118);
+  // Player movement and stamping
+  let px=34,pose="walk";
+  if(phase<70){
+    px=34+phase*2.8;
+  }else if(phase<150){
+    px=230;pose="stamp";
+  }else if(phase<250){
+    px=230;
+  }else if(phase<330){
+    px=230+(phase-250)*.55;
+  }else{
+    px=274;pose="stamp";
+  }
+
+  // Apple approaches and gets trapped
+  let ax=355,ay=116,trapped=false,panic=false,visible=true;
+  if(phase<150){
+    ax=355-(phase*.45);
+  }else if(phase<235){
+    ax=287;
+    ay=128;
+    trapped=true;panic=true;
+  }else if(phase<330){
+    ax=287;ay=128;trapped=true;panic=true;
+  }else if(phase<365){
+    ax=287;ay=132;trapped=true;panic=true;
+  }else{
+    visible=false;
+  }
+
+  drawIntroPlayer(px,116,pose);
+  if(visible)drawIntroApple(ax,ay,trapped,panic);
+
+  // Text effects
+  ictx.font="bold 12px monospace";
+  if(phase>=80&&phase<115)ictx.fillText("KRAK!",235,112);
+  if(phase>=115&&phase<150)ictx.fillText("KRAK!!",232,112);
+  if(phase>=150&&phase<175)ictx.fillText("GAT!",242,112);
+  if(phase>=330&&phase<350)ictx.fillText("BAM!",250,106);
+  if(phase>=350&&phase<370)ictx.fillText("BAM!!",246,106);
+  if(phase>=365&&phase<400){
+    drawIntroDust(292,136,Math.min((phase-365)*.7,14));
+    ictx.fillText("+300",276,105);
+  }
+
+  // Teddy easter egg runs through intro when active
+  if(teddyEggActive){
+    const tx=20+((introFrame*1.8)%360);
+    ictx.font="20px monospace";
+    ictx.fillText("ᓚᘏᗢ",tx,38);
   }
 
   requestAnimationFrame(drawIntro);
