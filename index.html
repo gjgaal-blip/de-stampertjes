@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.11.4</title>
+<title>De Stampertjes v2.11.5</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -439,6 +439,21 @@ body.attractMode #panel{max-width:520px}
   opacity:.75;
   letter-spacing:1px;
 }
+
+#statsList{
+  display:grid;
+  gap:8px;
+  text-align:left;
+  margin:12px 0
+}
+.statRow{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  border-bottom:1px dotted rgba(255,255,255,.4);
+  padding-bottom:5px
+}
+#resetStatsBtn{width:100%;margin-top:8px}
 </style>
 </head>
 <body>
@@ -447,7 +462,7 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.4 – Community Update</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.5 – Community Update</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -542,7 +557,7 @@ body.attractMode #panel{max-width:520px}
       <h2>📰 KASTEELKRANT</h2>
 
       <article class="newsItem featured">
-        <div class="newsVersion">v2.11.4</div>
+        <div class="newsVersion">v2.11.5</div>
         <h3>Het hoofdmenu is verbouwd!</h3>
         <p>De Kronieken staan nu netjes onder Historie. Release-updates lees je voortaan in de Kasteelkrant.</p>
       </article>
@@ -614,6 +629,14 @@ body.attractMode #panel{max-width:520px}
       <button class="backBtn" data-back>TERUG</button>
     </div>
 
+
+    <div id="statsSection" class="menuSection hidden">
+      <h2>📊 STATISTIEKEN</h2>
+      <div id="statsList"></div>
+      <button id="resetStatsBtn">STATISTIEKEN WISSEN</button>
+      <button class="backBtn" data-back>TERUG</button>
+    </div>
+
     <button id="startBtn" class="hidden">START SPEL</button>
 
     <div id="highscoreEntry" class="hidden">
@@ -632,7 +655,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.11.4 – COMMUNITY UPDATE</h2>
+    <h2>v2.11.5 – COMMUNITY UPDATE</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -704,6 +727,10 @@ const helpSection=document.getElementById("helpSection");
 const historySection=document.getElementById("historySection");
 const playMenuBtn=document.getElementById("playMenuBtn");
 const scoresMenuBtn=document.getElementById("scoresMenuBtn");
+const statsMenuBtn=document.getElementById("statsMenuBtn");
+const statsSection=document.getElementById("statsSection");
+const statsList=document.getElementById("statsList");
+const resetStatsBtn=document.getElementById("resetStatsBtn");
 const helpMenuBtn=document.getElementById("helpMenuBtn");
 const historyMenuBtn=document.getElementById("historyMenuBtn");
 const newsMenuBtn=document.getElementById("newsMenuBtn");
@@ -876,6 +903,7 @@ function showMainMenu(){
   historySection.classList.add("hidden");
   roadmapSection.classList.add("hidden");
   cafeSection.classList.add("hidden");
+  statsSection.classList.add("hidden");
   highscoreEntry.classList.add("hidden");
   document.getElementById("highscoreBox").classList.add("hidden");
   introText.textContent="De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!";
@@ -887,6 +915,7 @@ function showMenuSection(section){
   historySection.classList.add("hidden");
   roadmapSection.classList.add("hidden");
   cafeSection.classList.add("hidden");
+  statsSection.classList.add("hidden");
   section.classList.remove("hidden");
 }
 function activateButton(button,handler){
@@ -906,6 +935,16 @@ function activateButton(button,handler){
 }
 
 activateButton(playMenuBtn,()=>startGame());
+activateButton(statsMenuBtn,()=>{
+  stopAttractMode();
+  showMenuSection(statsSection);
+  renderStats();
+});
+activateButton(resetStatsBtn,()=>{
+  localStorage.removeItem("stampertjesStats");
+  renderStats();
+});
+
 activateButton(scoresMenuBtn,async()=>{
   stopAttractMode();
   document.body.classList.add("scoreMode");
@@ -933,6 +972,44 @@ activateButton(cafeMenuBtn,async()=>{
 });
 
 
+
+
+const DEFAULT_STATS={
+  gamesPlayed:0,
+  bestScore:0,
+  highestLevel:1,
+  applesDefeated:0,
+  deaths:0,
+  longestCombo:0,
+  teddyFound:false,
+  achievements:[]
+};
+
+function getStats(){
+  try{
+    const saved=JSON.parse(localStorage.getItem("stampertjesStats")||"{}");
+    return {...DEFAULT_STATS,...saved};
+  }catch{
+    return {...DEFAULT_STATS};
+  }
+}
+function saveStats(stats){
+  localStorage.setItem("stampertjesStats",JSON.stringify(stats));
+}
+function renderStats(){
+  const s=getStats();
+  const achievements=Array.isArray(s.achievements)?s.achievements:[];
+  statsList.innerHTML=`
+    <div class="statRow"><span>Gespeelde potjes</span><strong>${Number(s.gamesPlayed)||0}</strong></div>
+    <div class="statRow"><span>Beste score</span><strong>${Number(s.bestScore)||0}</strong></div>
+    <div class="statRow"><span>Hoogste level</span><strong>${Number(s.highestLevel)||1}</strong></div>
+    <div class="statRow"><span>Verslagen Appelieten</span><strong>${Number(s.applesDefeated)||0}</strong></div>
+    <div class="statRow"><span>Gevallen</span><strong>${Number(s.deaths)||0}</strong></div>
+    <div class="statRow"><span>Langste combo</span><strong>${Number(s.longestCombo)||0}</strong></div>
+    <div class="statRow"><span>Teddy gevonden</span><strong>${s.teddyFound?"JA":"NEE"}</strong></div>
+    <div class="statRow"><span>Achievements</span><strong>${achievements.length}</strong></div>
+  `;
+}
 
 const chroniclePages=[
   {
@@ -1333,7 +1410,10 @@ function startGame(){
   startingGame=true;
   playMenuBtn.textContent="SPELEN";
   audio();
-  score=0;level=1;lives=3;state="play";player.fastStamp=0;pauseOverlay.classList.add("hidden");pauseToggle.textContent="⏸ PAUZE";
+  score=0;level=1;lives=3;state="play";
+  const gameStats=getStats();
+  gameStats.gamesPlayed=(Number(gameStats.gamesPlayed)||0)+1;
+  saveStats(gameStats);player.fastStamp=0;pauseOverlay.classList.add("hidden");pauseToggle.textContent="⏸ PAUZE";
   spawnLevel();
   clearStartZone();
   startFreeze=90;
@@ -1350,6 +1430,7 @@ function showGameOverPanel(){
   historySection.classList.add("hidden");
   roadmapSection.classList.add("hidden");
   cafeSection.classList.add("hidden");
+  statsSection.classList.add("hidden");
   startBtn.classList.add("hidden");
   document.getElementById("introText").textContent=`Je eindscore: ${score}`;
   document.getElementById("highscoreBox").classList.toggle("hidden",qualifiesForHighscore(score));
@@ -1874,6 +1955,12 @@ function stamp(){
       const comboBonus=combo>1?(combo-1)*200:0;
       const earned=base+comboBonus;
       score+=earned;
+      const killStats=getStats();
+      killStats.applesDefeated=(Number(killStats.applesDefeated)||0)+1;
+      killStats.longestCombo=Math.max(Number(killStats.longestCombo)||0,combo);
+      killStats.bestScore=Math.max(Number(killStats.bestScore)||0,score);
+      killStats.highestLevel=Math.max(Number(killStats.highestLevel)||1,level);
+      saveStats(killStats);
 
       shake=12;sfxKill();
       effects.push({type:"dust",x:enemy.x+14,y:floors[enemy.floor]-8,t:42});
@@ -2273,6 +2360,11 @@ function updateEnemies(){
     if(collide&&e.trapped<=0&&player.invulnerable<=0&&state==="play"){
       lives--;
       shake=11;
+      const deathStats=getStats();
+      deathStats.deaths=(Number(deathStats.deaths)||0)+1;
+      deathStats.bestScore=Math.max(Number(deathStats.bestScore)||0,score);
+      deathStats.highestLevel=Math.max(Number(deathStats.highestLevel)||1,level);
+      saveStats(deathStats);
       showDeathSequence(lives<=0);
       return;
     }
