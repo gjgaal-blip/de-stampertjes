@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.09.2</title>
+<title>De Stampertjes v2.09.3</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -204,7 +204,7 @@ body:not(.keyboardMode) #keyboardHint{
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle">DE STAMPERTJES</h1>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.09.2</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.09.3</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
@@ -275,7 +275,7 @@ body:not(.keyboardMode) #keyboardHint{
     <div id="roadmapSection" class="menuSection hidden">
       <h2>ONTWIKKELING</h2>
       <p><strong>v2.08 – The Polish Update</strong><br>
-      Pauze hersteld, appels ontsnappen weer uit gaten, stabielere AI, audio- en bonuscontrole.</p>
+      Pauze hersteld, stabielere AI, verbeterde mobiele schermen en meerdere scores per spelersnaam.</p>
       <p><strong>v2.09 – Arcade Edition</strong><br>
       Laptopbediening, grotere desktopweergave en vernieuwd uitlegscherm.</p>
       <p><strong>v2.10 – Attract Mode</strong><br>
@@ -403,14 +403,18 @@ function saveLocalHighscores(scores){
   localStorage.setItem("stampertjesHighscores",JSON.stringify(scores));
 }
 function normalizeScores(rows){
-  const best=new Map();
-  (rows||[]).forEach(row=>{
-    const name=String(row.name||"SPELER").toUpperCase().slice(0,10);
-    const score=Number(row.score)||0;
-    const level=Number(row.level)||1;
-    if(!best.has(name)||score>best.get(name).score)best.set(name,{name,score,level});
-  });
-  return [...best.values()].sort((a,b)=>b.score-a.score).slice(0,10);
+  return (rows||[])
+    .map(row=>({
+      name:String(row.name||"SPELER").toUpperCase().slice(0,10),
+      score:Number(row.score)||0,
+      level:Number(row.level)||1,
+      created_at:row.created_at||null
+    }))
+    .sort((a,b)=>{
+      if(b.score!==a.score)return b.score-a.score;
+      return String(a.created_at||"").localeCompare(String(b.created_at||""));
+    })
+    .slice(0,10);
 }
 async function loadOnlineHighscores(){
   scoreList.innerHTML="<div>Online scores laden…</div>";
