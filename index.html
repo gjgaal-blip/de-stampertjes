@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.06</title>
+<title>De Stampertjes v2.07</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -16,6 +16,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:
 canvas{background:#fff;border:4px solid #fff;image-rendering:pixelated;width:min(96vw,720px);height:auto;max-height:68vh}
 #controlLabels{display:grid;grid-template-columns:136px 96px 136px;gap:7px;width:min(450px,96vw);font-size:10px;text-align:center;letter-spacing:1px}
 #controls{display:grid;grid-template-columns:64px 64px 96px 64px 64px;gap:7px;width:min(450px,96vw)}
+#gameOptions{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(300px,90vw)}
+#gameOptions button{padding:8px 12px;font-size:12px}
 button{appearance:none;border:2px solid #fff;background:#111;color:#fff;border-radius:10px;font:700 16px ui-monospace,monospace;padding:12px 3px;user-select:none}
 button:active{background:#fff;color:#111}
 .small{font-size:12px;text-align:center;opacity:.85}
@@ -47,6 +49,12 @@ button:active{background:#fff;color:#111}
 }
 .hidden{display:none!important}
 
+#pauseOverlay{
+  position:fixed;inset:0;background:rgba(17,17,17,.92);color:#fff;
+  display:flex;align-items:center;justify-content:center;z-index:8;text-align:center
+}
+#pauseCard{border:3px solid #fff;padding:24px 30px}
+#pauseCard h2{margin:0 0 8px}
 #levelOverlay{
   position:fixed;inset:0;background:rgba(17,17,17,.94);color:#fff;
   display:flex;align-items:center;justify-content:center;z-index:9;
@@ -135,7 +143,7 @@ body.scoreMode #scoresSection{
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle">DE STAMPERTJES</h1>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.06</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.07</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
@@ -164,6 +172,8 @@ body.scoreMode #scoresSection{
       </p>
       <p>
         Gebruik ▲ en ▼ links om te klimmen, ◀ en ▶ rechts om te lopen en STAMP in het midden.
+      Groene Appelieten zijn normaal, rode zijn sneller, zwarte vermijden soms gaten en gouden leveren extra punten op.
+      Bonusvoorwerpen verschijnen tijdelijk: kers, banaan, ster en klok.
       </p>
       <button class="backBtn" data-back>TERUG</button>
     </div>
@@ -197,6 +207,12 @@ body.scoreMode #scoresSection{
     </div>
   </div>
 </div>
+<div id="pauseOverlay" class="hidden">
+  <div id="pauseCard">
+    <h2>⏸ GEPAUZEERD</h2>
+    <p>Tik op PAUZE om verder te spelen</p>
+  </div>
+</div>
 <div id="levelOverlay" class="hidden">
   <div id="levelCard">
     <h2 id="levelTitle">LEVEL VOLTOOID</h2>
@@ -216,7 +232,10 @@ body.scoreMode #scoresSection{
     <button id="left">◀</button>
     <button id="right">▶</button>
   </div>
-  <button id="musicToggle" style="padding:8px 18px;font-size:13px">MUZIEK: UIT</button>
+  <div id="gameOptions">
+    <button id="pauseToggle">⏸ PAUZE</button>
+    <button id="musicToggle">MUZIEK: UIT</button>
+  </div>
   <div class="small">3× stampen voor een gat. Stamp daarna de gevangen appel weg.</div>
 </div>
 <script>
@@ -441,7 +460,7 @@ function startGame(){
   startingGame=true;
   playMenuBtn.textContent="SPELEN";
   audio();
-  score=0;level=1;lives=3;state="play";
+  score=0;level=1;lives=3;state="play";player.fastStamp=0;pauseOverlay.classList.add("hidden");pauseToggle.textContent="⏸ PAUZE";
   spawnLevel();
   clearStartZone();
   startFreeze=90;
@@ -617,7 +636,7 @@ let currentLayoutIndex=0;
 
 let keys={left:false,right:false,up:false,down:false};
 let frame=0,score=0,level=1,lives=3,state="intro",shake=0,startFreeze=0;
-let holes=[],cracks=[],enemies=[],effects=[];
+let holes=[],cracks=[],enemies=[],effects=[],bonus=null,bonusSpawnTimer=420,combo=0,comboTimer=0,enemyIdCounter=1;
 let player={x:30,y:282,w:24,h:28,onLadder:false,cool:0,dir:1,invulnerable:0};
 
 let audioCtx=null;
@@ -728,6 +747,32 @@ document.getElementById("musicToggle").addEventListener("pointerdown",async e=>{
   await audio();
   setMusic(!musicOn);
 });
+
+const pauseToggle=document.getElementById("pauseToggle");
+const pauseOverlay=document.getElementById("pauseOverlay");
+let previousState="play";
+
+function togglePause(){
+  if(state==="intro"||state==="gameover"||state==="transition")return;
+  if(state==="paused"){
+    state=previousState==="paused"?"play":previousState;
+    pauseOverlay.classList.add("hidden");
+    pauseToggle.textContent="⏸ PAUZE";
+    if(musicOn && !musicTimer)playMusicStep();
+  }else{
+    previousState=state;
+    state="paused";
+    pauseOverlay.classList.remove("hidden");
+    pauseToggle.textContent="▶ VERDER";
+    clearTimeout(musicTimer);
+    musicTimer=null;
+  }
+}
+pauseToggle.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  togglePause();
+});
+
 ['pointerdown','touchstart','click'].forEach(ev=>{
   window.addEventListener(ev,()=>audio(),{passive:true});
 });
@@ -786,21 +831,27 @@ function resetPlayerSafely(){
 
 function spawnLevel(){
   chooseLayoutForLevel(level);
-  holes=[];cracks=[];enemies=[];effects=[];
+  holes=[];cracks=[];enemies=[];effects=[];bonus=null;bonusSpawnTimer=300+Math.random()*300;combo=0;comboTimer=0;
   player.x=30;player.y=floors[4]-player.h;player.onLadder=false;player.cool=0;player.invulnerable=210;
   const count=Math.min(3+level,7);
   for(let i=0;i<count;i++){
     const fi=i%4;
+    let type="green";
+    if(level>=3 && i%4===1)type="red";
+    if(level>=5 && i%5===2)type="black";
+    if(level>=4 && i===count-1 && Math.random()<0.35)type="gold";
+
+    const typeSpeed=type==="red"?.12:type==="gold"?.08:type==="black"?.03:0;
+    const typeHits=type==="black"?3:(level>=4?3:2);
+
     enemies.push({
+      id:enemyIdCounter++,
+      type,
       x:410-(i*58)%330,y:floors[fi]-24,floor:fi,dir:i%2?1:-1,
-      speed:.43+level*.045+(i%3)*.035,trapped:0,hitsNeeded:level>=4?3:2,
-      hitsLeft:level>=4?3:2,blink:0,dead:false,
-      think:30+Math.random()*110,
-      mood:Math.random(),
-      ladderCooldown:0,
-      onLadder:false,
-      ladder:null,
-      ladderTargetFloor:null
+      speed:.41+level*.04+(i%3)*.03+typeSpeed,trapped:0,hitsNeeded:typeHits,
+      hitsLeft:typeHits,blink:0,dead:false,
+      think:30+Math.random()*110,mood:Math.random(),ladderCooldown:0,
+      onLadder:false,ladder:null,ladderTargetFloor:null
     });
   }
   clearStartZone();
@@ -819,14 +870,24 @@ function stamp(){
   const enemy=trappedEnemyUnderPlayer();
   if(enemy){
     enemy.hitsLeft--;
-    player.cool=18;shake=7;sfxHit();
+    player.cool=player.fastStamp>0?7:18;shake=7;sfxHit();
     effects.push({type:"hit",x:enemy.x+14,y:floors[enemy.floor]-18,t:24});
     if(enemy.hitsLeft<=0){
       enemy.dead=true;
-      score+=300;
+      const occupiedHole=holes.find(h=>h.occupiedBy===enemy.id);
+      if(occupiedHole)occupiedHole.occupiedBy=null;
+
+      combo = comboTimer>0 ? combo+1 : 1;
+      comboTimer=180;
+      const base=enemy.type==="gold"?900:enemy.type==="red"?400:enemy.type==="black"?500:300;
+      const comboBonus=combo>1?(combo-1)*200:0;
+      const earned=base+comboBonus;
+      score+=earned;
+
       shake=12;sfxKill();
       effects.push({type:"dust",x:enemy.x+14,y:floors[enemy.floor]-8,t:42});
-      effects.push({type:"score",x:enemy.x+4,y:floors[enemy.floor]-34,t:55,text:"+300"});
+      effects.push({type:"score",x:enemy.x-2,y:floors[enemy.floor]-34,t:70,text:`+${earned}`});
+      if(combo>1)effects.push({type:"combo",x:enemy.x-10,y:floors[enemy.floor]-48,t:70,text:`COMBO x${combo}`});
     }
     return;
   }
@@ -845,10 +906,10 @@ function stamp(){
 
   let cr=cracks.find(q=>q.floor===fi&&q.x===gx);
   if(!cr){cr={x:gx,floor:fi,hits:0,timer:700};cracks.push(cr)}
-  cr.hits++;cr.timer=700;player.cool=16;shake=3+cr.hits;sfxCrack();
+  cr.hits++;cr.timer=700;player.cool=player.fastStamp>0?6:16;shake=3+cr.hits;sfxCrack();
 
   if(cr.hits>=FLOOR_HITS){
-    holes.push({x:gx,floor:fi,timer:520});
+    holes.push({x:gx,floor:fi,timer:520,occupiedBy:null});
     cracks=cracks.filter(q=>q!==cr);
     shake=10;sfxBreak();
   }
@@ -889,13 +950,13 @@ function updatePlayer(){
   // Zodra een appel vastzit, wordt de HELE opening beloopbaar.
   const trappedInHole=enemies.find(e=>{
     if(e.trapped<=0||e.floor!==fi)return false;
-    const hole=holes.find(h=>h.floor===fi&&e.x+14>h.x&&e.x+14<h.x+40);
+    const hole=holes.find(h=>h.floor===fi&&h.occupiedBy===e.id);
     return !!hole;
   });
 
   let supported=false;
   if(under&&trappedInHole){
-    const h=holes.find(h=>h.floor===fi&&trappedInHole.x+14>h.x&&trappedInHole.x+14<h.x+40);
+    const h=holes.find(h=>h.floor===fi&&h.occupiedBy===trappedInHole.id);
     supported = !!h && center>h.x-8 && center<h.x+48;
   }
 
@@ -926,6 +987,8 @@ function updateEnemies(){
     if(e.trapped>0){
       e.trapped--;e.blink++;
       if(e.trapped===0){
+        const occupiedHole=holes.find(h=>h.occupiedBy===e.id);
+        if(occupiedHole)occupiedHole.occupiedBy=null;
         e.y=floors[e.floor]-24;
         e.x+=e.dir*16;
         e.hitsLeft=e.hitsNeeded;
@@ -939,7 +1002,7 @@ function updateEnemies(){
       const targetY=floors[e.ladderTargetFloor]-24;
       e.x+=(e.ladder.x-4-e.x)*.28;
       const dy=targetY-e.y;
-      const climbSpeed=1.25+Math.min(level*.03,.35);
+      const climbSpeed=(1.25+Math.min(level*.03,.35))*(e.slowTimer>0?.5:1);
 
       if(Math.abs(dy)<=climbSpeed+1){
         e.y=targetY;
@@ -1007,12 +1070,24 @@ function updateEnemies(){
       }
     }
 
-    e.x+=e.dir*e.speed;
+    if(e.type==="black"){
+      const ahead=e.x+14+e.dir*22;
+      const danger=holes.find(h=>h.floor===e.floor&&h.occupiedBy===null&&ahead>h.x&&ahead<h.x+40);
+      if(danger && Math.random()<0.82)e.dir*=-1;
+    }
+
+    e.x+=e.dir*e.speed*(e.slowTimer>0?.5:1);
     if(e.x<14){e.x=14;e.dir=1}
     if(e.x>W-42){e.x=W-42;e.dir=-1}
 
-    const h=holes.find(h=>h.floor===e.floor&&e.x+14>h.x+2&&e.x+14<h.x+38);
+    const h=holes.find(h=>
+      h.floor===e.floor &&
+      h.occupiedBy===null &&
+      e.x+14>h.x+2 &&
+      e.x+14<h.x+38
+    );
     if(h){
+      h.occupiedBy=e.id;
       e.x=h.x+6;
       e.y=floors[e.floor]-9;
       e.trapped=360-Math.min(level*8,80);
@@ -1046,12 +1121,67 @@ function updateEnemies(){
   }
 }
 
+
+function spawnBonus(){
+  const types=["cherry","banana","star","clock"];
+  const type=types[Math.floor(Math.random()*types.length)];
+  const floor=Math.floor(Math.random()*4);
+  bonus={
+    type,
+    floor,
+    x:45+Math.random()*(W-100),
+    y:floors[floor]-18,
+    timer:600
+  };
+}
+function collectBonus(){
+  if(!bonus)return;
+  let earned=0;
+  if(bonus.type==="cherry")earned=500;
+  if(bonus.type==="banana")earned=1000;
+  if(bonus.type==="star"){
+    earned=250;
+    player.fastStamp=420;
+  }
+  if(bonus.type==="clock"){
+    earned=250;
+    enemies.forEach(e=>e.slowTimer=300);
+  }
+  score+=earned;
+  effects.push({type:"score",x:bonus.x,y:bonus.y-12,t:70,text:`+${earned}`});
+  tone(520,.08,"square",.04,760);
+  bonus=null;
+  bonusSpawnTimer=500+Math.random()*500;
+}
+function updateBonus(){
+  if(player.fastStamp>0)player.fastStamp--;
+  enemies.forEach(e=>{if(e.slowTimer>0)e.slowTimer--});
+
+  if(bonus){
+    bonus.timer--;
+    const sameFloor=Math.abs((player.y+player.h)-floors[bonus.floor])<7;
+    if(sameFloor && Math.abs((player.x+12)-bonus.x)<22)collectBonus();
+    if(bonus && bonus.timer<=0){
+      bonus=null;
+      bonusSpawnTimer=300+Math.random()*500;
+    }
+  }else{
+    bonusSpawnTimer--;
+    if(bonusSpawnTimer<=0)spawnBonus();
+  }
+}
+
 function update(){
   if(state!=="play")return;
-  frame++;updatePlayer();updateEnemies();
-  holes.forEach(h=>h.timer--);holes=holes.filter(h=>h.timer>0);
+  frame++;updatePlayer();updateEnemies();updateBonus();
+  holes.forEach(h=>{
+    // Een bezet gat blijft bestaan zolang de appel erin zit.
+    if(h.occupiedBy===null)h.timer--;
+  });
+  holes=holes.filter(h=>h.timer>0||h.occupiedBy!==null);
   cracks.forEach(q=>q.timer--);cracks=cracks.filter(q=>q.timer>0);
   effects.forEach(e=>e.t--);effects=effects.filter(e=>e.t>0);
+  if(comboTimer>0)comboTimer--;else combo=0;
   if(shake>0)shake--;
 }
 
@@ -1065,15 +1195,27 @@ function drawPlayer(x,y){
 }
 function drawApple(e){
   if(e.trapped>0&&e.trapped<90&&Math.floor(e.blink/6)%2===0)return;
-  ctx.beginPath();ctx.arc(e.x+14,e.y+11,13,0,Math.PI*2);ctx.fill();
+  ctx.save();
+  if(e.type==="red")ctx.setLineDash([3,2]);
+  if(e.type==="gold")ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(e.x+14,e.y+11,13,0,Math.PI*2);
+  if(e.type==="red"){ctx.stroke();ctx.fill()}
+  else ctx.fill();
   ctx.fillRect(e.x+12,e.y-5,4,7);
   ctx.fillRect(e.x+3,e.y+21,6,5);ctx.fillRect(e.x+19,e.y+21,6,5);
   ctx.fillStyle="#fff";
   ctx.fillRect(e.x+7,e.y+7,3,3);ctx.fillRect(e.x+18,e.y+7,3,3);
   ctx.fillStyle="#111";
+  if(e.type==="black"){
+    ctx.fillStyle="#fff";ctx.fillRect(e.x+3,e.y+12,22,3);ctx.fillStyle="#111";
+  }
+  if(e.type==="gold"){
+    ctx.strokeRect(e.x-1,e.y-7,30,34);
+  }
   if(e.trapped>0){
     for(let i=0;i<e.hitsLeft;i++)ctx.fillRect(e.x+3+i*8,e.y-10,6,4);
   }
+  ctx.restore();
 }
 function drawFloor(a,b,y){
   ctx.fillRect(a,y-5,b-a,10);
@@ -1090,11 +1232,27 @@ function drawEffects(){
       ctx.beginPath();ctx.arc(e.x,e.y-r*.35,r*.55,0,Math.PI*2);ctx.fill();
     }else if(e.type==="score"){
       ctx.font="bold 12px monospace";ctx.fillText(e.text,e.x,e.y-(55-e.t)*.3);
+    }else if(e.type==="combo"){
+      ctx.font="bold 11px monospace";ctx.fillText(e.text,e.x,e.y-(70-e.t)*.25);
     }else{
       ctx.font="bold 12px monospace";ctx.fillText("BAM!",e.x-12,e.y);
     }
   });
 }
+
+function drawBonus(){
+  if(!bonus)return;
+  const x=bonus.x,y=bonus.y;
+  ctx.save();
+  ctx.font="bold 16px monospace";
+  const symbol=bonus.type==="cherry"?"●●":bonus.type==="banana"?")":bonus.type==="star"?"★":"◷";
+  ctx.fillText(symbol,x-8,y);
+  if(bonus.timer<120 && Math.floor(bonus.timer/8)%2===0){
+    ctx.fillStyle="#fff";ctx.fillRect(x-12,y-18,30,24);
+  }
+  ctx.restore();
+}
+
 function draw(){
   ctx.save();
   if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
@@ -1146,6 +1304,7 @@ function draw(){
     drawPlayer(Math.round(player.x),Math.round(player.y));
   }
   enemies.forEach(drawApple);
+  drawBonus();
   drawEffects();
 
   if(state==="gameover"){
