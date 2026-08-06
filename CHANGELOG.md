@@ -1,15 +1,10 @@
 # De Stampertjes – Changelog
 
-## v2.11.9 – Audio Update
-- `The Castle Awakens` toegevoegd als echte menu-soundtrack.
-- Zachte fade-in na de eerste gebruikersactie.
-- Ongeveer één seconde fade-out bij het starten van het spel.
-- Muziek loopt door op menu-, historie-, café-, score- en krantenschermen.
-- Muziek hervat bij terugkeer naar het hoofdmenu of Game Over.
-- Muziekvoorkeur wordt lokaal onthouden.
-- Dubbel afspelen na terugkeer uit de achtergrond wordt voorkomen.
-- iPhone/iPad-audio wordt netjes ontgrendeld na de eerste aanraking.
-- Tijdens het spelen blijven voorlopig alleen de geluidseffecten actief.
-
-## v2.11 – Community Update
-- Café, Kronieken, Kasteelkrant, statistieken en communityfuncties.
+## v2.11.91 – Audio Balance Fix
+- Menu-muziekvolume verlaagd van 38% naar 18%.
+- Muziek probeert direct bij het openen van het startscherm te starten.
+- Op iPhone start muziek direct na de eerste tik op het beginscherm.
+- Muziek stopt volledig tijdens gameplay, pauze, doodanimatie en levelovergangen.
+- Muziek hervat alleen in menu- of game-over-schermen.
+- Menu-geluidseffecten maken de muziek tijdelijk zachter.
+- Fade-in en fade-out opnieuw afgesteld.

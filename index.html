@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.11.9</title>
+<title>De Stampertjes v2.11.91</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -493,7 +493,7 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.11.9</div>
+    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.11.91</div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -696,7 +696,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.11.9</h2>
+    <h2>v2.11.91</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -810,6 +810,7 @@ const levelSubtitle=document.getElementById("levelSubtitle");
 let levelTransitioning=false;
 
 function showLevelTransition(completedLevel,nextLevel){
+  stopMenuMusic(180);
   levelTransitioning=true;
   state="transition";
   document.body.classList.remove("gameplayActive");
@@ -951,7 +952,7 @@ function showMainMenu(){
   highscoreEntry.classList.add("hidden");
   document.getElementById("highscoreBox").classList.add("hidden");
   introText.innerHTML="<strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.";
-  if(musicOn&&musicUnlocked)startMenuMusic(false);
+  if(musicOn&&musicUnlocked&&state==="intro")startMenuMusic(false);
 }
 function showMenuSection(section){
   mainMenu.classList.add("hidden");
@@ -1523,6 +1524,7 @@ activateButton(versionLabel,()=>{
     saveStats(teddyStats);
 
     teddyEgg.classList.remove("hidden");
+    duckMenuMusic(500);
     tone(330,.08,"square",.04,440);
     setTimeout(()=>tone(440,.08,"square",.04,660),90);
     setTimeout(()=>tone(660,.12,"square",.04,880),180);
@@ -1607,7 +1609,7 @@ function openIntro(){
 }
 let startingGame=false;
 function startGame(){
-  stopMenuMusic(1000);
+  stopMenuMusic(700);
   stopAttractMode();
   document.body.classList.remove("scoreMode");
   document.body.classList.add("gameplayActive");
@@ -1856,6 +1858,7 @@ function drawIntro(){
   requestAnimationFrame(drawIntro);
 }
 window.addEventListener("load",()=>{
+  setTimeout(tryImmediateMenuAutoplay,250);
   openIntro();
   drawIntro();
   setTimeout(showUpdateOnce,250);
@@ -1953,7 +1956,7 @@ const sfxKill=()=>{tone(120,.2,"sawtooth",.08,45);setTimeout(()=>tone(520,.1,"sq
 const sfxHurt=()=>tone(170,.22,"sawtooth",.08,70);
 
 const menuSoundtrack=document.getElementById("menuSoundtrack");
-const MUSIC_VOLUME=.38;
+const MUSIC_VOLUME=.18;
 let musicOn=localStorage.getItem("stampertjesMusic")!=="0";
 let musicUnlocked=false;
 let musicFadeFrame=null;
@@ -1963,6 +1966,22 @@ let musicStartDelay=null;
 let musicTimer=null;
 function playMusicStep(){
   return startMenuMusic(false);
+}
+
+
+async function tryImmediateMenuAutoplay(){
+  if(!musicOn||state!=="intro")return;
+  try{
+    menuSoundtrack.volume=0;
+    await menuSoundtrack.play();
+    musicUnlocked=true;
+    fadeSoundtrack(MUSIC_VOLUME,900,false);
+    musicTimer=true;
+  }catch(err){
+    // iPhone/Safari blokkeert dit meestal totdat de gebruiker één keer tikt.
+    menuSoundtrack.pause();
+    menuSoundtrack.volume=0;
+  }
 }
 
 function setMusicButton(){
@@ -2016,7 +2035,7 @@ async function unlockMenuMusic(){
 }
 
 function isMenuState(){
-  return state==="intro"||state==="gameover"||state==="results";
+  return state==="intro"||state==="gameover";
 }
 
 async function startMenuMusic(withDelay=true){
@@ -2048,6 +2067,16 @@ async function startMenuMusic(withDelay=true){
   }else{
     await begin();
   }
+}
+
+
+function duckMenuMusic(duration=450){
+  if(menuSoundtrack.paused||!musicOn)return;
+  const previousTarget=MUSIC_VOLUME;
+  fadeSoundtrack(.08,100,false);
+  setTimeout(()=>{
+    if(musicOn&&isMenuState())fadeSoundtrack(previousTarget,250,false);
+  },duration);
 }
 
 function stopMenuMusic(duration=1000){
@@ -2099,6 +2128,7 @@ let previousState="play";
 let pauseLocked=false;
 
 function togglePause(){
+  stopMenuMusic(120);
   if(pauseLocked)return;
   if(state==="intro"||state==="gameover"||state==="transition")return;
 
@@ -2137,7 +2167,7 @@ async function handleFirstAudioGesture(){
 
   if(!firstAudioGestureHandled){
     firstAudioGestureHandled=true;
-    if(musicOn&&isMenuState())startMenuMusic(true);
+    if(musicOn&&isMenuState())startMenuMusic(false);
   }
 }
 ["pointerdown","touchstart","click","keydown"].forEach(ev=>{
@@ -2475,6 +2505,7 @@ function animateDeath(startTime,duration,isGameOver){
 }
 
 function showDeathSequence(isGameOver){
+  stopMenuMusic(180);
   if(deathAnimating)return;
   deathAnimating=true;
   state="dying";
@@ -2892,6 +2923,9 @@ document.addEventListener("visibilitychange",()=>{
     menuSoundtrack.pause();
   }else if(musicOn&&musicUnlocked&&isMenuState()){
     startMenuMusic(false);
+  }else{
+    menuSoundtrack.pause();
+    menuSoundtrack.volume=0;
   }
 });
 
