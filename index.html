@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.10</title>
+<title>De Stampertjes v2.10.1</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -224,7 +224,7 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.10 – Arcade Edition</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.10.1 – Arcade Edition</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -537,36 +537,46 @@ function showMenuSection(section){
   roadmapSection.classList.add("hidden");
   section.classList.remove("hidden");
 }
-function handlePlay(e){
-  if(e)e.preventDefault();
-  startGame();
+function activateButton(button,handler){
+  let locked=false;
+  const run=e=>{
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if(locked)return;
+    locked=true;
+    handler();
+    setTimeout(()=>{locked=false},220);
+  };
+  button.addEventListener("click",run);
+  button.addEventListener("touchend",run,{passive:false});
 }
-playMenuBtn.addEventListener("click",handlePlay);
-playMenuBtn.addEventListener("pointerup",handlePlay);
-scoresMenuBtn.addEventListener("pointerdown",async e=>{
-  e.preventDefault();
+
+activateButton(playMenuBtn,()=>startGame());
+activateButton(scoresMenuBtn,async()=>{
+  stopAttractMode();
   document.body.classList.add("scoreMode");
   showMenuSection(scoresSection);
   await loadOnlineHighscores();
 });
-helpMenuBtn.addEventListener("pointerdown",e=>{
-  e.preventDefault();
+activateButton(helpMenuBtn,()=>{
+  stopAttractMode();
   showMenuSection(helpSection);
 });
-historyMenuBtn.addEventListener("pointerdown",e=>{
-  e.preventDefault();
+activateButton(historyMenuBtn,()=>{
+  stopAttractMode();
   showMenuSection(historySection);
 });
-roadmapMenuBtn.addEventListener("pointerdown",e=>{
-  e.preventDefault();
+activateButton(roadmapMenuBtn,()=>{
+  stopAttractMode();
   showMenuSection(roadmapSection);
 });
 
 let teddyTapCount=0;
 let teddyTapTimer=null;
 let teddyEggActive=false;
-versionLabel.addEventListener("pointerdown",e=>{
-  e.preventDefault();
+activateButton(versionLabel,()=>{
   teddyTapCount++;
   clearTimeout(teddyTapTimer);
   teddyTapTimer=setTimeout(()=>{teddyTapCount=0},1800);
@@ -583,11 +593,11 @@ versionLabel.addEventListener("pointerdown",e=>{
     },5000);
   }
 });
-
 document.querySelectorAll("[data-back]").forEach(btn=>{
-  btn.addEventListener("pointerdown",e=>{
-    e.preventDefault();
+  activateButton(btn,()=>{
+    stopAttractMode();
     showMainMenu();
+    armAttractMode();
   });
 });
 
@@ -603,7 +613,7 @@ function stopAttractMode(){
   attractPrompt.classList.add("hidden");
 }
 function startAttractMode(){
-  if(state!=="intro")return;
+  if(state!=="intro"||mainMenu.classList.contains("hidden"))return;
   attractActive=true;
   document.body.classList.add("attractMode");
   attractPrompt.classList.remove("hidden");
@@ -624,17 +634,24 @@ function startAttractMode(){
   },12000);
 }
 function armAttractMode(){
-  stopAttractMode();
+  clearTimeout(attractTimer);
+  if(state!=="intro")return;
   attractTimer=setTimeout(startAttractMode,15000);
 }
 ["pointerdown","touchstart","keydown"].forEach(ev=>{
   window.addEventListener(ev,()=>{
     if(state==="intro"){
+      const wasAttractActive=attractActive;
       stopAttractMode();
-      showMainMenu();
+
+      // Alleen vanuit de automatische attract mode terug naar het hoofdmenu.
+      // Normale taps op Uitleg, Highscores, Historie of Ontwikkeling
+      // mogen het gekozen scherm niet meteen weer sluiten.
+      if(wasAttractActive)showMainMenu();
+
       armAttractMode();
     }
-  },{passive:true});
+  },{passive:true,capture:false});
 });
 
 function openIntro(){
