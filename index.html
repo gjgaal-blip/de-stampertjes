@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.11.3</title>
+<title>De Stampertjes v2.11.4</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -117,6 +117,22 @@ button:active{background:#fff;color:#111}
 #levelCard h2{font-size:28px;letter-spacing:2px;margin:0 0 10px}
 #levelCard p{font-size:15px;margin:0}
 
+.mainMenuGroups{
+  display:grid;
+  gap:10px;
+  margin-top:8px
+}
+.menuGroup{
+  border-top:1px solid rgba(255,255,255,.35);
+  padding-top:8px
+}
+.menuGroup:first-child{border-top:0}
+.menuGroup h3{
+  margin:0 0 7px;
+  font-size:12px;
+  letter-spacing:1px;
+  opacity:.85
+}
 .menuGrid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -395,6 +411,34 @@ body.attractMode #panel{max-width:520px}
     grid-template-columns:1fr 88px 1fr;
   }
 }
+
+.menuGrid.single{
+  grid-template-columns:1fr;
+}
+.newsItem{
+  border:2px solid #fff;
+  padding:12px;
+  margin:10px 0;
+  text-align:left;
+}
+.newsItem.featured{
+  border-style:double;
+  border-width:4px;
+}
+.newsItem h3{
+  margin:4px 0 8px;
+  font-size:16px;
+}
+.newsItem p{
+  margin:0;
+  font-size:13px;
+  line-height:1.45;
+}
+.newsVersion{
+  font-size:11px;
+  opacity:.75;
+  letter-spacing:1px;
+}
 </style>
 </head>
 <body>
@@ -403,7 +447,7 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.3 – Community Update</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.4 – Community Update</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -411,13 +455,31 @@ body.attractMode #panel{max-width:520px}
       <div class="teddyCat">ᓚᘏᗢ</div>
       <div>TEDDY WAS HERE +100</div>
     </div>
-    <div id="mainMenu" class="menuGrid">
-      <button id="playMenuBtn">SPELEN</button>
-      <button id="scoresMenuBtn">HIGHSCORES</button>
-      <button id="helpMenuBtn">UITLEG</button>
-      <button id="historyMenuBtn">HISTORIE</button>
-      <button id="roadmapMenuBtn">ONTWIKKELING</button>
-      <button id="cafeMenuBtn">CAFÉ</button>
+    <div id="mainMenu" class="mainMenuGroups">
+      <section class="menuGroup">
+        <h3>🎮 SPELEN</h3>
+        <div class="menuGrid">
+          <button id="playMenuBtn">SPELEN</button>
+          <button id="scoresMenuBtn">HIGHSCORES</button>
+          <button id="statsMenuBtn">STATISTIEKEN</button>
+        </div>
+      </section>
+
+      <section class="menuGroup">
+        <h3>📚 ONTDEKKEN</h3>
+        <div class="menuGrid">
+          <button id="historyMenuBtn">HISTORIE</button>
+          <button id="newsMenuBtn">KASTEELKRANT</button>
+          <button id="helpMenuBtn">UITLEG</button>
+        </div>
+      </section>
+
+      <section class="menuGroup">
+        <h3>🌍 COMMUNITY</h3>
+        <div class="menuGrid single">
+          <button id="cafeMenuBtn">CAFÉ</button>
+        </div>
+      </section>
     </div>
 
     <div id="scoresSection" class="menuSection hidden">
@@ -459,21 +521,6 @@ body.attractMode #panel{max-width:520px}
     </div>
 
     <div id="historySection" class="menuSection hidden">
-      <h2>DE HISTORIE</h2>
-      <p>
-        Lang geleden werd het kasteel bewaakt door de Stampertjes. Die hielden de ondergrondse
-        Appelieten opgesloten in de kelder. Tijdens een onweersnacht sloeg de bliksem in de oude
-        toren. De kerker brak open en de Appelieten ontsnapten naar alle verdiepingen.
-      </p>
-      <p>
-        Zonder wapens moet de laatste Stampertjeswachter het kasteel terugveroveren door de vloer
-        zelf als valstrik te gebruiken.
-      </p>
-      <button class="backBtn" data-back>TERUG</button>
-    </div>
-
-
-    <div id="roadmapSection" class="menuSection hidden">
       <h2>📖 DE STAMPERTJES KRONIEKEN</h2>
 
       <div id="chronicleBook">
@@ -487,6 +534,45 @@ body.attractMode #panel{max-width:520px}
           <button id="chronicleNext">VOLGENDE ▶</button>
         </div>
       </div>
+
+      <button class="backBtn" data-back>TERUG</button>
+    </div>
+
+    <div id="roadmapSection" class="menuSection hidden">
+      <h2>📰 KASTEELKRANT</h2>
+
+      <article class="newsItem featured">
+        <div class="newsVersion">v2.11.4</div>
+        <h3>Het hoofdmenu is verbouwd!</h3>
+        <p>De Kronieken staan nu netjes onder Historie. Release-updates lees je voortaan in de Kasteelkrant.</p>
+      </article>
+
+      <article class="newsItem">
+        <div class="newsVersion">v2.11.3</div>
+        <h3>De bibliotheek is geopend</h3>
+        <p>De Stampertjes Kronieken zijn omgebouwd tot een bladerbaar verhaalboek met zes hoofdstukken.</p>
+      </article>
+
+      <article class="newsItem">
+        <div class="newsVersion">v2.11.2</div>
+        <h3>Een rustigere herstart</h3>
+        <p>Een echte doodanimatie en extra wachttijd maken het verliezen van een leven duidelijker en minder abrupt.</p>
+      </article>
+
+      <article class="newsItem">
+        <div class="newsVersion">v2.11.1</div>
+        <h3>Het Café groeit</h3>
+        <p>Berichten, communitystatistieken en uitgebreidere Kronieken werden toegevoegd.</p>
+      </article>
+
+      <article class="newsItem">
+        <div class="newsVersion">v2.10</div>
+        <h3>De arcadekast komt tot leven</h3>
+        <p>Een nieuw retro-beginscherm, gameplaydemo en attract mode werden toegevoegd.</p>
+      </article>
+
+      <h3>🔮 Wat komt eraan?</h3>
+      <p>Toekomstige updates kunnen meer sfeer, nieuwe animaties, extra Appelieten, speciale levels en eindbazen bevatten.</p>
 
       <button class="backBtn" data-back>TERUG</button>
     </div>
@@ -546,7 +632,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.11.3 – COMMUNITY UPDATE</h2>
+    <h2>v2.11.4 – COMMUNITY UPDATE</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -620,7 +706,7 @@ const playMenuBtn=document.getElementById("playMenuBtn");
 const scoresMenuBtn=document.getElementById("scoresMenuBtn");
 const helpMenuBtn=document.getElementById("helpMenuBtn");
 const historyMenuBtn=document.getElementById("historyMenuBtn");
-const roadmapMenuBtn=document.getElementById("roadmapMenuBtn");
+const newsMenuBtn=document.getElementById("newsMenuBtn");
 const roadmapSection=document.getElementById("roadmapSection");
 const chroniclePage=document.getElementById("chroniclePage");
 const chroniclePageContent=document.getElementById("chroniclePageContent");
@@ -832,12 +918,12 @@ activateButton(helpMenuBtn,()=>{
 });
 activateButton(historyMenuBtn,()=>{
   stopAttractMode();
-  showMenuSection(historySection);
-});
-activateButton(roadmapMenuBtn,()=>{
-  stopAttractMode();
   chronicleIndex=0;
   renderChroniclePage();
+  showMenuSection(historySection);
+});
+activateButton(newsMenuBtn,()=>{
+  stopAttractMode();
   showMenuSection(roadmapSection);
 });
 activateButton(cafeMenuBtn,async()=>{
