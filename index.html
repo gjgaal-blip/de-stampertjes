@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.08</title>
+<title>De Stampertjes v2.09</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -136,6 +136,29 @@ body.scoreMode #scoresSection{
   width:100%;
   margin-top:12px;
 }
+
+body.keyboardMode #controls,
+body.keyboardMode #controlLabels{
+  display:none!important;
+}
+body.keyboardMode canvas{
+  width:min(92vw,980px);
+  max-height:76vh;
+}
+body.keyboardMode #gameOptions{
+  width:min(360px,60vw);
+}
+body.keyboardMode #wrap{
+  gap:10px;
+}
+#keyboardHint{
+  font-size:11px;
+  opacity:.8;
+  text-align:center;
+}
+body:not(.keyboardMode) #keyboardHint{
+  display:none;
+}
 </style>
 </head>
 <body>
@@ -143,7 +166,7 @@ body.scoreMode #scoresSection{
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle">DE STAMPERTJES</h1>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.08</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.09</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
@@ -166,16 +189,33 @@ body.scoreMode #scoresSection{
 
     <div id="helpSection" class="menuSection hidden">
       <h2>HOE SPEEL JE?</h2>
-      <p>
-        Stamp drie keer op dezelfde vloer om een gat te maken. Lok daarna een Appeliet in het gat.
-        Zodra hij vastzit, kun je veilig over hem heen lopen. Ga erboven staan en stamp hem twee of
-        drie keer weg. Versla alle Appelieten om het volgende level te bereiken.
-      </p>
-      <p>
-        Gebruik ▲ en ▼ links om te klimmen, ◀ en ▶ rechts om te lopen en STAMP in het midden.
-      Groene Appelieten zijn normaal, rode zijn sneller, zwarte vermijden soms gaten en gouden leveren extra punten op.
-      Bonusvoorwerpen verschijnen tijdelijk: kers, banaan, ster en klok. Een gevangen Appeliet klimt na enkele seconden weer uit het gat als je hem niet op tijd wegstampt.
-      </p>
+
+      <p><strong>📱 iPhone / iPad</strong><br>
+      ▲ en ▼ links = ladder op en af<br>
+      ◀ en ▶ rechts = lopen<br>
+      STAMP = vloer of Appeliet stampen<br>
+      ⏸ PAUZE = pauzeren</p>
+
+      <p><strong>💻 Laptop / PC</strong><br>
+      Pijltjes links/rechts = lopen<br>
+      Pijltjes omhoog/omlaag = ladder op en af<br>
+      Spatiebalk = stampen<br>
+      P = pauze / verder<br>
+      M = muziek aan / uit<br>
+      Esc = terug naar het beginscherm</p>
+
+      <p><strong>🍏 Doel</strong><br>
+      Stamp drie keer op dezelfde plek om een gat te maken. Lok een Appeliet in het gat.
+      Ga erboven staan en stamp hem weg voordat hij ontsnapt. Versla alle Appelieten om
+      het volgende level te bereiken.</p>
+
+      <p><strong>⭐ Bonusvoorwerpen</strong><br>
+      Kers = 500 punten<br>
+      Banaan = 1.000 punten<br>
+      Ster = tijdelijk sneller stampen<br>
+      Klok = Appelieten tijdelijk langzamer<br>
+      Snelle opeenvolgende overwinningen leveren combo-bonussen op.</p>
+
       <button class="backBtn" data-back>TERUG</button>
     </div>
 
@@ -199,8 +239,10 @@ body.scoreMode #scoresSection{
       <p><strong>v2.08 – The Polish Update</strong><br>
       Pauze hersteld, appels ontsnappen weer uit gaten, stabielere AI, audio- en bonuscontrole.</p>
       <p><strong>v2.09 – Arcade Edition</strong><br>
+      Laptopbediening, grotere desktopweergave en vernieuwd uitlegscherm.</p>
+      <p><strong>v2.10 – Attract Mode</strong><br>
       Demo-modus, fakkels, maanlicht, betere animaties en gezichtsuitdrukkingen.</p>
-      <p><strong>v2.10 – Rise of the Apple King</strong><br>
+      <p><strong>v2.11 – Rise of the Apple King</strong><br>
       Eerste eindbaas en een speciale eindbaaslevel.</p>
       <p><strong>v3.0 – First Arcade Release</strong><br>
       Achievements, meerdere kastelen, Appelietengids en uitgebreidere spelstatistieken.</p>
@@ -251,6 +293,7 @@ body.scoreMode #scoresSection{
     <button id="pauseToggle">⏸ PAUZE</button>
     <button id="musicToggle">MUZIEK: UIT</button>
   </div>
+  <div id="keyboardHint">Pijltjes = bewegen • Spatie = stampen • P = pauze • M = muziek</div>
   <div class="small">3× stampen voor een gat. Stamp daarna de gevangen appel weg.</div>
 </div>
 <script>
@@ -472,6 +515,9 @@ document.querySelectorAll("[data-back]").forEach(btn=>{
 
 function openIntro(){
   state="intro";
+  keys.left=keys.right=keys.up=keys.down=false;
+  pauseOverlay.classList.add("hidden");
+  pauseToggle.textContent="⏸ PAUZE";
   startBtn.classList.add("hidden");
   overlay.classList.remove("hidden");
   showMainMenu();
@@ -962,6 +1008,66 @@ function bind(id,key){
   ['pointerup','pointercancel','pointerleave','touchend'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[key]=false}));
 }
 bind("left","left");bind("right","right");bind("up","up");bind("down","down");
+let keyboardDetected=false;
+
+function enableKeyboardMode(){
+  if(keyboardDetected)return;
+  keyboardDetected=true;
+  document.body.classList.add("keyboardMode");
+}
+
+window.addEventListener("keydown",e=>{
+  enableKeyboardMode();
+
+  const controlKeys=["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," ","Spacebar","p","P","m","M","Escape"];
+  if(controlKeys.includes(e.key))e.preventDefault();
+
+  if(e.key==="ArrowLeft")keys.left=true;
+  if(e.key==="ArrowRight")keys.right=true;
+  if(e.key==="ArrowUp")keys.up=true;
+  if(e.key==="ArrowDown")keys.down=true;
+
+  if((e.key===" "||e.key==="Spacebar")&&!e.repeat){
+    stamp();
+  }
+
+  if((e.key==="p"||e.key==="P")&&!e.repeat){
+    togglePause();
+  }
+
+  if((e.key==="m"||e.key==="M")&&!e.repeat){
+    audio();
+    setMusic(!musicOn);
+  }
+
+  if(e.key==="Escape"&&!e.repeat){
+    if(state==="paused"){
+      togglePause();
+    }
+    if(state==="play"||state==="transition"){
+      state="intro";
+      keys.left=keys.right=keys.up=keys.down=false;
+      pauseOverlay.classList.add("hidden");
+      overlay.classList.remove("hidden");
+      openIntro();
+    }else if(state==="intro"){
+      showMainMenu();
+    }
+  }
+});
+
+window.addEventListener("keyup",e=>{
+  if(e.key==="ArrowLeft")keys.left=false;
+  if(e.key==="ArrowRight")keys.right=false;
+  if(e.key==="ArrowUp")keys.up=false;
+  if(e.key==="ArrowDown")keys.down=false;
+});
+
+// Als een fysiek toetsenbord aanwezig lijkt, schakel direct de ruimere desktopweergave in.
+if(window.matchMedia("(pointer:fine)").matches && window.innerWidth>=700){
+  document.body.classList.add("keyboardMode");
+  keyboardDetected=true;
+}
 document.getElementById("stamp").addEventListener("pointerdown",e=>{e.preventDefault();stamp()});
 
 
