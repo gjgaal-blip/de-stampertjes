@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.12</title>
+<title>De Stampertjes v2.12.1</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -482,6 +482,29 @@ body.attractMode #panel{max-width:520px}
   border-bottom:1px dotted rgba(255,255,255,.35);
   font-size:12px
 }
+
+#panel{position:relative}
+#menuMusicIcon{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:34px!important;
+  min-width:34px!important;
+  height:34px;
+  min-height:34px!important;
+  padding:0!important;
+  margin:0!important;
+  border:2px solid #fff;
+  background:#111;
+  color:#fff;
+  font-size:17px!important;
+  line-height:1;
+  z-index:3;
+  border-radius:0;
+  transition:transform .12s ease,opacity .12s ease;
+}
+#menuMusicIcon.musicPulse{transform:scale(1.14)}
+#menuMusicIcon.musicOff{opacity:.72}
 </style>
 </head>
 <body>
@@ -493,7 +516,8 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.12</div>
+    <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
+    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.12.1</div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -620,8 +644,25 @@ body.attractMode #panel{max-width:520px}
       </article>
 
       <h3>🔮 Volgende grote hoofdstukken</h3>
-      <p>🌙 v2.20 – Castle Expansion<br>
-      👑 v3.00 – The Apple King</p>
+
+      <article class="newsItem featured">
+        <div class="newsVersion">🌙 v2.20</div>
+        <h3>Castle Expansion &amp; Soundtrack Update</h3>
+        <p><strong>🏰 Sfeer</strong><br>
+        Bewegende fakkels, maanlicht, mist, nieuwe achtergronden en meer kasteelanimaties.</p>
+        <p><strong>⚙️ Instellingen</strong><br>
+        Muziek, geluidseffecten, trillen, besturing, taal en thema’s instellen.</p>
+        <p><strong>🎵 Soundtrack</strong><br>
+        Eigen muziek per level, overwinningsmuziek, eindbaasmuziek en een Jukebox met vrijspeelbare nummers.</p>
+        <p><strong>🎮 Gameplay</strong><br>
+        Nieuwe Appelieten, leveltypes, geheimen en easter eggs.</p>
+        <p><strong>👥 Community</strong><br>
+        Meer wereldstatistieken en verdere verbeteringen aan het Stampertjes Café.</p>
+        <p><em>Heb je zelf een leuk idee? Deel het via het Stampertjes Café.</em></p>
+      </article>
+
+      <p>👑 <strong>v3.00 – The Apple King</strong><br>
+      Een toekomstige grote release met de Appelkoning en nieuwe eindbaasinhoud.</p>
 
       <button class="backBtn" data-back>TERUG</button>
     </div>
@@ -696,7 +737,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.12</h2>
+    <h2>v2.12.1</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -753,6 +794,8 @@ body.attractMode #panel{max-width:520px}
 <script>
 const c=document.getElementById('game'),ctx=c.getContext('2d');
 const overlay=document.getElementById("overlay");
+const musicToggle=document.getElementById("musicToggle");
+const menuMusicIcon=document.getElementById("menuMusicIcon");
 const startBtn=document.getElementById("startBtn");
 const introCanvas=document.getElementById("introCanvas");
 const ictx=introCanvas.getContext("2d");
@@ -935,6 +978,14 @@ function qualifiesForHighscore(value){
   const scores=onlineScores;
   return value>0 && (scores.length<10 || value>scores[scores.length-1].score);
 }
+
+function updateMenuMusicIconVisibility(){
+  const visible=state==="intro" &&
+    !mainMenu.classList.contains("hidden") &&
+    !overlay.classList.contains("hidden");
+  menuMusicIcon.classList.toggle("hidden",!visible);
+}
+
 function showMainMenu(){
   document.body.classList.remove("scoreMode");
   document.body.classList.remove("gameplayActive");
@@ -953,6 +1004,7 @@ function showMainMenu(){
   document.getElementById("highscoreBox").classList.add("hidden");
   introText.innerHTML="<strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.";
   if(musicOn&&state==="intro")startMenuMusic();
+  updateMenuMusicIconVisibility();
 }
 function showMenuSection(section){
   mainMenu.classList.add("hidden");
@@ -963,6 +1015,7 @@ function showMenuSection(section){
   cafeSection.classList.add("hidden");
   statsSection.classList.add("hidden");
   section.classList.remove("hidden");
+  updateMenuMusicIconVisibility();
 }
 function activateButton(button,handler){
   let locked=false;
@@ -1609,6 +1662,7 @@ function openIntro(){
 }
 let startingGame=false;
 function startGame(){
+  menuMusicIcon.classList.add("hidden");
   stopMenuMusic(250);
   stopAttractMode();
   document.body.classList.remove("scoreMode");
@@ -1969,6 +2023,9 @@ musicOn=localStorage.getItem("stampertjesMusic")!=="0";
 
 function setMusicButton(){
   musicToggle.textContent="MUZIEK: "+(musicOn?"AAN":"UIT");
+  menuMusicIcon.textContent=musicOn?"🔊":"🔇";
+  menuMusicIcon.classList.toggle("musicOff",!musicOn);
+  menuMusicIcon.setAttribute("aria-label",musicOn?"Muziek uitzetten":"Muziek aanzetten");
 }
 function cancelMusicFade(){
   if(musicFadeFrame){
@@ -2057,6 +2114,15 @@ musicToggle.addEventListener("pointerdown",async e=>{
   await audio();
   await setMusic(!musicOn);
 });
+menuMusicIcon.addEventListener("pointerdown",async e=>{
+  e.preventDefault();
+  e.stopPropagation();
+  await audio();
+  menuMusicIcon.classList.add("musicPulse");
+  setTimeout(()=>menuMusicIcon.classList.remove("musicPulse"),160);
+  await setMusic(!musicOn);
+});
+
 menuSoundtrack.addEventListener("error",()=>{
   console.error("The Castle Awakens kon niet worden geladen.",menuSoundtrack.error);
   musicToggle.textContent="MUZIEK: FOUT";
