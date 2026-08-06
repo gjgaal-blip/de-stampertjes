@@ -6,10 +6,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.09.1</title>
+<title>De Stampertjes v2.09.2</title>
 <style>
 :root{--bg:#111;--fg:#fff}
-*{box-sizing:border-box;touch-action:none}
+*{box-sizing:border-box}
+canvas,#controls button,#gameOptions button{touch-action:none}
+button{touch-action:manipulation}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:ui-monospace,Menlo,monospace;overflow:hidden}
 #wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px}
 #title{font-size:18px;letter-spacing:2px}
@@ -33,18 +35,34 @@ button:active{background:#fff;color:#111}
 
 #overlay{
   position:fixed;inset:0;background:#111;color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  z-index:10;padding:18px
+  display:flex;align-items:flex-start;justify-content:center;
+  z-index:10;padding:12px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y
 }
 #panel{
-  width:min(470px,100%);max-height:94vh;overflow-y:auto;
-  text-align:center;border:3px solid #fff;padding:16px;background:#111
+  width:min(470px,100%);
+  min-height:min-content;
+  max-height:none;
+  overflow:visible;
+  text-align:center;
+  border:3px solid #fff;
+  padding:16px;
+  margin:auto 0;
+  background:#111;
+  touch-action:pan-y
 }
 #introCanvas{
   width:100%;height:auto;background:#fff;border:3px solid #fff;
   image-rendering:pixelated;margin-bottom:12px
 }
 #panel h1{font-size:26px;letter-spacing:3px;margin:6px 0 10px}
+#helpSection,#historySection,#roadmapSection,#scoresSection{
+  padding-bottom:calc(16px + env(safe-area-inset-bottom));
+}
 #panel p{font-size:13px;line-height:1.4}
 #nameInput{
   width:100%;padding:12px;background:#fff;color:#111;border:0;
@@ -89,6 +107,7 @@ button:active{background:#fff;color:#111}
   margin-top:14px;
   border-top:2px solid #fff;
   padding-top:14px;
+  touch-action:pan-y
 }
 .menuSection h2{
   margin:0 0 10px;
@@ -123,6 +142,7 @@ body.scoreMode #panel{
   max-height:none;
   overflow:visible;
   padding:14px;
+  touch-action:pan-y;
 }
 body.scoreMode #scoresSection{
   margin-top:0;
@@ -143,7 +163,11 @@ body.scoreMode #scoresSection{
 }
 .backBtn{
   width:100%;
-  margin-top:12px;
+  margin-top:14px;
+  position:sticky;
+  bottom:0;
+  z-index:2;
+  background:#111;
 }
 
 body.keyboardMode #controls,
@@ -168,6 +192,11 @@ body.keyboardMode #wrap{
 body:not(.keyboardMode) #keyboardHint{
   display:none;
 }
+@media (max-height:700px){
+  #introCanvas{max-height:130px;object-fit:contain}
+  #panel{padding:12px}
+  .menuSection p{font-size:12px;line-height:1.4}
+}
 </style>
 </head>
 <body>
@@ -175,7 +204,7 @@ body:not(.keyboardMode) #keyboardHint{
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle">DE STAMPERTJES</h1>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.09.1</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.09.2</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
