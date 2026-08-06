@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.11.5</title>
+<title>De Stampertjes v2.11.7</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -453,7 +453,35 @@ body.attractMode #panel{max-width:520px}
   border-bottom:1px dotted rgba(255,255,255,.4);
   padding-bottom:5px
 }
-#resetStatsBtn{width:100%;margin-top:8px}
+#resetStatsBtn{width:100%;margin-top:14px}
+#statsSection h3{
+  margin:16px 0 8px;
+  font-size:14px;
+  letter-spacing:1px
+}
+#onlineStatsStatus{
+  min-height:18px;
+  font-size:11px;
+  opacity:.75;
+  margin-bottom:6px
+}
+#onlineStatsList{
+  display:grid;
+  gap:8px;
+  text-align:left
+}
+#onlineStatsLeaders{
+  margin-top:14px;
+  text-align:left
+}
+.onlineLeader{
+  display:grid;
+  grid-template-columns:28px 1fr auto auto;
+  gap:6px;
+  padding:5px 0;
+  border-bottom:1px dotted rgba(255,255,255,.35);
+  font-size:12px
+}
 </style>
 </head>
 <body>
@@ -462,7 +490,7 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.5 – Community Update</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.7 – Community Update</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -557,37 +585,40 @@ body.attractMode #panel{max-width:520px}
       <h2>📰 KASTEELKRANT</h2>
 
       <article class="newsItem featured">
-        <div class="newsVersion">v2.11.5</div>
-        <h3>Het hoofdmenu is verbouwd!</h3>
-        <p>De Kronieken staan nu netjes onder Historie. Release-updates lees je voortaan in de Kasteelkrant.</p>
+        <div class="newsVersion">🌍 v2.11</div>
+        <h3>Community Update</h3>
+        <p><strong>Een van de grootste updates sinds de eerste release!</strong></p>
+        <p>• De Stampertjes Kronieken zijn een bladerbaar verhaalboek geworden.<br>
+        • Het Stampertjes Café is geopend.<br>
+        • Online highscores en wereldstatistieken toegevoegd.<br>
+        • Persoonlijke statistieken en Teddy-achievement.<br>
+        • Nieuwe doodanimatie en rustigere respawn.<br>
+        • Toetsenbordbesturing voor pc.<br>
+        • Hoofdmenu opnieuw ingedeeld in Spelen, Ontdekken en Community.<br>
+        • De Kasteelkrant vervangt het oude ontwikkelscherm.</p>
       </article>
 
       <article class="newsItem">
-        <div class="newsVersion">v2.11.3</div>
-        <h3>De bibliotheek is geopend</h3>
-        <p>De Stampertjes Kronieken zijn omgebouwd tot een bladerbaar verhaalboek met zes hoofdstukken.</p>
+        <div class="newsVersion">🎮 v2.10</div>
+        <h3>The Arcade Update</h3>
+        <p>Nieuw retro-hoofdmenu, attract mode, gameplaydemo, online Top 10 en vele gameplayverbeteringen.</p>
       </article>
 
       <article class="newsItem">
-        <div class="newsVersion">v2.11.2</div>
-        <h3>Een rustigere herstart</h3>
-        <p>Een echte doodanimatie en extra wachttijd maken het verliezen van een leven duidelijker en minder abrupt.</p>
+        <div class="newsVersion">🏰 v2.00</div>
+        <h3>The Arcade Reborn</h3>
+        <p>Complete remake van het spel met nieuwe engine, levels, geluid en eerste publieke release.</p>
       </article>
 
       <article class="newsItem">
-        <div class="newsVersion">v2.11.1</div>
-        <h3>Het Café groeit</h3>
-        <p>Berichten, communitystatistieken en uitgebreidere Kronieken werden toegevoegd.</p>
+        <div class="newsVersion">🍏 v1.00</div>
+        <h3>The Beginning</h3>
+        <p>Het allereerste speelbare prototype waarin het avontuur van De Stampertjes begon.</p>
       </article>
 
-      <article class="newsItem">
-        <div class="newsVersion">v2.10</div>
-        <h3>De arcadekast komt tot leven</h3>
-        <p>Een nieuw retro-beginscherm, gameplaydemo en attract mode werden toegevoegd.</p>
-      </article>
-
-      <h3>🔮 Wat komt eraan?</h3>
-      <p>Toekomstige updates kunnen meer sfeer, nieuwe animaties, extra Appelieten, speciale levels en eindbazen bevatten.</p>
+      <h3>🔮 Volgende grote hoofdstukken</h3>
+      <p>🌙 v2.12 – Castle Expansion<br>
+      👑 v3.00 – The Apple King</p>
 
       <button class="backBtn" data-back>TERUG</button>
     </div>
@@ -632,8 +663,15 @@ body.attractMode #panel{max-width:520px}
 
     <div id="statsSection" class="menuSection hidden">
       <h2>📊 STATISTIEKEN</h2>
+      <h3>JOUW STATISTIEKEN</h3>
       <div id="statsList"></div>
-      <button id="resetStatsBtn">STATISTIEKEN WISSEN</button>
+
+      <h3>🌍 WERELDSTATISTIEKEN</h3>
+      <div id="onlineStatsStatus">Online statistieken laden…</div>
+      <div id="onlineStatsList"></div>
+      <div id="onlineStatsLeaders"></div>
+
+      <button id="resetStatsBtn">LOKALE STATISTIEKEN WISSEN</button>
       <button class="backBtn" data-back>TERUG</button>
     </div>
 
@@ -655,7 +693,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.11.5 – COMMUNITY UPDATE</h2>
+    <h2>v2.11.7 – COMMUNITY UPDATE</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -731,6 +769,9 @@ const statsMenuBtn=document.getElementById("statsMenuBtn");
 const statsSection=document.getElementById("statsSection");
 const statsList=document.getElementById("statsList");
 const resetStatsBtn=document.getElementById("resetStatsBtn");
+const onlineStatsStatus=document.getElementById("onlineStatsStatus");
+const onlineStatsList=document.getElementById("onlineStatsList");
+const onlineStatsLeaders=document.getElementById("onlineStatsLeaders");
 const helpMenuBtn=document.getElementById("helpMenuBtn");
 const historyMenuBtn=document.getElementById("historyMenuBtn");
 const newsMenuBtn=document.getElementById("newsMenuBtn");
@@ -935,14 +976,18 @@ function activateButton(button,handler){
 }
 
 activateButton(playMenuBtn,()=>startGame());
-activateButton(statsMenuBtn,()=>{
+activateButton(statsMenuBtn,async()=>{
   stopAttractMode();
   showMenuSection(statsSection);
   renderStats();
+  await loadOnlineStats();
 });
-activateButton(resetStatsBtn,()=>{
+activateButton(resetStatsBtn,async()=>{
   localStorage.removeItem("stampertjesStats");
+  const reset={...DEFAULT_STATS};
+  saveStats(reset);
   renderStats();
+  await loadOnlineStats();
 });
 
 activateButton(scoresMenuBtn,async()=>{
@@ -985,6 +1030,8 @@ const DEFAULT_STATS={
   achievements:[]
 };
 
+let statsSyncTimer=null;
+
 function getStats(){
   try{
     const saved=JSON.parse(localStorage.getItem("stampertjesStats")||"{}");
@@ -993,13 +1040,97 @@ function getStats(){
     return {...DEFAULT_STATS};
   }
 }
-function saveStats(stats){
-  localStorage.setItem("stampertjesStats",JSON.stringify(stats));
+
+function getStatsDeviceId(){
+  let id=localStorage.getItem("stampertjesDeviceId");
+  if(!id){
+    if(window.crypto&&crypto.randomUUID){
+      id=crypto.randomUUID();
+    }else{
+      id="xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{
+        const r=Math.random()*16|0;
+        const v=c==="x"?r:(r&3|8);
+        return v.toString(16);
+      });
+    }
+    localStorage.setItem("stampertjesDeviceId",id);
+  }
+  return id;
 }
+
+function rememberPlayerName(value){
+  const clean=String(value||"").trim().toUpperCase().slice(0,10);
+  if(clean)localStorage.setItem("stampertjesPlayerName",clean);
+  return clean;
+}
+
+function getPlayerName(){
+  return (
+    localStorage.getItem("stampertjesPlayerName") ||
+    rememberPlayerName(nameInput?.value) ||
+    rememberPlayerName(cafeName?.value) ||
+    "SPELER"
+  );
+}
+
+function saveStats(stats){
+  const clean={
+    ...DEFAULT_STATS,
+    ...stats,
+    gamesPlayed:Math.max(0,Number(stats.gamesPlayed)||0),
+    bestScore:Math.max(0,Number(stats.bestScore)||0),
+    highestLevel:Math.max(1,Number(stats.highestLevel)||1),
+    applesDefeated:Math.max(0,Number(stats.applesDefeated)||0),
+    deaths:Math.max(0,Number(stats.deaths)||0),
+    longestCombo:Math.max(0,Number(stats.longestCombo)||0),
+    teddyFound:Boolean(stats.teddyFound),
+    achievements:Array.isArray(stats.achievements)?stats.achievements:[]
+  };
+  localStorage.setItem("stampertjesStats",JSON.stringify(clean));
+  queueStatsSync(clean);
+}
+
+function queueStatsSync(stats=getStats()){
+  clearTimeout(statsSyncTimer);
+  statsSyncTimer=setTimeout(()=>{
+    syncOnlineStats(stats).catch(err=>console.warn("Statistieken synchroniseren mislukt:",err));
+  },650);
+}
+
+async function syncOnlineStats(stats=getStats()){
+  const payload={
+    p_device_id:getStatsDeviceId(),
+    p_player_name:getPlayerName(),
+    p_games_played:Number(stats.gamesPlayed)||0,
+    p_best_score:Number(stats.bestScore)||0,
+    p_highest_level:Number(stats.highestLevel)||1,
+    p_apples_defeated:Number(stats.applesDefeated)||0,
+    p_deaths:Number(stats.deaths)||0,
+    p_longest_combo:Number(stats.longestCombo)||0,
+    p_teddy_found:Boolean(stats.teddyFound)
+  };
+
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_player_stats`,{
+    method:"POST",
+    headers:{
+      "apikey":SUPABASE_KEY,
+      "Authorization":`Bearer ${SUPABASE_KEY}`,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify(payload)
+  });
+
+  if(!response.ok){
+    const text=await response.text();
+    throw new Error(`${response.status}: ${text}`);
+  }
+}
+
 function renderStats(){
   const s=getStats();
   const achievements=Array.isArray(s.achievements)?s.achievements:[];
   statsList.innerHTML=`
+    <div class="statRow"><span>Spelersnaam</span><strong>${escapeHtml(getPlayerName())}</strong></div>
     <div class="statRow"><span>Gespeelde potjes</span><strong>${Number(s.gamesPlayed)||0}</strong></div>
     <div class="statRow"><span>Beste score</span><strong>${Number(s.bestScore)||0}</strong></div>
     <div class="statRow"><span>Hoogste level</span><strong>${Number(s.highestLevel)||1}</strong></div>
@@ -1009,6 +1140,62 @@ function renderStats(){
     <div class="statRow"><span>Teddy gevonden</span><strong>${s.teddyFound?"JA":"NEE"}</strong></div>
     <div class="statRow"><span>Achievements</span><strong>${achievements.length}</strong></div>
   `;
+}
+
+async function loadOnlineStats(){
+  onlineStatsStatus.textContent="Online statistieken laden…";
+  onlineStatsList.innerHTML="";
+  onlineStatsLeaders.innerHTML="";
+
+  try{
+    await syncOnlineStats(getStats());
+
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_stats`,{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json"
+      },
+      body:"{}"
+    });
+
+    if(!response.ok){
+      const text=await response.text();
+      throw new Error(`${response.status}: ${text}`);
+    }
+
+    const data=await response.json();
+    const totals=data?.totals||{};
+    const leaders=Array.isArray(data?.leaders)?data.leaders:[];
+
+    onlineStatsStatus.textContent="Bijgewerkt vanuit het Stampertjes-kasteel";
+    onlineStatsList.innerHTML=`
+      <div class="statRow"><span>Spelers</span><strong>${Number(totals.players)||0}</strong></div>
+      <div class="statRow"><span>Gespeelde potjes</span><strong>${Number(totals.games_played)||0}</strong></div>
+      <div class="statRow"><span>Appelieten verslagen</span><strong>${Number(totals.apples_defeated)||0}</strong></div>
+      <div class="statRow"><span>Totaal gevallen</span><strong>${Number(totals.deaths)||0}</strong></div>
+      <div class="statRow"><span>Teddy gevonden</span><strong>${Number(totals.teddy_finders)||0} spelers</strong></div>
+      <div class="statRow"><span>Hoogste level wereldwijd</span><strong>${Number(totals.highest_level)||1}</strong></div>
+    `;
+
+    if(leaders.length){
+      onlineStatsLeaders.innerHTML=`
+        <h3>BESTE AVONTURIERS</h3>
+        ${leaders.map((p,i)=>`
+          <div class="onlineLeader">
+            <span>${i+1}.</span>
+            <span>${escapeHtml(p.player_name||"SPELER")}</span>
+            <span>${Number(p.best_score)||0}</span>
+            <span>Lv${Number(p.highest_level)||1}</span>
+          </div>
+        `).join("")}
+      `;
+    }
+  }catch(err){
+    console.error(err);
+    onlineStatsStatus.textContent="Online statistieken zijn nog niet beschikbaar. Voer eerst de nieuwe Supabase-SQL uit.";
+  }
 }
 
 const chroniclePages=[
@@ -1247,12 +1434,16 @@ function renderCafePosts(posts){
   });
 }
 
+nameInput.addEventListener("input",()=>rememberPlayerName(nameInput.value));
+cafeName.addEventListener("input",()=>rememberPlayerName(cafeName.value));
+
 cafeMessage.addEventListener("input",()=>{
   cafeCounter.textContent=`${cafeMessage.value.length} / 240`;
 });
 
 activateButton(cafeSubmitBtn,async()=>{
   const name=(cafeName.value.trim()||"SPELER").toUpperCase().slice(0,10);
+  rememberPlayerName(name);
   const type=cafeType.value;
   const message=cafeMessage.value.trim().slice(0,240);
 
@@ -1318,6 +1509,15 @@ activateButton(versionLabel,()=>{
   if(teddyTapCount>=5){
     teddyTapCount=0;
     teddyEggActive=true;
+
+    const teddyStats=getStats();
+    teddyStats.teddyFound=true;
+    if(!Array.isArray(teddyStats.achievements))teddyStats.achievements=[];
+    if(!teddyStats.achievements.includes("teddy")){
+      teddyStats.achievements.push("teddy");
+    }
+    saveStats(teddyStats);
+
     teddyEgg.classList.remove("hidden");
     tone(330,.08,"square",.04,440);
     setTimeout(()=>tone(440,.08,"square",.04,660),90);
@@ -1451,6 +1651,7 @@ startBtn.addEventListener("pointerdown",e=>{
 saveScoreBtn.addEventListener("pointerdown",async e=>{
   e.preventDefault();
   const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,10);
+  rememberPlayerName(name);
   saveScoreBtn.disabled=true;
   saveScoreBtn.textContent="OPSLAAN…";
 
