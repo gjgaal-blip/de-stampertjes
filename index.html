@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.10.2</title>
+<title>De Stampertjes v2.11.1</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -275,6 +275,25 @@ body.attractMode #panel{max-width:520px}
   padding:5px 9px!important;
   font-size:12px!important
 }
+
+#updateOverlay{
+  position:fixed;inset:0;background:rgba(17,17,17,.97);color:#fff;
+  display:flex;align-items:center;justify-content:center;z-index:40;padding:18px;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y
+}
+#updateCard{width:min(430px,94vw);border:3px solid #fff;padding:20px;background:#111;text-align:center}
+.updateKicker{font-size:12px;letter-spacing:2px;opacity:.85}
+.updateList{display:grid;gap:8px;text-align:left;margin:15px 0;font-size:13px}
+#closeUpdateBtn{width:100%;margin-top:8px}
+#cafeWelcome{border:2px solid #fff;padding:12px;text-align:left;margin:10px 0 14px}
+#cafeWelcome .officialTitle{font-weight:700;margin-bottom:7px}
+#cafeStats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0 14px}
+.cafeStat{border:1px solid #fff;padding:8px;text-align:center;font-size:12px}
+#cafeMessagesTitle,#cafeFormTitle{text-align:left;margin:15px 0 8px}
+.cafeNotice{border-top:1px dotted rgba(255,255,255,.55);margin-top:8px;padding-top:7px;font-size:11px;opacity:.85}
+.cafePost.officialPost{border-width:3px;background:#181818}
+.officialBadge{font-size:10px;letter-spacing:1px;border:1px solid #fff;padding:2px 5px;margin-left:5px}
+#cafeForm{border-top:2px solid #fff;padding-top:13px;margin-top:16px}
 </style>
 </head>
 <body>
@@ -283,7 +302,7 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.10.2 – Arcade Edition</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.1 – Community Update</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -356,49 +375,68 @@ body.attractMode #panel{max-width:520px}
     <div id="roadmapSection" class="menuSection hidden">
       <h2>📜 DE STAMPERTJES KRONIEKEN</h2>
 
-      <p><strong>v1.00 – Het begin</strong><br>
-      Eerste speelbare prototype met lopen, ladders, gaten en Appelieten.</p>
+      <p><strong>v1.00 – Het eerste prototype</strong><br>
+      De allereerste speelbare versie. Lopen, ladders beklimmen, gaten stampen en de eerste Appelieten verslaan vormden de basis.</p>
 
-      <p><strong>v1.10–v1.50 – De basis groeit</strong><br>
-      Levels, levens, geluid, dikkere vloeren, grotere figuren en veiligere vallen.</p>
+      <p><strong>v1.10–v1.30 – De spelregels krijgen vorm</strong><br>
+      Scores, levels en levens werden toegevoegd. Vloeren moesten meerdere keren worden gestampt en gevangen Appelieten kregen een duidelijke afmaaktijd.</p>
 
-      <p><strong>v1.60–v1.90 – Online en slimmer</strong><br>
-      Wereldwijde highscores, verschillende zalen, betere AI, muziek en veilige respawns.</p>
+      <p><strong>v1.40–v1.60 – Groter en duidelijker</strong><br>
+      De figuren en vloeren werden groter, geluidseffecten en muziek verschenen en een gevangen Appeliet maakte het gat tijdelijk beloopbaar.</p>
 
-      <p><strong>v2.00–v2.08 – Een echte arcadegame</strong><br>
-      Hoofdmenu, uitleg, historie, bonusitems, combo’s, meerdere Appelieten en een grote stabiliteitsronde.</p>
+      <p><strong>v1.70–v1.90 – Slimmere zalen</strong><br>
+      Wisselende ladderindelingen, soepelere ladderbewegingen, betere achtervolgings-AI, veilige herstarts en de eerste wereldwijde highscores.</p>
+
+      <p><strong>v2.00–v2.05 – Van demo naar arcadegame</strong><br>
+      Een echt hoofdmenu, intro, uitleg, historie, levelovergangen, een Top 10 en een verbeterde mobiele presentatie.</p>
+
+      <p><strong>v2.06–v2.08 – Meer inhoud en stabiliteit</strong><br>
+      De Teddy-easteregg, verschillende Appelieten, combo’s, bonusvoorwerpen, pauze en een uitgebreide stabiliteitsronde kwamen erbij.</p>
 
       <p><strong>v2.09 – Arcade Edition</strong><br>
-      Laptopbediening, grotere desktopweergave en verbeterde mobiele schermen.</p>
+      Volledige laptopbediening, grotere desktopweergave, mobiele scrollverbeteringen en een uitgebreid uitlegscherm.</p>
 
       <p><strong>v2.10 – Attract Mode</strong><br>
-      Correcte gameplaydemo, compacter hoofdmenu, attract mode en Teddy-easteregg.</p>
+      Een nieuw retro-beginscherm, een gameplaydemo, attract mode en een uitgebreidere Teddy-easteregg.</p>
 
       <p><strong>v2.10.2 – Stampertjes Café</strong><br>
-      Online berichten, ideeën, bugmeldingen en likes voor de community.</p>
+      Spelers konden voor het eerst online ideeën, bugs, algemene berichten en highscoremomenten delen.</p>
 
-      <h2>🔮 WAT KOMT ERAAN?</h2>
+      <p><strong>v2.11.1 – Community Update</strong><br>
+      Het Café is opnieuw ingericht, de Kronieken zijn uitgebreid en communitystatistieken en berichtlabels zijn toegevoegd.</p>
 
-      <p><strong>v2.11 – Castle Life</strong><br>
-      Fakkels, maanlicht, spinnenwebben, betere animaties en gezichtsuitdrukkingen.</p>
+      <h2>🔮 TOEKOMSTIGE ONTWIKKELING</h2>
+      <p>Voor volgende versies denken we onder andere aan meer sfeer in het kasteel, uitgebreidere animaties, nieuwe Appelieten, speciale levels, achievements, een Appelietengids, eindbazen en mogelijk meerdere kastelen of werelden.</p>
+      <p>De planning blijft bewust flexibel. Goede ideeën van spelers kunnen de richting van toekomstige updates beïnvloeden.</p>
 
-      <p><strong>v2.12 – Rise of the Apple King</strong><br>
-      Eerste eindbaas, speciale arena en eigen eindbaasmuziek.</p>
+      <h2>💬 HELP MEE</h2>
+      <p>Heb je een idee voor een level, Appeliet, eindbaas of verbetering? Laat het weten in het <strong>Stampertjes Café</strong>. Misschien verschijnt jouw idee in een volgende versie.</p>
 
-      <p><strong>v2.20</strong><br>
-      Appelietengids, achievements, statistieken en geheime cheats.</p>
-
-      <p><strong>v3.0 – First Arcade Release</strong><br>
-      Meerdere kastelen, uitgebreidere attract mode en een volwaardige arcade-release.</p>
-
-      <p><em>Ontwikkeld door GJ Studios &amp; ChatGPT.</em></p>
+      <p><strong>Ontwikkeld door GJ Studios</strong></p>
+      <p><em>Speciale dank aan alle spelers die ideeën en bugmeldingen delen. Samen maken we De Stampertjes steeds leuker.</em></p>
       <button class="backBtn" data-back>TERUG</button>
     </div>
 
     <div id="cafeSection" class="menuSection hidden">
       <h2>🍏 STAMPERTJES CAFÉ</h2>
-      <p>Deel een idee, meld een bug of vertel hoe ver je bent gekomen.</p>
 
+      <div id="cafeWelcome">
+        <div class="officialTitle">📢 GJ STUDIOS · OFFICIEEL</div>
+        <div><strong>Welkom in het Stampertjes Café!</strong></div>
+        <p>Bedankt dat je De Stampertjes speelt. Deel hier een leuk idee, meld een bug of vertel hoe ver je bent gekomen. Goede ideeën kunnen terugkomen in een volgende update.</p>
+      </div>
+
+      <div id="cafeStats">
+        <div class="cafeStat"><strong id="cafeTotalCount">—</strong><br>berichten</div>
+        <div class="cafeStat"><strong id="cafeIdeaCount">—</strong><br>ideeën</div>
+        <div class="cafeStat"><strong id="cafeBugCount">—</strong><br>bugs</div>
+        <div class="cafeStat"><strong id="cafeHighscoreCount">—</strong><br>highscores</div>
+      </div>
+
+      <h3 id="cafeMessagesTitle">💬 LAATSTE BERICHTEN</h3>
+      <div id="cafePosts"></div>
+
+      <h3 id="cafeFormTitle">✍️ NIEUW BERICHT</h3>
       <div id="cafeForm">
         <input id="cafeName" maxlength="10" placeholder="NAAM" value="GERT JAN">
         <select id="cafeType">
@@ -413,7 +451,6 @@ body.attractMode #panel{max-width:520px}
         <div id="cafeStatus"></div>
       </div>
 
-      <div id="cafePosts"></div>
       <button class="backBtn" data-back>TERUG</button>
     </div>
 
@@ -432,6 +469,23 @@ body.attractMode #panel{max-width:520px}
     </div>
   </div>
 </div>
+<div id="updateOverlay" class="hidden">
+  <div id="updateCard">
+    <div class="updateKicker">🎉 NIEUWE VERSIE</div>
+    <h2>v2.11.1 – COMMUNITY UPDATE</h2>
+    <div class="updateList">
+      <div>✓ Stampertjes Café vernieuwd</div>
+      <div>✓ Berichten staan nu bovenaan</div>
+      <div>✓ Communitystatistieken toegevoegd</div>
+      <div>✓ Kronieken uitgebreid</div>
+      <div>✓ Idee-, bug- en highscorelabels</div>
+    </div>
+    <p>Veel speelplezier!</p>
+    <p><strong>— GJ Studios</strong></p>
+    <button id="closeUpdateBtn">BEKIJK HET SPEL</button>
+  </div>
+</div>
+
 <div id="pauseOverlay" class="hidden">
   <div id="pauseCard">
     <h2>⏸ GEPAUZEERD</h2>
@@ -495,6 +549,12 @@ const cafeCounter=document.getElementById("cafeCounter");
 const cafeSubmitBtn=document.getElementById("cafeSubmitBtn");
 const cafeStatus=document.getElementById("cafeStatus");
 const cafePosts=document.getElementById("cafePosts");
+const cafeTotalCount=document.getElementById("cafeTotalCount");
+const cafeIdeaCount=document.getElementById("cafeIdeaCount");
+const cafeBugCount=document.getElementById("cafeBugCount");
+const cafeHighscoreCount=document.getElementById("cafeHighscoreCount");
+const updateOverlay=document.getElementById("updateOverlay");
+const closeUpdateBtn=document.getElementById("closeUpdateBtn");
 const gameTitle=document.getElementById("gameTitle");
 const versionLabel=document.getElementById("versionLabel");
 const teddyEgg=document.getElementById("teddyEgg");
@@ -717,6 +777,13 @@ function cafeTypeLabel(type){
   return labels[type]||"💬 Algemeen";
 }
 
+function cafeMessageNotice(type){
+  if(type==="Idee")return "⭐ Dit idee kan in een toekomstige update worden opgenomen.";
+  if(type==="Bug")return "🔧 Bedankt! Deze melding helpt ons het spel te verbeteren.";
+  if(type==="Highscore")return "🏆 Mooie prestatie! Kun jij de wereldwijde Top 10 halen?";
+  return "";
+}
+
 function formatCafeDate(value){
   try{
     return new Intl.DateTimeFormat("nl-NL",{
@@ -726,9 +793,43 @@ function formatCafeDate(value){
   }catch{return ""}
 }
 
+async function fetchCafeCount(type=null){
+  const filter=type?`&type=eq.${encodeURIComponent(type)}`:"";
+  const response=await fetch(
+    `${SUPABASE_URL}/rest/v1/community_posts?select=id${filter}`,
+    {
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
+        "Prefer":"count=exact",
+        "Range":"0-0"
+      }
+    }
+  );
+  if(!response.ok)throw new Error(`HTTP ${response.status}`);
+  const range=response.headers.get("content-range")||"0-0/0";
+  return Number(range.split("/")[1])||0;
+}
+
+async function loadCafeStats(){
+  try{
+    const [total,ideas,bugs,highscores]=await Promise.all([
+      fetchCafeCount(),fetchCafeCount("Idee"),fetchCafeCount("Bug"),fetchCafeCount("Highscore")
+    ]);
+    cafeTotalCount.textContent=total;
+    cafeIdeaCount.textContent=ideas;
+    cafeBugCount.textContent=bugs;
+    cafeHighscoreCount.textContent=highscores;
+  }catch(err){
+    console.warn("Caféstatistieken niet bereikbaar",err);
+    cafeTotalCount.textContent=cafeIdeaCount.textContent=cafeBugCount.textContent=cafeHighscoreCount.textContent="—";
+  }
+}
+
 async function loadCafePosts(){
   cafePosts.innerHTML="<div>Berichten laden…</div>";
   cafeStatus.textContent="";
+  loadCafeStats();
   try{
     const response=await fetch(
       `${SUPABASE_URL}/rest/v1/community_posts?select=id,name,type,message,likes,created_at&order=created_at.desc&limit=50`,
@@ -740,8 +841,7 @@ async function loadCafePosts(){
       }
     );
     if(!response.ok)throw new Error(`HTTP ${response.status}`);
-    const posts=await response.json();
-    renderCafePosts(posts);
+    renderCafePosts(await response.json());
   }catch(err){
     console.error(err);
     cafePosts.innerHTML="<div>Het café is tijdelijk niet bereikbaar.</div>";
@@ -754,22 +854,26 @@ function renderCafePosts(posts){
     return;
   }
 
-  cafePosts.innerHTML=posts.map(post=>`
-    <article class="cafePost">
+  cafePosts.innerHTML=posts.map(post=>{
+    const official=post.type==="GJ Studios"||String(post.name).toUpperCase()==="GJ STUDIOS";
+    const notice=cafeMessageNotice(post.type);
+    return `
+    <article class="cafePost ${official?"officialPost":""}">
       <div class="cafePostHeader">
         <div>
-          <div class="cafePostName">${escapeHtml(post.name)}</div>
+          <div class="cafePostName">${escapeHtml(post.name)}${official?'<span class="officialBadge">OFFICIEEL</span>':''}</div>
           <div class="cafePostType">${cafeTypeLabel(post.type)}</div>
         </div>
         <div>${formatCafeDate(post.created_at)}</div>
       </div>
       <div class="cafePostMessage">${escapeHtml(post.message)}</div>
+      ${notice?`<div class="cafeNotice">${notice}</div>`:""}
       <div class="cafePostFooter">
         <span>${Number(post.likes)||0} likes</span>
         <button class="likeBtn" data-like-id="${Number(post.id)}">👍 LIKE</button>
       </div>
-    </article>
-  `).join("");
+    </article>`;
+  }).join("");
 
   cafePosts.querySelectorAll("[data-like-id]").forEach(btn=>{
     activateButton(btn,async()=>{
@@ -778,25 +882,18 @@ function renderCafePosts(posts){
       try{
         const getResponse=await fetch(
           `${SUPABASE_URL}/rest/v1/community_posts?id=eq.${id}&select=likes`,
-          {
-            headers:{
-              "apikey":SUPABASE_KEY,
-              "Authorization":`Bearer ${SUPABASE_KEY}`
-            }
-          }
+          {headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}}
         );
+        if(!getResponse.ok)throw new Error(`HTTP ${getResponse.status}`);
         const rows=await getResponse.json();
         const likes=(Number(rows?.[0]?.likes)||0)+1;
-
         const updateResponse=await fetch(
           `${SUPABASE_URL}/rest/v1/community_posts?id=eq.${id}`,
           {
             method:"PATCH",
             headers:{
-              "apikey":SUPABASE_KEY,
-              "Authorization":`Bearer ${SUPABASE_KEY}`,
-              "Content-Type":"application/json",
-              "Prefer":"return=minimal"
+              "apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,
+              "Content-Type":"application/json","Prefer":"return=minimal"
             },
             body:JSON.stringify({likes})
           }
@@ -806,9 +903,7 @@ function renderCafePosts(posts){
       }catch(err){
         console.error(err);
         cafeStatus.textContent="Liken lukte niet.";
-      }finally{
-        btn.disabled=false;
-      }
+      }finally{btn.disabled=false;}
     });
   });
 }
@@ -851,6 +946,7 @@ activateButton(cafeSubmitBtn,async()=>{
     cafeCounter.textContent="0 / 240";
     cafeStatus.textContent="Bericht geplaatst!";
     await loadCafePosts();
+    document.getElementById("cafeMessagesTitle").scrollIntoView({behavior:"smooth",block:"start"});
   }catch(err){
     console.error(err);
     cafeStatus.textContent="Plaatsen lukte niet. Is de café-database aangemaakt?";
@@ -858,6 +954,19 @@ activateButton(cafeSubmitBtn,async()=>{
     cafeSubmitBtn.disabled=false;
     cafeSubmitBtn.textContent="BERICHT PLAATSEN";
   }
+});
+
+const CURRENT_VERSION="2.11.1";
+function showUpdateOnce(){
+  const seen=localStorage.getItem("stampertjesSeenVersion");
+  if(seen!==CURRENT_VERSION){
+    updateOverlay.classList.remove("hidden");
+  }
+}
+activateButton(closeUpdateBtn,()=>{
+  localStorage.setItem("stampertjesSeenVersion",CURRENT_VERSION);
+  updateOverlay.classList.add("hidden");
+  armAttractMode();
 });
 
 let teddyTapCount=0;
@@ -900,6 +1009,7 @@ function stopAttractMode(){
   attractPrompt.classList.add("hidden");
 }
 function startAttractMode(){
+  if(!updateOverlay.classList.contains("hidden"))return;
   if(state!=="intro"||mainMenu.classList.contains("hidden"))return;
   attractActive=true;
   document.body.classList.add("attractMode");
@@ -1189,6 +1299,7 @@ function drawIntro(){
 window.addEventListener("load",()=>{
   openIntro();
   drawIntro();
+  setTimeout(showUpdateOnce,250);
 });
 ctx.imageSmoothingEnabled=false;
 const W=c.width,H=c.height;
