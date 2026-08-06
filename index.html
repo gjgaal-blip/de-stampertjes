@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.11.1</title>
+<title>De Stampertjes v2.11.2</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -78,6 +78,28 @@ button:active{background:#fff;color:#111}
 }
 .hidden{display:none!important}
 
+#deathOverlay{
+  position:fixed;inset:0;background:rgba(17,17,17,.96);color:#fff;
+  display:flex;align-items:center;justify-content:center;z-index:16;text-align:center;
+  padding:18px
+}
+#deathCard{
+  width:min(360px,90vw);
+  border:3px solid #fff;
+  background:#111;
+  padding:20px
+}
+#deathCanvas{
+  width:100%;
+  height:auto;
+  max-height:150px;
+  background:#fff;
+  border:2px solid #fff;
+  image-rendering:pixelated;
+  margin:8px 0
+}
+#deathTitle{margin:0 0 6px;letter-spacing:2px}
+#deathText{margin:8px 0 0}
 #pauseOverlay{
   position:fixed;inset:0;background:rgba(17,17,17,.92);color:#fff;
   display:flex;align-items:center;justify-content:center;z-index:11;text-align:center
@@ -302,7 +324,7 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.1 – Community Update</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.2 – Community Update</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -375,45 +397,67 @@ body.attractMode #panel{max-width:520px}
     <div id="roadmapSection" class="menuSection hidden">
       <h2>📜 DE STAMPERTJES KRONIEKEN</h2>
 
+      <p><em>De Stampertjes begon als een klein idee voor een eenvoudige retrogame.
+      Dankzij het testen, verbeteren en de ideeën van spelers groeit het spel stap voor stap
+      uit tot een echte arcade-ervaring.</em></p>
+
+      <h3>🍏 HET BEGIN</h3>
+
       <p><strong>v1.00 – Het eerste prototype</strong><br>
-      De allereerste speelbare versie. Lopen, ladders beklimmen, gaten stampen en de eerste Appelieten verslaan vormden de basis.</p>
+      De allereerste speelbare versie. Het mannetje kon lopen, ladders beklimmen,
+      gaten in vloeren stampen en de eerste wandelende Appelieten verslaan.</p>
 
       <p><strong>v1.10–v1.30 – De spelregels krijgen vorm</strong><br>
-      Scores, levels en levens werden toegevoegd. Vloeren moesten meerdere keren worden gestampt en gevangen Appelieten kregen een duidelijke afmaaktijd.</p>
+      Levels, levens en scores werden toegevoegd. Vloeren werden dikker en moesten
+      meerdere keren worden gestampt voordat er een gat ontstond.</p>
 
-      <p><strong>v1.40–v1.60 – Groter en duidelijker</strong><br>
-      De figuren en vloeren werden groter, geluidseffecten en muziek verschenen en een gevangen Appeliet maakte het gat tijdelijk beloopbaar.</p>
+      <p><strong>v1.40–v1.60 – Meer karakter</strong><br>
+      De speler en Appelieten werden groter en herkenbaarder. Geluidseffecten,
+      achtergrondmuziek, veiligere vallen en duidelijkere animaties kwamen erbij.</p>
 
       <p><strong>v1.70–v1.90 – Slimmere zalen</strong><br>
-      Wisselende ladderindelingen, soepelere ladderbewegingen, betere achtervolgings-AI, veilige herstarts en de eerste wereldwijde highscores.</p>
+      Verschillende ladderindelingen, natuurlijker bewegende Appelieten,
+      veiligere respawns en de eerste wereldwijde highscores maakten het spel gevarieerder.</p>
 
-      <p><strong>v2.00–v2.05 – Van demo naar arcadegame</strong><br>
-      Een echt hoofdmenu, intro, uitleg, historie, levelovergangen, een Top 10 en een verbeterde mobiele presentatie.</p>
+      <h3>🏰 VAN PROTOTYPE NAAR ARCADEGAME</h3>
+
+      <p><strong>v2.00–v2.05 – Het hoofdmenu ontstaat</strong><br>
+      De Stampertjes kreeg een echt beginscherm, uitleg, historie, levelovergangen,
+      een wereldwijde Top 10 en een betere mobiele weergave.</p>
 
       <p><strong>v2.06–v2.08 – Meer inhoud en stabiliteit</strong><br>
-      De Teddy-easteregg, verschillende Appelieten, combo’s, bonusvoorwerpen, pauze en een uitgebreide stabiliteitsronde kwamen erbij.</p>
+      De Teddy-easteregg, verschillende soorten Appelieten, combo’s, bonusvoorwerpen,
+      een pauzeknop en een grote stabiliteitsronde werden toegevoegd.</p>
 
       <p><strong>v2.09 – Arcade Edition</strong><br>
-      Volledige laptopbediening, grotere desktopweergave, mobiele scrollverbeteringen en een uitgebreid uitlegscherm.</p>
+      Laptopbediening met pijltjestoetsen en spatiebalk, een grotere desktopweergave
+      en een vernieuwd uitlegscherm maakten het spel geschikt voor mobiel én computer.</p>
 
       <p><strong>v2.10 – Attract Mode</strong><br>
-      Een nieuw retro-beginscherm, een gameplaydemo, attract mode en een uitgebreidere Teddy-easteregg.</p>
+      Het beginscherm kreeg een retro-logo, een gameplaydemo, attract mode,
+      een verbeterde Teddy-easteregg en een compacter hoofdmenu.</p>
 
       <p><strong>v2.10.2 – Stampertjes Café</strong><br>
-      Spelers konden voor het eerst online ideeën, bugs, algemene berichten en highscoremomenten delen.</p>
+      Spelers konden voortaan online berichten, ideeën, bugmeldingen en
+      highscore-momenten delen en elkaars berichten liken.</p>
 
-      <p><strong>v2.11.1 – Community Update</strong><br>
-      Het Café is opnieuw ingericht, de Kronieken zijn uitgebreid en communitystatistieken en berichtlabels zijn toegevoegd.</p>
+      <p><strong>v2.11–v2.11.2 – Castle Life & Community</strong><br>
+      De communitypagina werd vernieuwd, de Kronieken uitgebreid en de doodanimatie,
+      wachttijd na een verloren leven en rustigere herstart werden toegevoegd.</p>
 
-      <h2>🔮 TOEKOMSTIGE ONTWIKKELING</h2>
-      <p>Voor volgende versies denken we onder andere aan meer sfeer in het kasteel, uitgebreidere animaties, nieuwe Appelieten, speciale levels, achievements, een Appelietengids, eindbazen en mogelijk meerdere kastelen of werelden.</p>
-      <p>De planning blijft bewust flexibel. Goede ideeën van spelers kunnen de richting van toekomstige updates beïnvloeden.</p>
+      <h3>🔮 DE TOEKOMST</h3>
 
-      <h2>💬 HELP MEE</h2>
-      <p>Heb je een idee voor een level, Appeliet, eindbaas of verbetering? Laat het weten in het <strong>Stampertjes Café</strong>. Misschien verschijnt jouw idee in een volgende versie.</p>
+      <p>Toekomstige updates kunnen onder andere meer sfeer in het kasteel,
+      uitgebreidere animaties, nieuwe Appelieten, speciale levels, eindbazen,
+      achievements, statistieken en meerdere werelden bevatten.</p>
+
+      <p><strong>Heb je zelf een leuk idee?</strong><br>
+      Deel het in het <strong>Stampertjes Café</strong>. Goede ideeën kunnen terugkomen
+      in een toekomstige versie van het spel.</p>
 
       <p><strong>Ontwikkeld door GJ Studios</strong></p>
-      <p><em>Speciale dank aan alle spelers die ideeën en bugmeldingen delen. Samen maken we De Stampertjes steeds leuker.</em></p>
+      <p><em>Speciale dank aan alle spelers die meedenken en feedback geven.</em></p>
+
       <button class="backBtn" data-back>TERUG</button>
     </div>
 
@@ -472,7 +516,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.11.1 – COMMUNITY UPDATE</h2>
+    <h2>v2.11.2 – COMMUNITY UPDATE</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -483,6 +527,14 @@ body.attractMode #panel{max-width:520px}
     <p>Veel speelplezier!</p>
     <p><strong>— GJ Studios</strong></p>
     <button id="closeUpdateBtn">BEKIJK HET SPEL</button>
+  </div>
+</div>
+
+<div id="deathOverlay" class="hidden">
+  <div id="deathCard">
+    <h2 id="deathTitle">AUW!</h2>
+    <canvas id="deathCanvas" width="240" height="150"></canvas>
+    <p id="deathText">Even bijkomen...</p>
   </div>
 </div>
 
@@ -1341,7 +1393,7 @@ let ladders=ladderLayouts[0];
 let currentLayoutIndex=0;
 
 let keys={left:false,right:false,up:false,down:false};
-let frame=0,score=0,level=1,lives=3,state="intro",shake=0,startFreeze=0;
+let frame=0,score=0,level=1,lives=3,state="intro",shake=0,startFreeze=0,deathAnimating=false,deathFrame=0;
 let holes=[],cracks=[],enemies=[],effects=[],bonus=null,bonusSpawnTimer=420,combo=0,comboTimer=0,enemyIdCounter=1;
 let player={x:30,y:282,w:24,h:28,onLadder:false,cool:0,dir:1,invulnerable:0};
 
@@ -1456,6 +1508,12 @@ document.getElementById("musicToggle").addEventListener("pointerdown",async e=>{
 });
 
 const pauseToggle=document.getElementById("pauseToggle");
+const deathOverlay=document.getElementById("deathOverlay");
+const deathTitle=document.getElementById("deathTitle");
+const deathText=document.getElementById("deathText");
+const deathCanvas=document.getElementById("deathCanvas");
+const dctx=deathCanvas.getContext("2d");
+dctx.imageSmoothingEnabled=false;
 const pauseOverlay=document.getElementById("pauseOverlay");
 let previousState="play";
 let pauseLocked=false;
@@ -1760,6 +1818,104 @@ function startEnemyLadder(e,l,targetFloor){
   e.ladderCooldown=120;
 }
 
+
+function drawDeathScene(progress){
+  dctx.fillStyle="#fff";
+  dctx.fillRect(0,0,deathCanvas.width,deathCanvas.height);
+  dctx.fillStyle="#111";
+  dctx.strokeStyle="#111";
+
+  // Ground
+  dctx.fillRect(10,125,220,7);
+
+  // Appleiet
+  dctx.beginPath();
+  dctx.arc(168,104,15,0,Math.PI*2);
+  dctx.fill();
+  dctx.fillRect(166,83,4,8);
+  dctx.fillRect(156,117,7,5);
+  dctx.fillRect(174,117,7,5);
+  dctx.fillStyle="#fff";
+  dctx.fillRect(161,99,3,3);
+  dctx.fillRect(173,99,3,3);
+  dctx.fillStyle="#111";
+
+  // Player falls backwards in stages
+  const x=78;
+  const y=94-Math.sin(Math.min(progress,0.55)*Math.PI)*18;
+  const angle=Math.min(progress*1.8,1.4);
+  dctx.save();
+  dctx.translate(x+12,y+14);
+  dctx.rotate(-angle);
+  dctx.translate(-12,-14);
+
+  dctx.fillRect(7,0,10,8);
+  dctx.fillRect(3,8,18,13);
+  dctx.fillRect(0,12,4,8);
+  dctx.fillRect(20,12,4,8);
+  dctx.fillRect(3,21,7,7);
+  dctx.fillRect(14,21,7,7);
+  dctx.restore();
+
+  // Stars
+  if(progress>.35){
+    dctx.font="18px monospace";
+    dctx.fillText("✦",48,58);
+    dctx.fillText("✦",92,48);
+    dctx.fillText("✦",120,66);
+  }
+
+  dctx.font="bold 14px monospace";
+  if(progress>.12)dctx.fillText("BAM!",92,28);
+}
+
+function animateDeath(startTime,duration,isGameOver){
+  const now=performance.now();
+  const progress=Math.min((now-startTime)/duration,1);
+  drawDeathScene(progress);
+
+  if(progress<1){
+    requestAnimationFrame(()=>animateDeath(startTime,duration,isGameOver));
+  }
+}
+
+function showDeathSequence(isGameOver){
+  if(deathAnimating)return;
+  deathAnimating=true;
+  state="dying";
+  document.body.classList.remove("gameplayActive");
+  keys.left=keys.right=keys.up=keys.down=false;
+  pauseOverlay.classList.add("hidden");
+
+  deathTitle.textContent=isGameOver?"GAME OVER":"AUW!";
+  deathText.textContent=isGameOver
+    ?"Je laatste leven is voorbij..."
+    :"Even bijkomen...";
+
+  deathOverlay.classList.remove("hidden");
+  sfxHurt();
+  animateDeath(performance.now(),1150,isGameOver);
+
+  setTimeout(()=>{
+    deathText.textContent=isGameOver?"Eindscore wordt klaargemaakt...":"Nieuw leven over 1...";
+  },1150);
+
+  setTimeout(()=>{
+    deathOverlay.classList.add("hidden");
+    deathAnimating=false;
+
+    if(isGameOver){
+      state="gameover";
+      showGameOverPanel();
+    }else{
+      resetPlayerSafely();
+      startFreeze=90;
+      state="play";
+      document.body.classList.add("gameplayActive");
+    }
+  },2200);
+}
+
 function updateEnemies(){
   if(startFreeze>0){
     startFreeze--;
@@ -1904,17 +2060,11 @@ function updateEnemies(){
     }
 
     const collide=Math.abs((player.x+12)-(e.x+14))<20&&Math.abs((player.y+14)-(e.y+12))<21;
-    if(collide&&e.trapped<=0&&player.invulnerable<=0){
+    if(collide&&e.trapped<=0&&player.invulnerable<=0&&state==="play"){
       lives--;
       shake=11;
-      sfxHurt();
-
-      if(lives<=0){
-        state="gameover";
-        setTimeout(showGameOverPanel,500);
-      }else{
-        resetPlayerSafely();
-      }
+      showDeathSequence(lives<=0);
+      return;
     }
   });
 
