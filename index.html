@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.07</title>
+<title>De Stampertjes v2.08</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box;touch-action:none}
@@ -16,7 +16,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:
 canvas{background:#fff;border:4px solid #fff;image-rendering:pixelated;width:min(96vw,720px);height:auto;max-height:68vh}
 #controlLabels{display:grid;grid-template-columns:136px 96px 136px;gap:7px;width:min(450px,96vw);font-size:10px;text-align:center;letter-spacing:1px}
 #controls{display:grid;grid-template-columns:64px 64px 96px 64px 64px;gap:7px;width:min(450px,96vw)}
-#gameOptions{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(300px,90vw)}
+#gameOptions{position:relative;z-index:12;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(300px,90vw)}
 #gameOptions button{padding:8px 12px;font-size:12px}
 button{appearance:none;border:2px solid #fff;background:#111;color:#fff;border-radius:10px;font:700 16px ui-monospace,monospace;padding:12px 3px;user-select:none}
 button:active{background:#fff;color:#111}
@@ -51,7 +51,7 @@ button:active{background:#fff;color:#111}
 
 #pauseOverlay{
   position:fixed;inset:0;background:rgba(17,17,17,.92);color:#fff;
-  display:flex;align-items:center;justify-content:center;z-index:8;text-align:center
+  display:flex;align-items:center;justify-content:center;z-index:11;text-align:center
 }
 #pauseCard{border:3px solid #fff;padding:24px 30px}
 #pauseCard h2{margin:0 0 8px}
@@ -143,7 +143,7 @@ body.scoreMode #scoresSection{
   <div id="panel">
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle">DE STAMPERTJES</h1>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.07</div>
+    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.08</div>
     <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
@@ -155,6 +155,7 @@ body.scoreMode #scoresSection{
       <button id="scoresMenuBtn">HIGHSCORES</button>
       <button id="helpMenuBtn">UITLEG</button>
       <button id="historyMenuBtn">HISTORIE</button>
+      <button id="roadmapMenuBtn">ONTWIKKELING</button>
     </div>
 
     <div id="scoresSection" class="menuSection hidden">
@@ -173,7 +174,7 @@ body.scoreMode #scoresSection{
       <p>
         Gebruik ▲ en ▼ links om te klimmen, ◀ en ▶ rechts om te lopen en STAMP in het midden.
       Groene Appelieten zijn normaal, rode zijn sneller, zwarte vermijden soms gaten en gouden leveren extra punten op.
-      Bonusvoorwerpen verschijnen tijdelijk: kers, banaan, ster en klok.
+      Bonusvoorwerpen verschijnen tijdelijk: kers, banaan, ster en klok. Een gevangen Appeliet klimt na enkele seconden weer uit het gat als je hem niet op tijd wegstampt.
       </p>
       <button class="backBtn" data-back>TERUG</button>
     </div>
@@ -189,6 +190,20 @@ body.scoreMode #scoresSection{
         Zonder wapens moet de laatste Stampertjeswachter het kasteel terugveroveren door de vloer
         zelf als valstrik te gebruiken.
       </p>
+      <button class="backBtn" data-back>TERUG</button>
+    </div>
+
+
+    <div id="roadmapSection" class="menuSection hidden">
+      <h2>ONTWIKKELING</h2>
+      <p><strong>v2.08 – The Polish Update</strong><br>
+      Pauze hersteld, appels ontsnappen weer uit gaten, stabielere AI, audio- en bonuscontrole.</p>
+      <p><strong>v2.09 – Arcade Edition</strong><br>
+      Demo-modus, fakkels, maanlicht, betere animaties en gezichtsuitdrukkingen.</p>
+      <p><strong>v2.10 – Rise of the Apple King</strong><br>
+      Eerste eindbaas en een speciale eindbaaslevel.</p>
+      <p><strong>v3.0 – First Arcade Release</strong><br>
+      Achievements, meerdere kastelen, Appelietengids en uitgebreidere spelstatistieken.</p>
       <button class="backBtn" data-back>TERUG</button>
     </div>
 
@@ -258,6 +273,8 @@ const playMenuBtn=document.getElementById("playMenuBtn");
 const scoresMenuBtn=document.getElementById("scoresMenuBtn");
 const helpMenuBtn=document.getElementById("helpMenuBtn");
 const historyMenuBtn=document.getElementById("historyMenuBtn");
+const roadmapMenuBtn=document.getElementById("roadmapMenuBtn");
+const roadmapSection=document.getElementById("roadmapSection");
 const gameTitle=document.getElementById("gameTitle");
 const versionLabel=document.getElementById("versionLabel");
 const teddyEgg=document.getElementById("teddyEgg");
@@ -391,6 +408,7 @@ function showMainMenu(){
   scoresSection.classList.add("hidden");
   helpSection.classList.add("hidden");
   historySection.classList.add("hidden");
+  roadmapSection.classList.add("hidden");
   highscoreEntry.classList.add("hidden");
   document.getElementById("highscoreBox").classList.add("hidden");
   introText.textContent="De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!";
@@ -400,6 +418,7 @@ function showMenuSection(section){
   scoresSection.classList.add("hidden");
   helpSection.classList.add("hidden");
   historySection.classList.add("hidden");
+  roadmapSection.classList.add("hidden");
   section.classList.remove("hidden");
 }
 function handlePlay(e){
@@ -421,6 +440,10 @@ helpMenuBtn.addEventListener("pointerdown",e=>{
 historyMenuBtn.addEventListener("pointerdown",e=>{
   e.preventDefault();
   showMenuSection(historySection);
+});
+roadmapMenuBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  showMenuSection(roadmapSection);
 });
 
 let teddyTapCount=0;
@@ -474,6 +497,7 @@ function showGameOverPanel(){
   scoresSection.classList.add("hidden");
   helpSection.classList.add("hidden");
   historySection.classList.add("hidden");
+  roadmapSection.classList.add("hidden");
   startBtn.classList.add("hidden");
   document.getElementById("introText").textContent=`Je eindscore: ${score}`;
   document.getElementById("highscoreBox").classList.toggle("hidden",qualifiesForHighscore(score));
@@ -641,6 +665,7 @@ let player={x:30,y:282,w:24,h:28,onLadder:false,cool:0,dir:1,invulnerable:0};
 
 let audioCtx=null;
 let audioUnlocked=false;
+let lastTrapSound=0;
 
 async function audio(){
   try{
@@ -751,11 +776,16 @@ document.getElementById("musicToggle").addEventListener("pointerdown",async e=>{
 const pauseToggle=document.getElementById("pauseToggle");
 const pauseOverlay=document.getElementById("pauseOverlay");
 let previousState="play";
+let pauseLocked=false;
 
 function togglePause(){
+  if(pauseLocked)return;
   if(state==="intro"||state==="gameover"||state==="transition")return;
+
+  pauseLocked=true;
+
   if(state==="paused"){
-    state=previousState==="paused"?"play":previousState;
+    state=(previousState&&previousState!=="paused")?previousState:"play";
     pauseOverlay.classList.add("hidden");
     pauseToggle.textContent="⏸ PAUZE";
     if(musicOn && !musicTimer)playMusicStep();
@@ -767,8 +797,16 @@ function togglePause(){
     clearTimeout(musicTimer);
     musicTimer=null;
   }
+
+  setTimeout(()=>{pauseLocked=false},180);
 }
+
 pauseToggle.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  e.stopPropagation();
+  togglePause();
+});
+pauseOverlay.addEventListener("pointerdown",e=>{
   e.preventDefault();
   togglePause();
 });
@@ -831,6 +869,9 @@ function resetPlayerSafely(){
 
 function spawnLevel(){
   chooseLayoutForLevel(level);
+  keys.left=keys.right=keys.up=keys.down=false;
+  pauseOverlay.classList.add("hidden");
+  pauseToggle.textContent="⏸ PAUZE";
   holes=[];cracks=[];enemies=[];effects=[];bonus=null;bonusSpawnTimer=300+Math.random()*300;combo=0;comboTimer=0;
   player.x=30;player.y=floors[4]-player.h;player.onLadder=false;player.cool=0;player.invulnerable=210;
   const count=Math.min(3+level,7);
@@ -851,7 +892,7 @@ function spawnLevel(){
       speed:.41+level*.04+(i%3)*.03+typeSpeed,trapped:0,hitsNeeded:typeHits,
       hitsLeft:typeHits,blink:0,dead:false,
       think:30+Math.random()*110,mood:Math.random(),ladderCooldown:0,
-      onLadder:false,ladder:null,ladderTargetFloor:null
+      onLadder:false,ladder:null,ladderTargetFloor:null,holeCooldown:0,slowTimer:0
     });
   }
   clearStartZone();
@@ -986,12 +1027,19 @@ function updateEnemies(){
 
     if(e.trapped>0){
       e.trapped--;e.blink++;
-      if(e.trapped===0){
+      if(e.trapped<=0){
         const occupiedHole=holes.find(h=>h.occupiedBy===e.id);
         if(occupiedHole)occupiedHole.occupiedBy=null;
+
+        e.trapped=0;
         e.y=floors[e.floor]-24;
-        e.x+=e.dir*16;
+        e.dir=(e.dir===0?1:e.dir);
+        e.x=Math.max(14,Math.min(W-42,e.x+e.dir*30));
         e.hitsLeft=e.hitsNeeded;
+        e.holeCooldown=120;
+        e.think=70+Math.random()*100;
+
+        effects.push({type:"escape",x:e.x,y:e.y-8,t:45,text:"ONTsnapt!"});
       }
       return;
     }
@@ -1010,7 +1058,7 @@ function updateEnemies(){
         e.onLadder=false;
         e.ladder=null;
         e.ladderTargetFloor=null;
-        e.think=45+Math.random()*90;
+        e.think=70+Math.random()*90;e.ladderCooldown=120;e.holeCooldown=45;
       }else{
         e.y+=Math.sign(dy)*climbSpeed;
       }
@@ -1018,7 +1066,7 @@ function updateEnemies(){
     }
 
     const pc=player.x+12;
-    if(e.ladderCooldown>0)e.ladderCooldown--;
+    if(e.ladderCooldown>0)e.ladderCooldown--; if(e.holeCooldown>0)e.holeCooldown--;
     e.think--;
 
     if(e.think<=0){
@@ -1080,9 +1128,21 @@ function updateEnemies(){
     if(e.x<14){e.x=14;e.dir=1}
     if(e.x>W-42){e.x=W-42;e.dir=-1}
 
+
+    const occupiedBridge=holes.find(h=>
+      h.floor===e.floor &&
+      h.occupiedBy!==null &&
+      e.x+14>h.x-4 &&
+      e.x+14<h.x+44
+    );
+    if(occupiedBridge){
+      e.y=floors[e.floor]-24;
+    }
+
     const h=holes.find(h=>
       h.floor===e.floor &&
       h.occupiedBy===null &&
+      e.holeCooldown<=0 &&
       e.x+14>h.x+2 &&
       e.x+14<h.x+38
     );
@@ -1090,9 +1150,12 @@ function updateEnemies(){
       h.occupiedBy=e.id;
       e.x=h.x+6;
       e.y=floors[e.floor]-9;
-      e.trapped=360-Math.min(level*8,80);
+      e.trapped=300-Math.min(level*6,60);
       e.hitsLeft=e.hitsNeeded;
-      sfxTrap();
+      if(performance.now()-lastTrapSound>100){
+        sfxTrap();
+        lastTrapSound=performance.now();
+      }
     }else{
       e.y=floors[e.floor]-24;
     }
@@ -1113,7 +1176,7 @@ function updateEnemies(){
   });
 
   enemies=enemies.filter(e=>!e.dead);
-  if(enemies.length===0 && !levelTransitioning){
+  if(enemies.length===0 && !levelTransitioning && state==="play"){
     score+=500;
     const completedLevel=level;
     level++;
@@ -1125,14 +1188,24 @@ function updateEnemies(){
 function spawnBonus(){
   const types=["cherry","banana","star","clock"];
   const type=types[Math.floor(Math.random()*types.length)];
-  const floor=Math.floor(Math.random()*4);
-  bonus={
-    type,
-    floor,
-    x:45+Math.random()*(W-100),
-    y:floors[floor]-18,
-    timer:600
-  };
+
+  let floor=Math.floor(Math.random()*4);
+  let x=60+Math.random()*(W-120);
+
+  for(let tries=0;tries<20;tries++){
+    floor=Math.floor(Math.random()*4);
+    x=60+Math.random()*(W-120);
+
+    const nearHole=holes.some(h=>h.floor===floor && Math.abs((h.x+20)-x)<55);
+    const nearLadder=ladders.some(l=>
+      (l.top===floors[floor]||l.bottom===floors[floor]) &&
+      Math.abs((l.x+10)-x)<35
+    );
+
+    if(!nearHole&&!nearLadder)break;
+  }
+
+  bonus={type,floor,x,y:floors[floor]-18,timer:600};
 }
 function collectBonus(){
   if(!bonus)return;
@@ -1181,7 +1254,7 @@ function update(){
   holes=holes.filter(h=>h.timer>0||h.occupiedBy!==null);
   cracks.forEach(q=>q.timer--);cracks=cracks.filter(q=>q.timer>0);
   effects.forEach(e=>e.t--);effects=effects.filter(e=>e.t>0);
-  if(comboTimer>0)comboTimer--;else combo=0;
+  if(comboTimer>0){comboTimer--;}else{combo=0;comboTimer=0;}
   if(shake>0)shake--;
 }
 
@@ -1234,6 +1307,8 @@ function drawEffects(){
       ctx.font="bold 12px monospace";ctx.fillText(e.text,e.x,e.y-(55-e.t)*.3);
     }else if(e.type==="combo"){
       ctx.font="bold 11px monospace";ctx.fillText(e.text,e.x,e.y-(70-e.t)*.25);
+    }else if(e.type==="escape"){
+      ctx.font="bold 10px monospace";ctx.fillText("ONTSNAPT!",e.x,e.y-(45-e.t)*.2);
     }else{
       ctx.font="bold 12px monospace";ctx.fillText("BAM!",e.x-12,e.y);
     }
