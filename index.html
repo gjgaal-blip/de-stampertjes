@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.11.7</title>
+<title>De Stampertjes v2.11.8</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -490,8 +490,8 @@ body.attractMode #panel{max-width:520px}
     <canvas id="introCanvas" width="420" height="180"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
-    <div id="versionLabel" style="font-size:14px;letter-spacing:2px;margin-top:-4px;margin-bottom:10px">v2.11.7 – Community Update</div>
-    <p id="introText">De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!</p>
+    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.11.8</div>
+    <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
@@ -693,7 +693,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.11.7 – COMMUNITY UPDATE</h2>
+    <h2>v2.11.8</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -947,7 +947,7 @@ function showMainMenu(){
   statsSection.classList.add("hidden");
   highscoreEntry.classList.add("hidden");
   document.getElementById("highscoreBox").classList.add("hidden");
-  introText.textContent="De Appelieten hebben het kasteel overgenomen. Lok ze in je vallen en stamp ze weg!";
+  introText.innerHTML="<strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.";
 }
 function showMenuSection(section){
   mainMenu.classList.add("hidden");
@@ -1776,6 +1776,13 @@ function drawIntro(){
   drawIntroLadder(70,48,96);
   drawIntroLadder(282,96,144);
 
+  // Extra attract-mode detail: een Appeliet klimt rustig op de linker ladder.
+  const ladderCycle=introFrame%300;
+  if(ladderCycle<110){
+    const climbProgress=ladderCycle/110;
+    drawIntroApple(66,70-(climbProgress*46),false,false);
+  }
+
   let crackStage=0;
   let holeOpen=false;
   if(phase>=80&&phase<115)crackStage=1;
@@ -1796,8 +1803,10 @@ function drawIntro(){
     px=230;
   }else if(phase<330){
     px=230+(phase-250)*.55;
-  }else{
+  }else if(phase<400){
     px=274;pose="stamp";
+  }else{
+    px=274-(phase-400)*3.2;
   }
 
   // Apple approaches and gets trapped
