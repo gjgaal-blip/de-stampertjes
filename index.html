@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.12.1</title>
+<title>De Stampertjes v2.12.2</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -517,7 +517,7 @@ body.attractMode #panel{max-width:520px}
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
-    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.12.1</div>
+    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.12.2</div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -737,7 +737,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.12.1</h2>
+    <h2>v2.12.2</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -2089,6 +2089,16 @@ async function setMusic(on){
   musicOn=Boolean(on);
   localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
   setMusicButton();
+
+function retryMenuMusic(){
+  if(musicOn&&isMenuState()&&menuSoundtrack.paused){
+    menuSoundtrack.play()
+      .then(()=>fadeSoundtrack(MUSIC_VOLUME,500,false))
+      .catch(()=>{});
+  }
+}
+document.getElementById("panel").addEventListener("mouseenter",retryMenuMusic,{once:true});
+
   if(musicOn&&isMenuState()){
     await playMenuMusic();
   }else if(!musicOn){
@@ -2098,34 +2108,81 @@ async function setMusic(on){
 async function tryImmediateMenuAutoplay(){
   if(musicOn&&state==="intro")await playMenuMusic();
 }
-async function handleFirstAudioGesture(){
-  await audio();
+function handleFirstAudioGesture(){
+  // Start het MP3-bestand direct binnen dezelfde klik/tik.
+  // Eerst wachten op de Web Audio-engine kan de browsertoestemming laten verlopen.
   if(musicOn&&isMenuState()&&menuSoundtrack.paused){
-    await playMenuMusic();
+    const playPromise=menuSoundtrack.play();
+    if(playPromise){
+      playPromise.then(()=>{
+        musicTimer=true;
+        fadeSoundtrack(MUSIC_VOLUME,650,false);
+      }).catch(err=>{
+        console.warn("Muziek kon nog niet starten:",err);
+      });
+    }
   }
+
+  // Geluidseffecten mogen daarna worden ontgrendeld.
+  audio();
 }
-["pointerdown","touchend","click","keydown"].forEach(eventName=>{
-  window.addEventListener(eventName,handleFirstAudioGesture,{passive:true});
+
+["pointerdown","mousedown","touchstart","keydown"].forEach(eventName=>{
+  window.addEventListener(eventName,handleFirstAudioGesture,{
+    passive:true,
+    capture:true,
+    once:false
+  });
 });
 
-musicToggle.addEventListener("pointerdown",async e=>{
+musicToggle.addEventListener("pointerdown",e=>{
   e.preventDefault();
   e.stopPropagation();
-  await audio();
-  await setMusic(!musicOn);
+
+  const turnOn=!musicOn;
+  musicOn=turnOn;
+  localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
+  setMusicButton();
+
+  if(turnOn&&isMenuState()){
+    menuSoundtrack.play()
+      .then(()=>fadeSoundtrack(MUSIC_VOLUME,650,false))
+      .catch(err=>console.warn("Muziek kon niet worden ingeschakeld:",err));
+  }else if(!turnOn){
+    stopMenuMusic(180);
+  }
+
+  audio();
 });
-menuMusicIcon.addEventListener("pointerdown",async e=>{
+menuMusicIcon.addEventListener("pointerdown",e=>{
   e.preventDefault();
   e.stopPropagation();
-  await audio();
+
+  const turnOn=!musicOn;
+  musicOn=turnOn;
+  localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
+  setMusicButton();
+
   menuMusicIcon.classList.add("musicPulse");
   setTimeout(()=>menuMusicIcon.classList.remove("musicPulse"),160);
-  await setMusic(!musicOn);
+
+  if(turnOn){
+    // Ook hier direct binnen de muisklik afspelen.
+    menuSoundtrack.play()
+      .then(()=>fadeSoundtrack(MUSIC_VOLUME,650,false))
+      .catch(err=>console.warn("Muziek kon niet worden ingeschakeld:",err));
+  }else{
+    stopMenuMusic(180);
+  }
+
+  audio();
 });
 
 menuSoundtrack.addEventListener("error",()=>{
   console.error("The Castle Awakens kon niet worden geladen.",menuSoundtrack.error);
   musicToggle.textContent="MUZIEK: FOUT";
+  menuMusicIcon.textContent="⚠️";
+  menuMusicIcon.title="Muziekbestand niet gevonden";
 });
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden){
