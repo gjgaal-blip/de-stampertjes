@@ -1,14 +1,11 @@
-# De Stampertjes v2.15.3
+# De Stampertjes v2.15.4
 
 Geen nieuwe Supabase-SQL nodig.
 
-Nieuwe Café-regel:
-- kies één keer je naam;
-- plaats een bericht;
-- daarna wordt die naam op dit apparaat vastgezet.
-
-Test:
-1. Nieuwe speler kiest naam TESTER.
-2. Plaats bericht.
-3. Open Café opnieuw: TESTER staat ingevuld en is niet wijzigbaar.
-4. Probeer via bewerken of opnieuw openen een andere naam te gebruiken: dit mag niet lukken.
+Belangrijkste controles:
+1. Scoor punten via een Appeliet.
+2. Pak een bonus.
+3. Voltooi een level.
+4. Open Statistieken en controleer beste score + hoogste level.
+5. Herlaad de site en controleer of de waarden behouden blijven.
+6. Open Uitleg en controleer of de nieuwe tekst volledig zichtbaar is op iPhone.

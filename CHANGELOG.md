@@ -1,7 +1,9 @@
 # De Stampertjes
 
-## v2.15.3
-- Café-naam wordt na het eerste succesvolle bericht permanent vastgezet op dat apparaat.
-- Daarna kan vanaf hetzelfde apparaat niet onder een andere naam worden gepost.
-- De vaste naam wordt automatisch ingevuld en het naamveld wordt read-only.
-- De naamvalidatie en Café-tellers uit eerdere 2.15.x-versies blijven behouden.
+## v2.15.4
+- Statistiekenlogica gecentraliseerd.
+- Beste score wordt ook bijgewerkt bij bonussen en andere scoremomenten.
+- Hoogste level wordt direct opgeslagen zodra een nieuw level wordt bereikt.
+- Game Over en het openen van Statistieken synchroniseren altijd de laatste voortgang.
+- Online statistieken synchroniseren sneller.
+- Uitleg volledig herschreven voor de huidige gameplay, vijandtypes, combo's, bonussen, muziek, community en geheimen.

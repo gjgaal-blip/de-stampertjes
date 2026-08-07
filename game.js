@@ -72,6 +72,10 @@ let levelTransitioning=false;
 
 function showLevelTransition(completedLevel,nextLevel){
   if(musicOn&&!menuSoundtrack.paused)menuSoundtrack.volume=.06;
+  const transitionStats=getStats();
+  transitionStats.bestScore=Math.max(Number(transitionStats.bestScore)||0,Number(score)||0);
+  transitionStats.highestLevel=Math.max(Number(transitionStats.highestLevel)||1,Number(nextLevel)||1);
+  saveStats(transitionStats);
   levelTransitioning=true;
   state="transition";
   document.body.classList.remove("gameplayActive");
@@ -405,6 +409,14 @@ function getPlayerName(){
   );
 }
 
+function updateProgressStats(){
+  const s=getStats();
+  s.bestScore=Math.max(Number(s.bestScore)||0,Number(score)||0);
+  s.highestLevel=Math.max(Number(s.highestLevel)||1,Number(level)||1);
+  saveStats(s);
+  return s;
+}
+
 function saveStats(stats){
   const clean={
     ...DEFAULT_STATS,
@@ -426,7 +438,7 @@ function queueStatsSync(stats=getStats()){
   clearTimeout(statsSyncTimer);
   statsSyncTimer=setTimeout(()=>{
     syncOnlineStats(stats).catch(err=>console.warn("Statistieken synchroniseren mislukt:",err));
-  },650);
+  },250);
 }
 
 async function syncOnlineStats(stats=getStats()){
@@ -459,6 +471,7 @@ async function syncOnlineStats(stats=getStats()){
 }
 
 function renderStats(){
+  updateProgressStats();
   const s=getStats();
   const achievements=Array.isArray(s.achievements)?s.achievements:[];
   statsList.innerHTML=`
@@ -1149,7 +1162,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.15.3";
+const CURRENT_VERSION="2.15.4";
 function showUpdateOnce(){
   const seen=localStorage.getItem("stampertjesSeenVersion");
   if(seen!==CURRENT_VERSION){
@@ -1297,6 +1310,7 @@ function startGame(){
   playMenuBtn.textContent="SPELEN";
   audio();
   score=0;level=1;lives=3;state="play";
+  updateProgressStats();
   if(musicOn)startMusic();
   const gameStats=getStats();
   gameStats.gamesPlayed=(Number(gameStats.gamesPlayed)||0)+1;
@@ -1308,6 +1322,7 @@ function startGame(){
   setTimeout(()=>{startingGame=false},250);
 }
 function showGameOverPanel(){
+  updateProgressStats();
   document.body.classList.remove("gameplayActive");
   if(musicOn)startMusic();
   pendingScore=score;
@@ -2386,6 +2401,7 @@ function updateEnemies(){
   enemies=enemies.filter(e=>!e.dead);
   if(enemies.length===0 && !levelTransitioning && state==="play"){
     score+=500;
+    updateProgressStats();
     const completedLevel=level;
     level++;
     showLevelTransition(completedLevel,level);
@@ -2429,6 +2445,7 @@ function collectBonus(){
     enemies.forEach(e=>e.slowTimer=300);
   }
   score+=earned;
+      updateProgressStats();
   effects.push({type:"score",x:bonus.x,y:bonus.y-12,t:70,text:`+${earned}`});
   tone(520,.08,"square",.04,760);
   bonus=null;

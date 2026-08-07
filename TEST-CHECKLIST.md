@@ -38,3 +38,15 @@
 - [ ] Verwijderen verlaagt de juiste teller
 - [ ] Bewerken naar ander type werkt de categorietellers bij
 - [ ] Naamveld/naamfix van v2.15.1 werkt nog
+
+# v2.15.4
+- [ ] Beste score stijgt na vijand verslaan
+- [ ] Beste score stijgt na bonus
+- [ ] Beste score bevat level-complete bonus
+- [ ] Hoogste level stijgt direct bij levelovergang
+- [ ] Statistieken blijven goed na refresh
+- [ ] Online statistieken lopen binnen korte tijd mee
+- [ ] Uitleg klopt met 3x stampen voor gat
+- [ ] Uitleg noemt 2-3 extra stampen voor gevangen Appeliet
+- [ ] Uitleg noemt groen/rood/zwart/goud
+- [ ] Uitleg noemt muziek/pauze en communityfuncties

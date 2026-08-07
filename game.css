@@ -695,3 +695,16 @@ body.attractMode #panel{max-width:520px}
   margin-bottom:6px;
   text-align:left;
 }
+
+.helpBlock{
+  border:1px solid rgba(255,255,255,.45);
+  padding:10px;
+  margin:9px 0;
+  text-align:left;
+}
+.helpBlock h3{
+  margin:0 0 6px;
+}
+.helpBlock p{
+  margin:6px 0;
+}
