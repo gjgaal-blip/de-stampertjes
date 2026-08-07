@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.12.2</title>
+<title>De Stampertjes v2.12.3</title>
 <style>
 :root{--bg:#111;--fg:#fff}
 *{box-sizing:border-box}
@@ -505,6 +505,19 @@ body.attractMode #panel{max-width:520px}
 }
 #menuMusicIcon.musicPulse{transform:scale(1.14)}
 #menuMusicIcon.musicOff{opacity:.72}
+#cafeSection{
+  padding-bottom:calc(32px + env(safe-area-inset-bottom));
+}
+#cafePosts{padding-bottom:8px}
+#cafeSection .cafeBackBtn{
+  position:static!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:100%;
+  margin-top:18px;
+  z-index:auto!important;
+}
 </style>
 </head>
 <body>
@@ -517,7 +530,7 @@ body.attractMode #panel{max-width:520px}
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
-    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.12.2</div>
+    <div id="versionLabel" style="font-size:13px;letter-spacing:2px;margin-top:-2px;margin-bottom:8px;opacity:.85">v2.12.3</div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
@@ -701,7 +714,7 @@ body.attractMode #panel{max-width:520px}
         <div id="cafeStatus"></div>
       </div>
 
-      <button class="backBtn" data-back>TERUG</button>
+      <button class="backBtn cafeBackBtn" data-back>TERUG</button>
     </div>
 
 
@@ -737,7 +750,7 @@ body.attractMode #panel{max-width:520px}
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.12.2</h2>
+    <h2>v2.12.3</h2>
     <div class="updateList">
       <div>✓ Stampertjes Café vernieuwd</div>
       <div>✓ Berichten staan nu bovenaan</div>
@@ -1662,6 +1675,7 @@ function openIntro(){
 }
 let startingGame=false;
 function startGame(){
+  ensureGameplayControlsVisible();
   menuMusicIcon.classList.add("hidden");
   stopMenuMusic(250);
   stopAttractMode();
@@ -2281,7 +2295,15 @@ function clearStartZone(){
   });
 }
 
+function ensureGameplayControlsVisible(){
+  const controls=document.getElementById("controls");
+  const gameOptions=document.getElementById("gameOptions");
+  if(controls)controls.classList.remove("hidden");
+  if(gameOptions)gameOptions.classList.remove("hidden");
+}
+
 function resetPlayerSafely(){
+  ensureGameplayControlsVisible();
   player.x=30;
   player.y=floors[4]-player.h;
   player.onLadder=false;
@@ -2393,6 +2415,12 @@ function bind(id,key){
 bind("left","left");bind("right","right");bind("up","up");bind("down","down");
 let keyboardDetected=false;
 
+function isTypingTarget(target){
+  if(!target)return false;
+  const tag=String(target.tagName||"").toLowerCase();
+  return tag==="input" || tag==="textarea" || tag==="select" || target.isContentEditable===true;
+}
+
 function enableKeyboardMode(){
   if(keyboardDetected)return;
   keyboardDetected=true;
@@ -2400,6 +2428,7 @@ function enableKeyboardMode(){
 }
 
 window.addEventListener("keydown",e=>{
+  if(isTypingTarget(e.target))return;
   enableKeyboardMode();
 
   const controlKeys=["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," ","Spacebar","p","P","m","M","Escape"];
@@ -2442,6 +2471,7 @@ window.addEventListener("keydown",e=>{
 });
 
 window.addEventListener("keyup",e=>{
+  if(isTypingTarget(e.target))return;
   if(e.key==="ArrowLeft")keys.left=false;
   if(e.key==="ArrowRight")keys.right=false;
   if(e.key==="ArrowUp")keys.up=false;
@@ -2600,6 +2630,7 @@ function showDeathSequence(isGameOver){
       showGameOverPanel();
     }else{
       resetPlayerSafely();
+      ensureGameplayControlsVisible();
       startFreeze=90;
       state="play";
       document.body.classList.add("gameplayActive");
