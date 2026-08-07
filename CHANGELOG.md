@@ -1,9 +1,11 @@
 # De Stampertjes
 
-## v2.15.4
-- Statistiekenlogica gecentraliseerd.
-- Beste score wordt ook bijgewerkt bij bonussen en andere scoremomenten.
-- Hoogste level wordt direct opgeslagen zodra een nieuw level wordt bereikt.
-- Game Over en het openen van Statistieken synchroniseren altijd de laatste voortgang.
-- Online statistieken synchroniseren sneller.
-- Uitleg volledig herschreven voor de huidige gameplay, vijandtypes, combo's, bonussen, muziek, community en geheimen.
+## v2.15.5
+- Uitleg volledig nagekeken op actuele gameplay.
+- Toekomstige gekleurde/nieuwe Appeliet-varianten uit de Uitleg verwijderd.
+- Uitleg compacter en duidelijker gemaakt en voorzien van een GJ Studios-tip.
+- Kasteelkrant en roadmap uitgebreid met Het Kasteel Leeft.
+- Dagberichten, speelmijlpalen, seizoensberichten, zeldzame verrassingen en Teddy-momenten toegevoegd aan de roadmap.
+- Verjaardagsidee voor De Stampertjes toegevoegd.
+- Verre toekomstvisie v4.00 – The Living Castle toegevoegd.
+- Enkele Kronieken-zinnen gepolijst zonder toekomstige gameplay als bestaand te presenteren.

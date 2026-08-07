@@ -565,7 +565,7 @@ const chroniclePages=[
     art:"👢  💥  🍏",
     body:`<p><span class="chapterDrop">N</span>iemand weet meer wie de eerste was. Volgens de ene legende was het een bewaker, volgens de andere een kok die zijn soeppan liet vallen.</p>
     <p>Wat wel vaststaat: drie harde stampen maakten de verzwakte vloer open. Een Appeliet viel erin en zat muurvast.</p>
-    <p>De bewoners begrepen het onmiddellijk. Lokken. Stampen. Vangen. En nog één laatste dreun.</p>
+    <p>De bewoners begrepen het principe al snel: lokken, stampen, vangen en op het juiste moment toeslaan.</p>
     <p>De dappersten onder hen kregen al snel een naam: <strong>De Stampertjes</strong>.</p>
     <p class="chronicleCliff">Maar de Appelieten leerden sneller dan iemand had verwacht.</p>`
   },
@@ -573,7 +573,7 @@ const chroniclePages=[
     title:"🏰 Het Kasteel Groeit",
     art:"🪜  🏰  🪜",
     body:`<p>Nieuwe zalen werden geopend en oude trappen hersteld. Waar eerst één verdieping was, ontstond een doolhof van ladders, balkons en gangen.</p>
-    <p>De Appelieten pasten zich aan. Sommige werden sneller, andere taaier. Ze begonnen ladders te gebruiken en wachtten soms precies naast de plek waar een Stampertje wilde landen.</p>
+    <p>De Appelieten pasten zich aan. De Appelieten leerden nieuwe routes kennen. Ze gebruikten ladders en wachtten soms precies naast de plek waar een Stampertje wilde landen.</p>
     <p>Voor iedere nieuwe zaal ontstonden nieuwe trucs, nieuwe helden en nieuwe verhalen.</p>
     <p class="chronicleCliff">Tot iemand achter een dichtgemetselde muur een deur vond zonder klink.</p>`
   },
@@ -621,7 +621,7 @@ const chroniclePages=[
     title:"☕ Geruchten uit het Café",
     art:"☕  💬  👑",
     body:`<p>Niet ieder verhaal in het Café is waar. Waarschijnlijk.</p>
-    <p>Er wordt gesproken over een Appeliet die door muren kan lopen, een kamer waarin de tijd langzamer gaat en een melodie die alleen klinkt als alle lichten uit zijn.</p>
+    <p>Er wordt gesproken over vreemde voetstappen achter muren, een kamer waarin de tijd anders lijkt te lopen en een melodie die alleen klinkt als alle lichten uit zijn.</p>
     <p>Ook zou er ergens een sleutel bestaan die niet op een deur past, maar op een hoofdstuk.</p>
     <p class="chronicleCliff">Opvallend genoeg verdween het bericht over die sleutel dezelfde nacht.</p>`
   },
@@ -1162,7 +1162,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.15.4";
+const CURRENT_VERSION="2.15.5";
 function showUpdateOnce(){
   const seen=localStorage.getItem("stampertjesSeenVersion");
   if(seen!==CURRENT_VERSION){

@@ -708,3 +708,6 @@ body.attractMode #panel{max-width:520px}
 .helpBlock p{
   margin:6px 0;
 }
+
+.tipBlock{border-style:dashed}
+.roadmapSlogan{margin:16px 0 4px!important;padding:12px;border:2px double #fff;text-align:center!important}

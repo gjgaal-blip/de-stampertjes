@@ -1,11 +1,7 @@
-# De Stampertjes v2.15.4
+# De Stampertjes v2.15.5
 
-Geen nieuwe Supabase-SQL nodig.
+Quality/polish-update. Geen nieuwe Supabase-SQL nodig.
 
-Belangrijkste controles:
-1. Scoor punten via een Appeliet.
-2. Pak een bonus.
-3. Voltooi een level.
-4. Open Statistieken en controleer beste score + hoogste level.
-5. Herlaad de site en controleer of de waarden behouden blijven.
-6. Open Uitleg en controleer of de nieuwe tekst volledig zichtbaar is op iPhone.
+Upload alle bestanden uit deze ZIP en overschrijf de bestaande bestanden.
+
+Controleer vooral Uitleg, Kasteelkrant/Roadmap, Café, statistieken, Hall of Fame, muziek en Admin Portal.

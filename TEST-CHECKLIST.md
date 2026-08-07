@@ -1,52 +1,18 @@
-# v2.15 testchecklist
+# v2.15.5 testchecklist
 
-- [ ] Hoofdmenu toont v2.15
-- [ ] Muziekicoon staat naast het versienummer
-- [ ] Muziek aan/uit werkt in menu
-- [ ] Muziek aan/uit werkt tijdens gameplay
-- [ ] Muziek blijft werken na levelovergang
-- [ ] Historie opent
-- [ ] Alle 13 Kronieken-pagina's zijn te bladeren
-- [ ] Pagina-omslaangeluid werkt na een gebruikersactie
-- [ ] Geheime pagina toont een slot
-- [ ] Kasteelkrant toont v2.15 en de geruchten
-- [ ] Roadmap toont v2.20 t/m v3.00
-- [ ] Vera wordt bedankt in v2.15 en Hall of Fame
+- [ ] Startscherm toont v2.15.5
+- [ ] Muziek werkt in menu en gameplay
+- [ ] Uitleg opent en scrollt goed op iPhone
+- [ ] Uitleg noemt geen gekleurde/nieuwe Appeliet-typen
+- [ ] Uitleg beschrijft 3x stampen voor een gat
+- [ ] Uitleg noemt ontsnappen uit een gat
+- [ ] GJ Studios-tip staat onderaan Uitleg
+- [ ] Kronieken bladeren goed
+- [ ] Kasteelkrant toont Vera-bedankje
+- [ ] Roadmap toont Het Kasteel Leeft, dagberichten, mijlpalen, seizoenen en verrassingen
+- [ ] Roadmap toont v2.20 t/m v4.00
+- [ ] Café-tellers verversen
+- [ ] Café-naam blijft vastgezet
 - [ ] Hall of Fame opent
-- [ ] Hall of Fame haalt live kampioen/statistieken op
-- [ ] Café opent en scrollt op iPhone
-- [ ] Café berichten plaatsen/bewerken/verwijderen werkt
-- [ ] Highscores werken
-- [ ] Statistieken werken
-- [ ] 5× A GJ STUDIOS GAME opent admin.html
-- [ ] Adminlogin werkt
-
-# v2.15.1
-- [ ] Naamveld leeg voor nieuwe speler
-- [ ] Geen standaard GERT JAN
-- [ ] Knop disabled zonder naam
-- [ ] 1 teken blijft disabled
-- [ ] 2+ tekens activeert knop
-- [ ] Naam pas na succesvol posten onthouden
-- [ ] Volgend bezoek vult eigen naam in
-
-# v2.15.2
-- [ ] Café opent met actuele totaal-teller
-- [ ] Idee plaatsen verhoogt totaal + ideeën
-- [ ] Bug plaatsen verhoogt totaal + bugs
-- [ ] Highscore plaatsen verhoogt totaal + highscores
-- [ ] Verwijderen verlaagt de juiste teller
-- [ ] Bewerken naar ander type werkt de categorietellers bij
-- [ ] Naamveld/naamfix van v2.15.1 werkt nog
-
-# v2.15.4
-- [ ] Beste score stijgt na vijand verslaan
-- [ ] Beste score stijgt na bonus
-- [ ] Beste score bevat level-complete bonus
-- [ ] Hoogste level stijgt direct bij levelovergang
-- [ ] Statistieken blijven goed na refresh
-- [ ] Online statistieken lopen binnen korte tijd mee
-- [ ] Uitleg klopt met 3x stampen voor gat
-- [ ] Uitleg noemt 2-3 extra stampen voor gevangen Appeliet
-- [ ] Uitleg noemt groen/rood/zwart/goud
-- [ ] Uitleg noemt muziek/pauze en communityfuncties
+- [ ] Statistieken lokaal en online laden
+- [ ] Admin Portal opent en login werkt
