@@ -1,14 +1,20 @@
-# De Stampertjes v2.12.3
+# De Stampertjes v2.15
 
-## Voor GitHub Pages
-Upload deze drie bestanden:
-- index.html
-- manifest.json
-- the-castle-awakens.mp3
+Alles staat in één map zodat je de bestanden vanaf een iPhone naar GitHub kunt uploaden.
 
-## Voor Supabase
-Deze scripts hoef je alleen uit te voeren als je ze nog niet eerder hebt uitgevoerd:
-- setup_stampertjes_cafe.sql
-- setup_online_stats.sql
+## Upload naar GitHub
+Upload alle bestanden uit deze ZIP en overschrijf de bestaande bestanden.
 
-CHANGELOG.md is alleen documentatie.
+## Supabase
+Voor v2.15 is geen nieuwe SQL nodig als de v2.13-migratie al succesvol is uitgevoerd.
+
+## Nieuw
+- uitgebreide Kronieken;
+- Kasteelkrant met geruchten;
+- uitgebreide roadmap;
+- Hall of Fame;
+- speciale dank aan Vera;
+- bladzijde-omslaangeluid.
+
+## Admin
+De bestaande `admin.html` blijft werken met dezelfde Supabase-instellingen.

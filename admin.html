@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>De Stampertjes - GJ Studios Admin</title>
+<link rel="stylesheet" href="admin.css">
+
+</head>
+<body>
+<div class="wrap">
+  <h1>🍏 GJ STUDIOS</h1>
+  <div class="small">De Stampertjes Developer Portal · v2.15</div>
+
+  <section id="loginCard" class="card">
+    <h2>🔐 Beheerlogin</h2>
+    <input id="adminCode" type="password" autocomplete="current-password" placeholder="Beheercode" style="width:100%">
+    <button id="loginBtn" style="width:100%;margin-top:8px">INLOGGEN</button>
+    <div id="loginStatus" class="small" style="margin-top:8px"></div>
+  </section>
+
+  <section id="portal" class="hidden">
+    <div class="card">
+      <h2>📊 Status</h2>
+      <div class="row"><span>Supabase</span><strong id="sbStatus">-</strong></div>
+      <div class="row"><span>Spelers</span><strong id="players">-</strong></div>
+      <div class="row"><span>Café berichten</span><strong id="postCount">-</strong></div>
+      <div class="row"><span>Potjes</span><strong id="games">-</strong></div>
+      <div class="row"><span>Appelieten verslagen</span><strong id="apples">-</strong></div>
+      <div class="row"><span>Teddy gevonden</span><strong id="teddy">-</strong></div>
+      <button id="refreshBtn" style="width:100%;margin-top:10px">VERVERS STATUS</button>
+    </div>
+
+    <div class="card">
+      <h2>💬 Café beheer</h2>
+      <div id="cafeStatus" class="small"></div>
+      <div id="posts"></div>
+    </div>
+
+    <div class="card">
+      <h2>⚙️ Beheer</h2>
+      <div class="grid">
+        <button id="openGameBtn">🎮 OPEN SPEL</button>
+        <button id="logoutBtn">🚪 UITLOGGEN</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script src="admin.js" defer></script>
+
+</body>
+</html>
