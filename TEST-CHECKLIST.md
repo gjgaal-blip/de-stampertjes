@@ -20,3 +20,12 @@
 - [ ] Statistieken werken
 - [ ] 5× A GJ STUDIOS GAME opent admin.html
 - [ ] Adminlogin werkt
+
+# v2.15.1
+- [ ] Naamveld leeg voor nieuwe speler
+- [ ] Geen standaard GERT JAN
+- [ ] Knop disabled zonder naam
+- [ ] 1 teken blijft disabled
+- [ ] 2+ tekens activeert knop
+- [ ] Naam pas na succesvol posten onthouden
+- [ ] Volgend bezoek vult eigen naam in

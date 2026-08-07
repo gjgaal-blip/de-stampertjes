@@ -1,20 +1,10 @@
-# De Stampertjes v2.15
+# De Stampertjes v2.15.1
 
-Alles staat in één map zodat je de bestanden vanaf een iPhone naar GitHub kunt uploaden.
+Kleine Café-naamfix. Geen nieuwe Supabase-SQL nodig.
 
-## Upload naar GitHub
-Upload alle bestanden uit deze ZIP en overschrijf de bestaande bestanden.
-
-## Supabase
-Voor v2.15 is geen nieuwe SQL nodig als de v2.13-migratie al succesvol is uitgevoerd.
-
-## Nieuw
-- uitgebreide Kronieken;
-- Kasteelkrant met geruchten;
-- uitgebreide roadmap;
-- Hall of Fame;
-- speciale dank aan Vera;
-- bladzijde-omslaangeluid.
-
-## Admin
-De bestaande `admin.html` blijft werken met dezelfde Supabase-instellingen.
+Test:
+1. Open Café als nieuwe speler.
+2. Naamveld is leeg.
+3. Berichtknop is uitgeschakeld.
+4. Vanaf 2 tekens wordt de knop actief.
+5. Na succesvol posten wordt de eigen naam onthouden.

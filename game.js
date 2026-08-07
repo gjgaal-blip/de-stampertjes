@@ -705,6 +705,7 @@ activateButton(chronicleNext,()=>{
 });
 
 renderChroniclePage();
+initCafeName();
 
 
 function getCafeDeviceId(){
@@ -763,12 +764,35 @@ function setCafeAdminMode(on,code=""){
   }
 }
 
+function isValidCafeName(value){
+  return String(value||"").trim().length>=2;
+}
+
+function updateCafeSubmitState(){
+  if(cafeSubmitBtn.dataset.saving==="1")return;
+  cafeSubmitBtn.disabled=!isValidCafeName(cafeName.value);
+}
+
+function initCafeName(){
+  let saved=String(localStorage.getItem("stampertjesPlayerName")||"").trim();
+
+  // Oude hardcoded standaardnaam uit eerdere testversies opruimen.
+  if(saved.toUpperCase()==="GERT JAN"){
+    localStorage.removeItem("stampertjesPlayerName");
+    saved="";
+  }
+
+  cafeName.value=saved;
+  updateCafeSubmitState();
+}
+
 function resetCafeEdit(){
   cafeEditingPostId=null;
   cafeSubmitBtn.textContent="BERICHT PLAATSEN";
   cafeCancelEditBtn.classList.add("hidden");
   cafeMessage.value="";
   cafeCounter.textContent="0 / 240";
+  updateCafeSubmitState();
 }
 
 function escapeHtml(value){
@@ -972,6 +996,7 @@ function renderCafePosts(posts){
       if(!post)return;
       cafeEditingPostId=id;
       cafeName.value=post.name||"";
+      updateCafeSubmitState();
       cafeType.value=post.type||"Algemeen";
       cafeMessage.value=post.message||"";
       cafeCounter.textContent=`${cafeMessage.value.length} / 240`;
@@ -984,15 +1009,29 @@ function renderCafePosts(posts){
 }
 
 nameInput.addEventListener("input",()=>rememberPlayerName(nameInput.value));
-cafeName.addEventListener("input",()=>rememberPlayerName(cafeName.value));
+
+cafeName.addEventListener("input",()=>{
+  updateCafeSubmitState();
+  if(isValidCafeName(cafeName.value) && cafeStatus.textContent.includes("naam")){
+    cafeStatus.textContent="";
+  }
+});
 
 cafeMessage.addEventListener("input",()=>{
   cafeCounter.textContent=`${cafeMessage.value.length} / 240`;
 });
 
 activateButton(cafeSubmitBtn,async()=>{
-  const name=(cafeName.value.trim()||"SPELER").toUpperCase().slice(0,10);
-  rememberPlayerName(name);
+  const rawName=cafeName.value.trim();
+
+  if(!isValidCafeName(rawName)){
+    cafeStatus.textContent="Vul eerst je naam in voordat je een bericht plaatst.";
+    updateCafeSubmitState();
+    cafeName.focus();
+    return;
+  }
+
+  const name=rawName.toUpperCase().slice(0,10);
   const type=cafeType.value;
   const message=cafeMessage.value.trim().slice(0,240);
 
@@ -1001,6 +1040,7 @@ activateButton(cafeSubmitBtn,async()=>{
     return;
   }
 
+  cafeSubmitBtn.dataset.saving="1";
   cafeSubmitBtn.disabled=true;
   cafeStatus.textContent="";
 
@@ -1033,6 +1073,7 @@ activateButton(cafeSubmitBtn,async()=>{
     });
     if(!response.ok)throw new Error(`${response.status}: ${await response.text()}`);
 
+    rememberPlayerName(name);
     cafeStatus.textContent=editing?"Bericht aangepast!":"Bericht geplaatst!";
     resetCafeEdit();
     await loadCafePosts();
@@ -1040,12 +1081,13 @@ activateButton(cafeSubmitBtn,async()=>{
     console.error(err);
     cafeStatus.textContent="Opslaan lukte niet. Probeer het later opnieuw.";
   }finally{
-    cafeSubmitBtn.disabled=false;
+    delete cafeSubmitBtn.dataset.saving;
     if(!cafeEditingPostId)cafeSubmitBtn.textContent="BERICHT PLAATSEN";
+    updateCafeSubmitState();
   }
 });
 
-const CURRENT_VERSION="2.15";
+const CURRENT_VERSION="2.15.1";
 function showUpdateOnce(){
   const seen=localStorage.getItem("stampertjesSeenVersion");
   if(seen!==CURRENT_VERSION){
