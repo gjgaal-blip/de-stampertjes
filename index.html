@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.15.1</title>
+<title>De Stampertjes v2.15.3</title>
 <link rel="stylesheet" href="game.css">
 
 </head>
@@ -20,7 +20,7 @@
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <div id="versionMusicRow">
-      <div id="versionLabel">v2.15.1</div>
+      <div id="versionLabel">v2.15.3</div>
       <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
     </div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
@@ -280,6 +280,7 @@
       <h3 id="cafeFormTitle">✍️ NIEUW BERICHT</h3>
       <div id="cafeForm">
         <input id="cafeName" maxlength="10" placeholder="Voer je naam in..." autocomplete="nickname">
+        <div id="cafeNameHint" class="small">Je kiest je Café-naam één keer. Na je eerste bericht wordt hij vastgezet.</div>
         <select id="cafeType">
           <option value="Algemeen">💬 Algemeen</option>
           <option value="Idee">💡 Idee</option>
@@ -329,14 +330,14 @@
 <div id="updateOverlay" class="hidden">
   <div id="updateCard">
     <div class="updateKicker">🎉 NIEUWE VERSIE</div>
-    <h2>v2.15.1</h2>
+    <h2>v2.15.3</h2>
     <div class="updateList">
-      <div>✓ Café vraagt nu eerst om je eigen naam</div>
-      <div>✓ Geen standaardnaam meer ingevuld</div>
-      <div>✓ Je naam wordt pas bewaard nadat je succesvol post</div>
-      <div>✓ Je eigen opgeslagen naam wordt bij een volgend bezoek hergebruikt</div>
+      <div>✓ Café-naam wordt na het eerste succesvolle bericht vastgezet</div>
+      <div>✓ Daarna kan vanaf hetzelfde apparaat niet onder een andere naam worden gepost</div>
+      <div>✓ De gekozen naam wordt automatisch opnieuw ingevuld</div>
+      <div>✓ Café-tellers en naamvalidatie blijven behouden</div>
     </div>
-    <p><strong>Een kleine Café-fix, zodat iedereen onder zijn eigen naam post.</strong></p>
+    <p><strong>Iedere speler houdt voortaan één vaste Café-naam per apparaat.</strong></p>
     <p><strong>— GJ Studios</strong></p>
     <button id="closeUpdateBtn">BEKIJK HET SPEL</button>
   </div>

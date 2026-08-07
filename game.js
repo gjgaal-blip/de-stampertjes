@@ -45,6 +45,7 @@ const hallStatus=document.getElementById("hallStatus");
 const cafeMenuBtn=document.getElementById("cafeMenuBtn");
 const cafeSection=document.getElementById("cafeSection");
 const cafeName=document.getElementById("cafeName");
+const cafeNameHint=document.getElementById("cafeNameHint");
 const cafeType=document.getElementById("cafeType");
 const cafeMessage=document.getElementById("cafeMessage");
 const cafeCounter=document.getElementById("cafeCounter");
@@ -344,7 +345,7 @@ activateButton(hallMenuBtn,async()=>{
 activateButton(cafeMenuBtn,async()=>{
   stopAttractMode();
   showMenuSection(cafeSection);
-  await loadCafePosts();
+  await refreshCafe();
 });
 
 
@@ -773,7 +774,24 @@ function updateCafeSubmitState(){
   cafeSubmitBtn.disabled=!isValidCafeName(cafeName.value);
 }
 
+function getLockedCafeName(){
+  return String(localStorage.getItem("stampertjesCafeLockedName")||"").trim();
+}
+
+function lockCafeName(name){
+  const clean=String(name||"").trim().toUpperCase().slice(0,10);
+  if(!clean)return "";
+  localStorage.setItem("stampertjesCafeLockedName",clean);
+  localStorage.setItem("stampertjesPlayerName",clean);
+  cafeName.value=clean;
+  cafeName.readOnly=true;
+  cafeName.classList.add("lockedName");
+  cafeNameHint.textContent=`Vaste Café-naam: ${clean}`;
+  return clean;
+}
+
 function initCafeName(){
+  let locked=getLockedCafeName();
   let saved=String(localStorage.getItem("stampertjesPlayerName")||"").trim();
 
   // Oude hardcoded standaardnaam uit eerdere testversies opruimen.
@@ -782,7 +800,18 @@ function initCafeName(){
     saved="";
   }
 
-  cafeName.value=saved;
+  if(locked){
+    cafeName.value=locked;
+    cafeName.readOnly=true;
+    cafeName.classList.add("lockedName");
+    cafeNameHint.textContent=`Vaste Café-naam: ${locked}`;
+  }else{
+    cafeName.value=saved && saved.toUpperCase()!=="GERT JAN" ? saved : "";
+    cafeName.readOnly=false;
+    cafeName.classList.remove("lockedName");
+    cafeNameHint.textContent="Je kiest je Café-naam één keer. Na je eerste bericht wordt hij vastgezet.";
+  }
+
   updateCafeSubmitState();
 }
 
@@ -864,9 +893,17 @@ async function loadCafeStats(){
   }
 }
 
+async function refreshCafe(){
+  await loadCafePosts();
+}
+
 async function loadCafePosts(){
   cafePosts.innerHTML="<div>Berichten laden…</div>";
-  cafeStatus.textContent="";
+
+  // Tellers altijd opnieuw ophalen. Dit gebeurt onafhankelijk van de berichtenlijst:
+  // een probleem met één van beide mag de andere niet blokkeren.
+  const statsPromise=loadCafeStats();
+
   try{
     const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_community_posts`,{
       method:"POST",
@@ -884,6 +921,8 @@ async function loadCafePosts(){
     console.error(err);
     cafePosts.innerHTML="<div>Het Café is tijdelijk niet bereikbaar. Probeer het later opnieuw.</div>";
   }
+
+  await statsPromise;
 }
 
 function renderCafePosts(posts){
@@ -941,7 +980,7 @@ function renderCafePosts(posts){
           body:JSON.stringify({p_post_id:id})
         });
         if(!response.ok)throw new Error(`HTTP ${response.status}`);
-        await loadCafePosts();
+        await refreshCafe();
       }catch(err){
         console.error(err);
         cafeStatus.textContent="Liken lukte niet.";
@@ -977,7 +1016,7 @@ function renderCafePosts(posts){
           throw new Error("Supabase heeft het bericht niet verwijderd.");
         }
         cafeStatus.textContent="Bericht verwijderd.";
-        await loadCafePosts();
+        await refreshCafe();
       }catch(err){
         console.error(err);
         cafeStatus.textContent=isCafeAdmin()
@@ -995,7 +1034,9 @@ function renderCafePosts(posts){
       const post=posts.find(p=>Number(p.id)===id);
       if(!post)return;
       cafeEditingPostId=id;
-      cafeName.value=post.name||"";
+      const lockedName=getLockedCafeName();
+      cafeName.value=lockedName||post.name||"";
+      cafeName.readOnly=Boolean(lockedName);
       updateCafeSubmitState();
       cafeType.value=post.type||"Algemeen";
       cafeMessage.value=post.message||"";
@@ -1011,6 +1052,14 @@ function renderCafePosts(posts){
 nameInput.addEventListener("input",()=>rememberPlayerName(nameInput.value));
 
 cafeName.addEventListener("input",()=>{
+  const locked=getLockedCafeName();
+  if(locked){
+    cafeName.value=locked;
+    cafeName.readOnly=true;
+    updateCafeSubmitState();
+    return;
+  }
+
   updateCafeSubmitState();
   if(isValidCafeName(cafeName.value) && cafeStatus.textContent.includes("naam")){
     cafeStatus.textContent="";
@@ -1022,7 +1071,8 @@ cafeMessage.addEventListener("input",()=>{
 });
 
 activateButton(cafeSubmitBtn,async()=>{
-  const rawName=cafeName.value.trim();
+  const lockedName=getLockedCafeName();
+  const rawName=(lockedName||cafeName.value).trim();
 
   if(!isValidCafeName(rawName)){
     cafeStatus.textContent="Vul eerst je naam in voordat je een bericht plaatst.";
@@ -1032,6 +1082,14 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 
   const name=rawName.toUpperCase().slice(0,10);
+
+  if(lockedName && name!==lockedName){
+    cafeStatus.textContent="Je Café-naam staat vast op dit apparaat.";
+    cafeName.value=lockedName;
+    cafeName.readOnly=true;
+    updateCafeSubmitState();
+    return;
+  }
   const type=cafeType.value;
   const message=cafeMessage.value.trim().slice(0,240);
 
@@ -1073,10 +1131,14 @@ activateButton(cafeSubmitBtn,async()=>{
     });
     if(!response.ok)throw new Error(`${response.status}: ${await response.text()}`);
 
-    rememberPlayerName(name);
+    if(!getLockedCafeName()){
+      lockCafeName(name);
+    }else{
+      rememberPlayerName(name);
+    }
     cafeStatus.textContent=editing?"Bericht aangepast!":"Bericht geplaatst!";
     resetCafeEdit();
-    await loadCafePosts();
+    await refreshCafe();
   }catch(err){
     console.error(err);
     cafeStatus.textContent="Opslaan lukte niet. Probeer het later opnieuw.";
@@ -1087,7 +1149,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.15.1";
+const CURRENT_VERSION="2.15.3";
 function showUpdateOnce(){
   const seen=localStorage.getItem("stampertjesSeenVersion");
   if(seen!==CURRENT_VERSION){

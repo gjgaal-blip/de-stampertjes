@@ -1,10 +1,14 @@
-# De Stampertjes v2.15.1
+# De Stampertjes v2.15.3
 
-Kleine Café-naamfix. Geen nieuwe Supabase-SQL nodig.
+Geen nieuwe Supabase-SQL nodig.
+
+Nieuwe Café-regel:
+- kies één keer je naam;
+- plaats een bericht;
+- daarna wordt die naam op dit apparaat vastgezet.
 
 Test:
-1. Open Café als nieuwe speler.
-2. Naamveld is leeg.
-3. Berichtknop is uitgeschakeld.
-4. Vanaf 2 tekens wordt de knop actief.
-5. Na succesvol posten wordt de eigen naam onthouden.
+1. Nieuwe speler kiest naam TESTER.
+2. Plaats bericht.
+3. Open Café opnieuw: TESTER staat ingevuld en is niet wijzigbaar.
+4. Probeer via bewerken of opnieuw openen een andere naam te gebruiken: dit mag niet lukken.

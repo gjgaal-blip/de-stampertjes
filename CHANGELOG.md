@@ -1,8 +1,7 @@
 # De Stampertjes
 
-## v2.15.1
-- Standaardnaam `GERT JAN` uit het Café verwijderd.
-- Naamveld is voor een nieuwe speler leeg.
-- Zonder naam van minimaal 2 tekens kan geen bericht worden geplaatst.
-- Naam wordt pas na succesvol posten lokaal opgeslagen.
-- Een oude opgeslagen `GERT JAN` uit de testversies wordt automatisch opgeschoond.
+## v2.15.3
+- Café-naam wordt na het eerste succesvolle bericht permanent vastgezet op dat apparaat.
+- Daarna kan vanaf hetzelfde apparaat niet onder een andere naam worden gepost.
+- De vaste naam wordt automatisch ingevuld en het naamveld wordt read-only.
+- De naamvalidatie en Café-tellers uit eerdere 2.15.x-versies blijven behouden.

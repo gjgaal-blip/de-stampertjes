@@ -29,3 +29,12 @@
 - [ ] 2+ tekens activeert knop
 - [ ] Naam pas na succesvol posten onthouden
 - [ ] Volgend bezoek vult eigen naam in
+
+# v2.15.2
+- [ ] Café opent met actuele totaal-teller
+- [ ] Idee plaatsen verhoogt totaal + ideeën
+- [ ] Bug plaatsen verhoogt totaal + bugs
+- [ ] Highscore plaatsen verhoogt totaal + highscores
+- [ ] Verwijderen verlaagt de juiste teller
+- [ ] Bewerken naar ander type werkt de categorietellers bij
+- [ ] Naamveld/naamfix van v2.15.1 werkt nog

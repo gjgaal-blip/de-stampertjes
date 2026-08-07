@@ -685,3 +685,13 @@ body.attractMode #panel{max-width:520px}
 @media(max-width:390px){
   .hallGrid{grid-template-columns:1fr}
 }
+
+#cafeName.lockedName{
+  opacity:.78;
+  cursor:not-allowed;
+}
+#cafeNameHint{
+  margin-top:-4px;
+  margin-bottom:6px;
+  text-align:left;
+}
