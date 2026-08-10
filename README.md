@@ -1,3 +1,3 @@
-# De Stampertjes v2.21 — Castle Polish
+# De Stampertjes v2.21.1 — Hall of Fame
 
-Polish-release op basis van de officiële v2.20. Roadmap vernieuwd, mobiele menu-layout opgeschoond en toekomstige Opper-Appeliet teaser toegevoegd.
+Patch op v2.21 met gecorrigeerde Kasteelkrant en uitgebreide live Hall of Fame. Geen nieuwe SQL nodig: de uitbreiding gebruikt de bestaande highscores en get_public_stats data.

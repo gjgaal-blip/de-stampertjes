@@ -1155,3 +1155,11 @@ body:not(.attractMode) #panel #introCanvas{
 .bossBody i:first-child{left:30px;transform:skewY(-15deg)}.bossBody i:last-child{right:30px;transform:skewY(15deg)}
 .bossCrown{position:absolute;z-index:2;left:50%;bottom:116px;transform:translateX(-50%);font-size:38px;color:#fff}
 .bossFloor{position:absolute;left:0;right:0;bottom:18px;border-top:4px dashed #aaa}
+
+/* v2.21.1 Hall of Fame */
+.hallPodium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end;margin:16px 0 22px}
+.podiumCard{border:2px solid currentColor;padding:12px 6px;text-align:center;min-width:0}
+.podiumCard.gold{min-height:150px;border-width:3px}.podiumCard.silver{min-height:125px}.podiumCard.bronze{min-height:110px}
+.podiumCard span{display:block;font-size:30px}.podiumCard strong{display:block;font-size:clamp(12px,3vw,18px);overflow-wrap:anywhere;margin:7px 0}.podiumCard small{display:block;line-height:1.35}
+.hallSubhead{text-align:center;margin:25px 0 12px;letter-spacing:2px}
+@media(max-width:520px){.hallPodium{gap:5px}.podiumCard{padding:10px 3px}.podiumCard span{font-size:24px}}

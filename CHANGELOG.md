@@ -1,8 +1,8 @@
 # De Stampertjes
 
-## v2.21 — Castle Polish
-- Mobiele lege/zwart-balkruimte onder menu's aangepakt.
-- Roadmap opnieuw ingedeeld: Uitgebracht, Nu en Toekomst.
-- Verouderde Beta/RC-roadmapteksten verwijderd.
-- Opper-Appeliet teaser toegevoegd in spelstijl.
-- Toekomstplannen uitgebreid met v2.50, challenges, achievements, T-shirt en Android.
+## v2.21.1
+- Kasteelkrant gecorrigeerd: v2.20-release blijft v2.20 en v2.21.1 staat bovenaan.
+- Hall of Fame uitgebreid met unieke Top 3, recordmuur en onderscheidingen.
+- Dubbele spelersnamen bezetten niet meerdere podiumplaatsen.
+- Bug Hunter Vera behouden.
+- Geen nieuwe databasevelden of SQL nodig.

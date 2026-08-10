@@ -1,9 +1,7 @@
-# v2.21
-- [ ] Hoofdmenu toont v2.21
-- [ ] Roadmap toont v2.20 als uitgebracht en v2.21 als huidige update
-- [ ] Geen Beta/RC in actuele roadmap/popup
-- [ ] Mobiel geen grote lege zwarte balk onder menucontent
-- [ ] TERUG blijft bereikbaar
-- [ ] Opper-Appeliet teaser zichtbaar
-- [ ] Muziek en FX werken na eerste gebruikersinteractie
-- [ ] SPELEN, score delen, Developer Portal en Teddy tracking werken
+# v2.21.1
+- [ ] Kasteelkrant: v2.21.1 bovenaan, v2.20 correct als historische release
+- [ ] Hall of Fame toont drie unieke spelers indien beschikbaar
+- [ ] Recordmuur toont hoogste level, Appelieten, potjes en Teddy-vinders
+- [ ] Vera staat als Bug Hunter vermeld
+- [ ] Geen nieuwe SQL nodig
+- [ ] SPELEN, muziek, score delen, Teddy en Developer Portal blijven werken
