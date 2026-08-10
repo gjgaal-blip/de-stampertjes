@@ -1,11 +1,10 @@
-# v2.21.2
-- [ ] SQL 006 uitgevoerd
-- [ ] Top 3 podium laadt
-- [ ] Iedere recordtegel toont naam + record
-- [ ] Tikken opent Top 5
-- [ ] Modal sluit via X en buiten het venster
-- [ ] Jouw plaats toont persoonlijke posities
-- [ ] Vera blijft Bug Hunter
-- [ ] Eerste Teddy- en Easter-vinder worden getoond
-- [ ] Opper-Appeliet Slayer blijft vergrendeld
-- [ ] SPELEN, audio, Teddy en Developer Portal blijven werken
+# v2.22
+- [ ] SQL 007 uitgevoerd
+- [ ] Hoofdmenu toont v2.22
+- [ ] Kasteelkrant: v2.22 bovenaan; v2.21 samengevat; v2.20 officiële release behouden
+- [ ] Hall of Fame v2.21.2 blijft werken
+- [ ] Spel start normaal
+- [ ] Level-start/completion metrics verschijnen
+- [ ] Developer Portal toont Kasteelarchief
+- [ ] Audio/Teddy/score delen blijven werken
+- [ ] Geen exacte GPS of IP-history opgeslagen

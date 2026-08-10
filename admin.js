@@ -117,7 +117,7 @@ function renderPlayers(list){
         await refreshAll();
       }catch(err){
         console.error(err);
-        alert("Verwijderen is mislukt. Controleer of de v2.21.2 SQL-migratie is uitgevoerd.");
+        alert("Verwijderen is mislukt. Controleer of de v2.22 SQL-migratie is uitgevoerd.");
         btn.disabled=false;
         btn.textContent=original;
       }
@@ -134,7 +134,7 @@ function renderLevels(list){
       <strong>LEVEL ${n(x.level)}</strong>
       <span>${starts} starts</span><span>${done} klaar</span><span>${deaths} deaths</span><b>${pct}%</b>
     </div>`;
-  }).join(""):"<div class='small emptyBox'>Nog geen level-events geregistreerd. Speel v2.21.2 om deze data te vullen.</div>";
+  }).join(""):"<div class='small emptyBox'>Nog geen level-events geregistreerd. Speel v2.22 om deze data te vullen.</div>";
 }
 
 function renderBonuses(list){
@@ -192,7 +192,7 @@ function renderEvents(list){
       <span>${e.bonus_type?esc(e.bonus_type):""}</span>
       <small>${date(e.created_at)}</small>
     </div>
-  `).join(""):"<div class='small emptyBox'>Nog geen v2.21.2-events.</div>";
+  `).join(""):"<div class='small emptyBox'>Nog geen v2.22-events.</div>";
 }
 
 function renderPosts(list){
@@ -276,7 +276,7 @@ logoutBtn.addEventListener("click",()=>{
 });
 
 (async()=>{
-  const raw=window.STAMPERTJES_CONFIG?.version||"2.21.2";
+  const raw=window.STAMPERTJES_CONFIG?.version||"2.22";
   const version=$("portalVersion");
   if(version)version.textContent="v"+raw.replace("-beta"," Beta ");
   if(activeAdminCode){
@@ -287,3 +287,14 @@ logoutBtn.addEventListener("click",()=>{
     }catch(err){console.warn(err)}
   }
 })();
+async function loadV222Analytics(){
+  const el=document.getElementById("v222Analytics"); if(!el)return;
+  try{
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_v222_analytics`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},body:"{}"});
+    if(!r.ok)throw new Error(String(r.status));
+    const d=await r.json();
+    const countries=Object.entries(d.countries||{}).map(([k,v])=>`${k}: ${v}`).join(" · ")||"nog geen landen vastgelegd";
+    el.innerHTML=`<div class="statRow"><span>Nieuwe metric-events</span><b>${Number(d.total_metric_events||0).toLocaleString("nl-NL")}</b></div><div class="statRow"><span>Gemeten speeltijd</span><b>${Math.round(Number(d.total_play_seconds||0)/60)} min</b></div><div class="statRow"><span>Landen</span><b>${countries}</b></div>`;
+  }catch(e){el.textContent="v2.22 analytics nog niet beschikbaar — controleer SQL 007.";}
+}
+loadV222Analytics();

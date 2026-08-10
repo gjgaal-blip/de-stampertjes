@@ -1,10 +1,11 @@
-# De Stampertjes v2.21.2 — Eregalerij
+# De Stampertjes v2.22 — Het Kasteel Onthoudt
 
-Nieuw:
-- Klikbare Hall of Fame-recordtegels.
-- Top 5 per categorie: Appelieten, level, potjes, Teddy Encounters, bonussen en deaths.
-- Persoonlijke rangpositie van de huidige speler.
-- Eremedailles voor Vera, eerste Teddy Encounter, eerste Teddy Easter Egg en een vergrendelde Opper-Appeliet Slayer.
-- Top 3 podium blijft bovenaan.
+Grote analytics/security-basis voor toekomstige Hall of Fame-records, achievements en challenges.
 
-Voer eerst `006_v2212_hall_of_fame.sql` uit in Supabase.
+Voer `007_v222_analytics_security.sql` uit vóór publicatie.
+
+Privacykeuze:
+- geen exacte GPS;
+- geen permanente IP-history;
+- alleen optioneel land/regio;
+- nieuwe metrics zijn gameplaygegevens.
