@@ -222,7 +222,7 @@ function saveLocalHighscores(scores){
 function normalizeScores(rows){
   return (rows||[])
     .map(row=>({
-      name:String(row.name||"SPELER").toUpperCase().slice(0,10),
+      name:String(row.name||"SPELER").toUpperCase().slice(0,20),
       score:Number(row.score)||0,
       level:Number(row.level)||1,
       created_at:row.created_at||null
@@ -231,7 +231,7 @@ function normalizeScores(rows){
       if(b.score!==a.score)return b.score-a.score;
       return String(a.created_at||"").localeCompare(String(b.created_at||""));
     })
-    .slice(0,10);
+    .slice(0,20);
 }
 function hallValueLabel(type,value){
   const n=Number(value)||0;
@@ -408,7 +408,7 @@ function renderHighscores(useLocalFallback=false){
       </div>`;
     }
 
-    const name=String(s.name||"---").toUpperCase().slice(0,10);
+    const name=String(s.name||"---").toUpperCase().slice(0,20);
     const scoreText=String(s.score||0).padStart(5,"0");
     const levelText=`Lv${Number(s.level)||1}`;
 
@@ -782,7 +782,7 @@ function getStatsDeviceId(){
 }
 
 function rememberPlayerName(value){
-  const clean=String(value||"").trim().toUpperCase().slice(0,10);
+  const clean=String(value||"").trim().toUpperCase().slice(0,20);
   if(clean)localStorage.setItem("stampertjesPlayerName",clean);
   return clean;
 }
@@ -1286,7 +1286,7 @@ function getLockedCafeName(){
 }
 
 function lockCafeName(name){
-  const clean=String(name||"").trim().toUpperCase().slice(0,10);
+  const clean=String(name||"").trim().toUpperCase().slice(0,20);
   if(!clean)return "";
   localStorage.setItem("stampertjesCafeLockedName",clean);
   localStorage.setItem("stampertjesPlayerName",clean);
@@ -1591,7 +1591,7 @@ activateButton(cafeSubmitBtn,async()=>{
     return;
   }
 
-  const name=rawName.toUpperCase().slice(0,10);
+  const name=rawName.toUpperCase().slice(0,20);
 
   if(lockedName && name!==lockedName){
     cafeStatus.textContent="Je Café-naam staat vast op dit apparaat.";
@@ -1659,7 +1659,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.22.7";
+const CURRENT_VERSION="2.22.8";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -1937,7 +1937,7 @@ startBtn.addEventListener("pointerdown",e=>{
 });
 saveScoreBtn.addEventListener("pointerdown",async e=>{
   e.preventDefault();
-  const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,10);
+  const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,20);
   rememberPlayerName(name);
   saveScoreBtn.disabled=true;
   saveScoreBtn.textContent="OPSLAAN…";
