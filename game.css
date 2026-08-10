@@ -1140,3 +1140,18 @@ body:not(.attractMode) #panel #introCanvas{
 }
 
 #shareScoreBox{margin-top:14px;padding:12px;border:2px solid #111;text-align:center}#shareScoreBox p{font-size:11px;line-height:1.45;margin:8px 0 10px}#shareScoreBtn{font-weight:900;border-width:2px;width:100%}
+
+/* v2.21 Castle Polish — mobile viewport */
+@media (max-width: 700px){
+  .menuSection{min-height:0!important;padding-bottom:max(18px,env(safe-area-inset-bottom))!important}
+  .menuSection .backBtn{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:20;margin-top:16px}
+  #mainMenu{padding-bottom:max(18px,env(safe-area-inset-bottom))!important}
+}
+/* Roadmap boss teaser — native monochrome game-style pixel silhouette */
+.bossTeaser{text-align:left}
+.bossPixel{width:min(100%,420px);height:170px;margin:16px auto;position:relative;border:2px solid currentColor;overflow:hidden;background:#111}
+.bossBody{position:absolute;width:132px;height:96px;left:50%;bottom:25px;transform:translateX(-50%);background:#000;border:5px solid #ddd;border-radius:45% 45% 35% 35%;box-shadow:-35px 24px 0 -15px #000,35px 24px 0 -15px #000}
+.bossBody i{position:absolute;top:32px;width:18px;height:9px;background:#fff}
+.bossBody i:first-child{left:30px;transform:skewY(-15deg)}.bossBody i:last-child{right:30px;transform:skewY(15deg)}
+.bossCrown{position:absolute;z-index:2;left:50%;bottom:116px;transform:translateX(-50%);font-size:38px;color:#fff}
+.bossFloor{position:absolute;left:0;right:0;bottom:18px;border-top:4px dashed #aaa}

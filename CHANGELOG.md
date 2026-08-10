@@ -1,6 +1,8 @@
 # De Stampertjes
 
-## v2.20 — officiële release
-- RC2 gepromoveerd naar stabiele productieversie.
-- Release Candidate-verwijzingen uit de gebruikersinterface verwijderd.
-- Kasteelkrant bijgewerkt met v2.20 bovenaan.
+## v2.21 — Castle Polish
+- Mobiele lege/zwart-balkruimte onder menu's aangepakt.
+- Roadmap opnieuw ingedeeld: Uitgebracht, Nu en Toekomst.
+- Verouderde Beta/RC-roadmapteksten verwijderd.
+- Opper-Appeliet teaser toegevoegd in spelstijl.
+- Toekomstplannen uitgebreid met v2.50, challenges, achievements, T-shirt en Android.
