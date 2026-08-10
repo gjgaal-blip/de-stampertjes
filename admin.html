@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>De Stampertjes - GJ Studios Admin</title>
-<link rel="stylesheet" href="admin.css?v=2226">
+<link rel="stylesheet" href="admin.css?v=2227">
 
 </head>
 <body>
 <div class="wrap">
   <h1>🍏 GJ STUDIOS</h1>
-  <div class="small">De Stampertjes Developer Portal · <span id="portalVersion">v2.22.6</span> · <strong>BUILD 2226</strong></div>
+  <div class="small">De Stampertjes Developer Portal · <span id="portalVersion">v2.22.7</span> · <strong>BUILD 2227</strong></div>
 
   <section id="loginCard" class="card">
     <h2>🔐 Beheerlogin</h2>
@@ -25,7 +25,7 @@
         <div>
           <div class="eyebrow">🍏 GJ STUDIOS · LIVE ANALYTICS</div>
           <h2>DEVELOPER DASHBOARD</h2>
-          <div class="small">Alleen zichtbaar na geldige beheerlogin. · BUILD 2226</div>
+          <div class="small">Alleen zichtbaar na geldige beheerlogin. · BUILD 2227</div>
         </div>
         <div class="liveBadge">● LIVE</div>
       </div>
@@ -68,6 +68,21 @@
           <button id="addManualScoreBtn" type="button">➕ SCORE TOEVOEGEN</button>
         </div>
         <div id="scoreAdminStatus" class="small"></div>
+        <div id="manualScoreForm" class="manualScoreForm hidden">
+          <h3>➕ HANDMATIGE SCORE TOEVOEGEN</h3>
+          <div class="manualScoreGrid">
+            <label>NAAM<input id="manualScoreName" maxlength="30" placeholder="SPELER"></label>
+            <label>SCORE<input id="manualScoreValue" type="number" min="1" step="1" value="5000"></label>
+            <label>LEVEL<input id="manualScoreLevel" type="number" min="1" step="1" value="1"></label>
+            <label>DATUM<input id="manualScoreDate" type="date"></label>
+            <label>TIJD<input id="manualScoreTime" type="time" step="60"></label>
+          </div>
+          <div class="manualScoreButtons">
+            <button id="saveManualScoreBtn" type="button">✓ OPSLAAN</button>
+            <button id="cancelManualScoreBtn" type="button">ANNULEREN</button>
+          </div>
+        </div>
+
         <div id="recordsDashboard">Wordt geladen…</div>
       </div>
       <div class="portalDashPanel" data-dash-panel="teddy"><div id="teddyDashboard" class="dashGrid"></div></div>
@@ -163,8 +178,8 @@
   </section>
 </div>
 
-<script src="config.js?v=2226"></script>
-<script src="admin.js?v=2226" defer></script>
+<script src="config.js?v=2227"></script>
+<script src="admin.js?v=2227" defer></script>
 
-<section class="panel"><h2>📊 v2.22.6 Kasteelarchief</h2><div id="v222Analytics">Nieuwe analytics worden geladen…</div></section></body>
+<section class="panel"><h2>📊 v2.22.7 Kasteelarchief</h2><div id="v222Analytics">Nieuwe analytics worden geladen…</div></section></body>
 </html>

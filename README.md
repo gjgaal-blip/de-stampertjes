@@ -1,10 +1,6 @@
-# De Stampertjes v2.22.6
+# De Stampertjes v2.22.7
 
-Stille beheerupdate:
-- Publieke highscorelijst is nu Top 20.
-- Developer Portal kan highscores toevoegen, wijzigen en verwijderen.
-- Handmatige scores zijn alleen in Developer Portal als HANDMATIG zichtbaar.
-- Hoofdmenuknop heet nu MERCHANDISE, omdat deze shirts én wallpapers bevat.
-- Geen nieuwe melding hierover in Kasteelkrant of update-popup.
-
-Voer SQL 012 uit in Supabase.
+- Huidige versievermeldingen bijgewerkt naar v2.22.7.
+- Historische versies in de Kasteelkrant blijven staan.
+- Handmatige score toevoegen met naam, score, level, datum en tijd.
+- Voer SQL 013 uit na SQL 012.
