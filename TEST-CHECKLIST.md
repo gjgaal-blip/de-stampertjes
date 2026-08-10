@@ -1,7 +1,11 @@
-# v2.21.1
-- [ ] Kasteelkrant: v2.21.1 bovenaan, v2.20 correct als historische release
-- [ ] Hall of Fame toont drie unieke spelers indien beschikbaar
-- [ ] Recordmuur toont hoogste level, Appelieten, potjes en Teddy-vinders
-- [ ] Vera staat als Bug Hunter vermeld
-- [ ] Geen nieuwe SQL nodig
-- [ ] SPELEN, muziek, score delen, Teddy en Developer Portal blijven werken
+# v2.21.2
+- [ ] SQL 006 uitgevoerd
+- [ ] Top 3 podium laadt
+- [ ] Iedere recordtegel toont naam + record
+- [ ] Tikken opent Top 5
+- [ ] Modal sluit via X en buiten het venster
+- [ ] Jouw plaats toont persoonlijke posities
+- [ ] Vera blijft Bug Hunter
+- [ ] Eerste Teddy- en Easter-vinder worden getoond
+- [ ] Opper-Appeliet Slayer blijft vergrendeld
+- [ ] SPELEN, audio, Teddy en Developer Portal blijven werken

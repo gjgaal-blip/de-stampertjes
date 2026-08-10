@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.21.1</title>
-<link rel="stylesheet" href="game.css?v=2211">
+<title>De Stampertjes v2.21.2</title>
+<link rel="stylesheet" href="game.css?v=2212">
 
 </head>
 <body>
@@ -18,10 +18,10 @@
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <div id="versionMusicRow">
-      <div id="versionLabel">v2.21.1</div>
+      <div id="versionLabel">v2.21.2</div>
       <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
     </div>
-    <div id="betaBadge">🏛️ v2.21.1 · HALL OF FAME</div>
+    <div id="betaBadge">🏛️ v2.21.2 · EREGALERIJ</div>
     <div id="castleSlogan">EEN KASTEEL DAT NOOIT HELEMAAL HETZELFDE IS.</div>
     <div id="dailyCastleMessage" class="dailyCastleMessage"></div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
@@ -101,6 +101,7 @@
 
     <div id="roadmapSection" class="menuSection hidden">
       <h2>📰 KASTEELKRANT</h2>
+<article class="newsItem featured"><div class="newsVersion">🏛️ v2.21.2 · EREGALERIJ</div><h3>De muren kennen nu meer namen</h3><p>De Hall of Fame is opnieuw verbouwd. Niet alleen de Top 3, maar ook Appelietenjagers, doorzetters, Teddy-vinders, bonusjagers en andere recordhouders krijgen nu een echte plek in de eregalerij.</p><p>Tik op een recordtegel om de Top 5 te openen. Onderaan zie je bovendien jouw eigen positie in de geschiedenis van het kasteel.</p></article>
 <article class="newsItem featured"><div class="newsVersion">🏛️ v2.21.1 · EREGALERIJ</div><h3>Nieuwe namen aan de kasteelmuur</h3><p>De Hall of Fame is verbouwd tot een echte eregalerij. De wereldwijde Top 3 staat nu vooraan, aangevuld met live records en bijzondere onderscheidingen.</p><p>Ook de Kasteelkrant is opnieuw geordend. Oude releaseberichten blijven geschiedenis en actuele berichten staan voortaan duidelijk bovenaan.</p><p>Ondertussen komen uit de diepste gangen opnieuw vreemde geluiden. Volgens de wachters klinkt het veel te zwaar om een gewone Appeliet te zijn…</p></article>
 <article class="newsItem featured"><div class="newsVersion">✨ v2.21 · CASTLE POLISH</div><h3>Het kasteel is opgepoetst</h3><p>Een kleine maar belangrijke kwaliteitsupdate na v2.20. De mobiele schermindeling is opgeschoond, oude bèta/RC-verwijzingen zijn uit de actuele Roadmap gehaald en de toekomstplannen zijn opnieuw ingericht.</p><p>Ook de audio-start en bediening zijn extra gecontroleerd. En diep onder het kasteel lijkt iets groots wakker te worden…</p></article>
 <article class="newsItem featured"><div class="newsVersion">🎉 v2.20 · OFFICIËLE RELEASE</div><h3>De poorten van het vernieuwde kasteel zijn open!</h3><p><strong>v2.20 is uit.</strong> Na de bèta- en RC-periode is dit de officiële stabiele release van De Stampertjes.</p><p>Vier verdiepingen, vijf kasteelzalen, verbeterde ladders, een langere attract-demo, bonus-FX en geluiden en uitgebreide online statistieken maken het kasteel levendiger dan ooit.</p><p>Teddy dwaalt heel sporadisch door het kasteel: bereik hem tijdens het spel voor <strong>+2000</strong>. Het verborgen Teddy Easter Egg levert <strong>+1000</strong> op. Beide ontdekkingen worden apart bijgehouden.</p><p>Nieuw: deel na Game Over je score en daag vrienden uit om jouw score en de wereldwijde Top 10 te verslaan.</p></article>
@@ -129,28 +130,49 @@
     </div>
 <div id="hallSection" class="menuSection hidden">
       <h2>🏛️ HALL OF FAME</h2>
-      <p class="hallIntro">De eregalerij van het kasteel. Records worden live uit de wereldwijde Stampertjes-gegevens gehaald.</p>
+      <p class="hallIntro">De eregalerij van het kasteel. Tik op een record om te zien wie daar echt geschiedenis schrijft.</p>
+
       <div class="hallPodium">
         <div class="podiumCard silver"><span>🥈</span><strong id="hallSecond">—</strong><small id="hallSecondScore">—</small></div>
         <div class="podiumCard gold"><span>👑</span><strong id="hallChampion">LADEN…</strong><small id="hallChampionScore">—</small></div>
         <div class="podiumCard bronze"><span>🥉</span><strong id="hallThird">—</strong><small id="hallThirdScore">—</small></div>
       </div>
-      <h3 class="hallSubhead">📜 RECORDMUUR</h3>
-      <div class="hallGrid">
-        <div class="hallCard"><div class="hallIcon">🏰</div><div class="hallLabel">DIEPSTE AVONTURIER</div><strong id="hallHighestLevel">—</strong><span>hoogste level wereldwijd</span></div>
-        <div class="hallCard"><div class="hallIcon">🍎</div><div class="hallLabel">APPELIETENJACHT</div><strong id="hallApples">—</strong><span>wereldwijd verslagen</span></div>
-        <div class="hallCard"><div class="hallIcon">🎮</div><div class="hallLabel">KASTEELBEZOEKEN</div><strong id="hallGames">—</strong><span>gespeelde potjes</span></div>
-        <div class="hallCard"><div class="hallIcon">🐈</div><div class="hallLabel">TEDDY-ONTDEKKERS</div><strong id="hallTeddyFinders">—</strong><span>avonturiers</span></div>
+
+      <h3 class="hallSubhead">🏆 KASTEELRECORDS</h3>
+      <div id="hallRecordGrid" class="hallRecordGrid">
+        <button class="recordTile" data-record="apples"><span>🍎</span><strong>APPELIETENJAGER</strong><b id="recordApplesName">—</b><small id="recordApplesValue">—</small></button>
+        <button class="recordTile" data-record="level"><span>🏰</span><strong>DIEPSTE AVONTURIER</strong><b id="recordLevelName">—</b><small id="recordLevelValue">—</small></button>
+        <button class="recordTile" data-record="games"><span>🎮</span><strong>DOORZETTER</strong><b id="recordGamesName">—</b><small id="recordGamesValue">—</small></button>
+        <button class="recordTile" data-record="teddy"><span>🐈</span><strong>TEDDY WHISPERER</strong><b id="recordTeddyName">—</b><small id="recordTeddyValue">—</small></button>
+        <button class="recordTile" data-record="bonus"><span>🎁</span><strong>BONUSJAGER</strong><b id="recordBonusName">—</b><small id="recordBonusValue">—</small></button>
+        <button class="recordTile" data-record="deaths"><span>💀</span><strong>EEUWIGE STAMPER</strong><b id="recordDeathsName">—</b><small id="recordDeathsValue">—</small></button>
       </div>
-      <h3 class="hallSubhead">🎖️ BIJZONDERE ONDERSCHEIDINGEN</h3>
-      <div class="hallGrid">
-        <div class="hallCard veraCard"><div class="hallIcon">🐞</div><div class="hallLabel">BUG HUNTER</div><strong>VERA</strong><span>speciale dank voor het testen</span></div>
-        <div class="hallCard"><div class="hallIcon">🐾</div><div class="hallLabel">TEDDY WHISPERERS</div><strong id="hallTeddyBadge">—</strong><span>spelers die Teddy vonden</span></div>
-        <div class="hallCard"><div class="hallIcon">🥚</div><div class="hallLabel">GEHEIME ONTDEKKING</div><strong>TEDDY EASTER EGG</strong><span>een verborgen plek in het kasteel</span></div>
-        <div class="hallCard"><div class="hallIcon">💡</div><div class="hallLabel">COMMUNITY-EREPLEK</div><strong>NOG VRIJ</strong><span>wie schrijft hier straks geschiedenis?</span></div>
+
+      <section class="myHistoryCard">
+        <h3>🧭 JOUW PLAATS IN DE GESCHIEDENIS</h3>
+        <div id="myHallRanks" class="myHallRanks"><div class="small">Jouw posities worden geladen…</div></div>
+      </section>
+
+      <h3 class="hallSubhead">🎖️ EREMEDAILLES</h3>
+      <div class="honorGrid">
+        <div class="honorCard"><span>🐞</span><strong>BUG HUNTER</strong><b>VERA</b><small>Hielp het kasteel veiliger te maken.</small></div>
+        <div class="honorCard"><span>🐾</span><strong>TEDDY PIONIER</strong><b id="firstTeddyFinder">—</b><small>Eerste speler die Teddy tijdens een level bereikte.</small></div>
+        <div class="honorCard"><span>🥚</span><strong>GEHEIMENJAGER</strong><b id="firstEasterFinder">—</b><small>Eerste ontdekker van het verborgen Teddy-geheim.</small></div>
+        <div class="honorCard locked"><span>👑</span><strong>OPPER-APPELIET SLAYER</strong><b>🔒 NOG NIEMAND</b><small>Er moet eerst iets ontwaken…</small></div>
       </div>
+
       <p id="hallStatus" class="hallStatus">Live gegevens worden uit het kasteel opgehaald…</p>
       <button class="backBtn" data-back>TERUG</button>
+    </div>
+
+    <div id="hallRecordModal" class="hidden" aria-hidden="true">
+      <div id="hallRecordModalCard">
+        <div class="hallModalHead">
+          <h2 id="hallModalTitle">KASTEELRECORD</h2>
+          <button id="hallModalClose" aria-label="Sluiten">✕</button>
+        </div>
+        <div id="hallModalList"></div>
+      </div>
     </div>
 
 <div id="cafeSection" class="menuSection hidden">
@@ -228,7 +250,7 @@
     </div>
   </div>
 </div>
-<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">🏛️ v2.21.1 · HALL OF FAME</div><h2>De eregalerij is geopend</h2><div class="updateIntro">Meer helden, meer records en een opgeschoonde Kasteelkrant.</div><div class="updateList"><div>✓ Wereldwijde Top 3 op het erepodium</div><div>✓ Live recordmuur met levels, Appelieten en potjes</div><div>✓ Teddy-onderscheidingen en Bug Hunter Vera</div><div>✓ Kasteelkrant gecorrigeerd en opnieuw geordend</div></div><div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.21.1</button></div></div></div>
+<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">🏛️ v2.21.2 · EREGALERIJ</div><h2>Wie schrijft geschiedenis?</h2><div class="updateIntro">De Hall of Fame is nu interactief.</div><div class="updateList"><div>✓ Klikbare recordtegels met Top 5</div><div>✓ Jouw persoonlijke positie per categorie</div><div>✓ Teddy-, Easter Egg- en Bug Hunter-eremedailles</div><div>✓ Vergrendelde Opper-Appeliet-medaille als toekomstteaser</div></div><div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.21.2</button></div></div></div>
 
 <div id="deathOverlay" class="hidden">
   <div id="deathCard">
@@ -270,8 +292,8 @@
   <div id="keyboardHint">Pijltjes = bewegen • Spatie = stampen • P = pauze • M = muziek</div>
   <div class="small">3× stampen voor een gat. Stamp daarna de gevangen appel weg.</div>
 </div>
-<script src="config.js?v=2211"></script>
-<script src="game-2211.js" defer></script>
+<script src="config.js?v=2212"></script>
+<script src="game-2212.js" defer></script>
 
 </body>
 </html>
