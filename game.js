@@ -311,14 +311,20 @@ async function loadHallOfFame(){
     if(!response.ok)throw new Error(`Hall ${response.status}: ${await response.text()}`);
     const data=await response.json();
     hallDataCache=data||{};
-    const podium=Array.isArray(data?.podium)?data.podium:[];
+    // Zelfde bron als de publieke Top 20: ook Developer Portal-wijzigingen zijn direct zichtbaar.
+    const scoreResponse=await fetch(
+      `${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=20`,
+      {headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}}
+    );
+    if(!scoreResponse.ok)throw new Error(`Hall scores ${scoreResponse.status}: ${await scoreResponse.text()}`);
+    const hallScores=normalizeScores(await scoreResponse.json()).slice(0,3);
     const setPodium=(entry,nameEl,scoreEl)=>{
-      nameEl.textContent=entry?String(entry.player_name||"SPELER").toUpperCase():"NOG VRIJ";
-      scoreEl.textContent=entry?`${Number(entry.value)||0} punten`:"—";
+      nameEl.textContent=entry?String(entry.name||"SPELER").toUpperCase():"NOG VRIJ";
+      scoreEl.textContent=entry?`${Number(entry.score)||0} punten`:"—";
     };
-    setPodium(podium[0],hallChampion,hallChampionScore);
-    setPodium(podium[1],hallSecond,hallSecondScore);
-    setPodium(podium[2],hallThird,hallThirdScore);
+    setPodium(hallScores[0],hallChampion,hallChampionScore);
+    setPodium(hallScores[1],hallSecond,hallSecondScore);
+    setPodium(hallScores[2],hallThird,hallThirdScore);
 
     const lb=data?.leaderboards||{};
     setRecordPreview(lb.apples,recordApplesName,recordApplesValue,"apples");
@@ -624,6 +630,7 @@ activateButton(newsMenuBtn,()=>{
 activateButton(hallMenuBtn,async()=>{
   stopAttractMode();
   showMenuSection(hallSection);
+  await loadOnlineHighscores();
   await loadHallOfFame();
 });
 
@@ -1659,7 +1666,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.22.8";
+const CURRENT_VERSION="2.22.9";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
