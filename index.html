@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.22.3</title>
-<link rel="stylesheet" href="game.css?v=2223">
+<title>De Stampertjes v2.22.4</title>
+<link rel="stylesheet" href="game.css?v=2224">
 
 </head>
 <body>
@@ -18,7 +18,7 @@
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <div id="versionMusicRow">
-      <div id="versionLabel">v2.22.3</div>
+      <div id="versionLabel">v2.22.4</div>
       <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
     </div>
     <div id="betaBadge">👕 v2.22.3 · STAMPERTJES SHIRT</div>
@@ -31,33 +31,20 @@
       <div class="teddyCat">ᓚᘏᗢ</div>
       <div>TEDDY WAS HERE +1000</div>
     </div>
-    <div id="mainMenu" class="mainMenuGroups">
-      <section class="menuGroup">
-        <h3>🎮 SPELEN</h3>
-        <div class="menuGrid">
-          <button id="playMenuBtn">SPELEN</button>
-          <button id="scoresMenuBtn">HIGHSCORES</button>
-          <button id="statsMenuBtn">STATISTIEKEN</button>
-        </div>
-      </section>
-
-      <section class="menuGroup">
-        <h3>📚 ONTDEKKEN</h3>
-        <div class="menuGrid">
-          <button id="historyMenuBtn">HISTORIE</button>
-          <button id="newsMenuBtn">KASTEELKRANT</button>
-          <button id="helpMenuBtn">UITLEG</button>
-        </div>
-      </section>
-
-      <section class="menuGroup">
-        <h3>🌍 COMMUNITY</h3>
-        <div class="menuGrid">
-          <button id="cafeMenuBtn">CAFÉ</button>
-          <button id="hallMenuBtn">HALL OF FAME</button>
-          <button id="merchMenuBtn" class="merchMenuBtn">👕 STAMPERTJES SHIRT</button>
-        </div>
-      </section>
+    <div id="mainMenu" class="mainMenuGroups compactMainMenu">
+      <div class="menuHero">
+        <button id="playMenuBtn">🎮 SPELEN</button>
+      </div>
+      <div class="menuGrid compactGrid">
+        <button id="scoresMenuBtn">🏆 HIGHSCORES</button>
+        <button id="statsMenuBtn">📊 STATISTIEKEN</button>
+        <button id="historyMenuBtn">📜 HISTORIE</button>
+        <button id="newsMenuBtn">📰 KASTEELKRANT</button>
+        <button id="helpMenuBtn">📖 UITLEG</button>
+        <button id="cafeMenuBtn">☕ CAFÉ</button>
+        <button id="hallMenuBtn">👑 HALL OF FAME</button>
+        <button id="merchMenuBtn" class="merchMenuBtn">👕 SHIRT</button>
+      </div>
     </div>
 
     <div id="scoresSection" class="menuSection hidden">
@@ -312,7 +299,7 @@
     </div>
   </div>
 </div>
-<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">👕 v2.22.3 · STAMPERTJES SHIRT</div><h2>Zou jij het kasteel dragen?</h2><div class="updateIntro">Nieuw: bekijk drie shirtontwerpen en laat vrijblijvend weten welke jij zou willen.</div><div class="updateList"><div>✓ Classic, Appeliet Boss en Kasteelheld</div><div>✓ Kies maat en eventuele personalisatie</div><div>✓ Nog géén bestelling of betaling</div></div><div class="updateAction"><button id="closeUpdateBtn">BEKIJK v2.22.3</button></div></div></div>
+<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">🏰 v2.22.4 · MENU UPDATE</div><h2>Het kasteelmenu is verbouwd</h2><div class="updateIntro">Minder zoeken, sneller spelen.</div><div class="updateList"><div>✓ Compacter hoofdmenu</div><div>✓ Logischer gegroepeerd</div><div>✓ Beter passend op mobiel</div></div><div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.22.4</button></div></div></div>
 
 <div id="deathOverlay" class="hidden">
   <div id="deathCard">
@@ -354,8 +341,8 @@
   <div id="keyboardHint">Pijltjes = bewegen • Spatie = stampen • P = pauze • M = muziek</div>
   <div class="small">3× stampen voor een gat. Stamp daarna de gevangen appel weg.</div>
 </div>
-<script src="config.js?v=2223"></script>
-<script src="game-2223.js" defer></script>
+<script src="config.js?v=2224"></script>
+<script src="game-2224.js" defer></script>
 
 </body>
 </html>

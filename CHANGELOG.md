@@ -1,8 +1,3 @@
-# De Stampertjes
-
-## v2.22.3
-- Stampertjes Shirt-knop toegevoegd aan hoofdmenu.
-- Drie merchandisevoorbeelden ingebouwd.
-- Maat en personalisatiekeuze toegevoegd.
-- Merchandise-interesse gekoppeld aan Supabase.
-- Favoriet shirtontwerp toegevoegd aan Developer Portal-samenvatting.
+# v2.22.4
+- Compact hoofdmenu.
+- Land/regio kan nu automatisch aan player_stats worden toegevoegd.

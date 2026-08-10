@@ -1187,3 +1187,18 @@ body:not(.attractMode) #panel #introCanvas{
 .merchNameLabel{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;font-size:10px}.merchNameLabel input{width:100%;text-transform:uppercase}.merchNameLabel.disabled{opacity:.45}
 .merchNotice{border:1px solid #666;padding:10px;margin:14px 0;text-align:center;font-size:10px}.merchStatus{text-align:center;min-height:28px;font-weight:900;line-height:1.4}.merchActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.merchActions button{font-weight:900}
 @media(max-width:700px){.merchDesigns{grid-template-columns:1fr}.merchDesign{display:grid;grid-template-columns:115px 1fr;grid-template-rows:auto 1fr;text-align:left}.merchDesign img{grid-row:1/3;width:115px;height:150px}.merchDesignLabel{align-self:end}.merchOptions{grid-template-columns:1fr}.merchNameLabel{grid-column:auto}.merchActions{grid-template-columns:1fr}.merchTitleRow{align-items:flex-start}.merchComing{font-size:8px}}
+
+/* v2.22.4 — hoofdmenu compacter en meer game-achtig */
+.compactMainMenu{padding:8px 12px 12px!important}
+.compactMainMenu .menuHero{margin:0 0 8px}
+.compactMainMenu .menuHero button{width:100%;padding:17px 8px!important;font-size:20px!important;font-weight:900;border:3px double #ddd!important}
+.compactMainMenu .compactGrid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin:0!important}
+.compactMainMenu .compactGrid button{min-height:0!important;padding:11px 5px!important;font-size:12px!important;margin:0!important}
+.compactMainMenu .merchMenuBtn{grid-column:auto!important;border-style:double!important}
+@media(max-width:700px){
+ .compactMainMenu{padding:6px 9px 9px!important}
+ .compactMainMenu .menuHero{margin-bottom:6px}
+ .compactMainMenu .menuHero button{padding:14px 5px!important;font-size:18px!important}
+ .compactMainMenu .compactGrid{gap:6px!important}
+ .compactMainMenu .compactGrid button{padding:9px 3px!important;font-size:11px!important}
+}
