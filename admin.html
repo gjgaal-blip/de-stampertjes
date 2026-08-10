@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>De Stampertjes - GJ Studios Admin</title>
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="admin.css?v=220">
 
 </head>
 <body>
 <div class="wrap">
   <h1>🍏 GJ STUDIOS</h1>
-  <div class="small">De Stampertjes Developer Portal · v2.15.5</div>
+  <div class="small">De Stampertjes Developer Portal · <span id="portalVersion">v2.20</span></div>
 
   <section id="loginCard" class="card">
     <h2>🔐 Beheerlogin</h2>
@@ -21,14 +21,67 @@
 
   <section id="portal" class="hidden">
     <div class="card">
-      <h2>📊 Status</h2>
+      <h2>📊 Live status</h2>
       <div class="row"><span>Supabase</span><strong id="sbStatus">-</strong></div>
-      <div class="row"><span>Spelers</span><strong id="players">-</strong></div>
-      <div class="row"><span>Café berichten</span><strong id="postCount">-</strong></div>
-      <div class="row"><span>Potjes</span><strong id="games">-</strong></div>
-      <div class="row"><span>Appelieten verslagen</span><strong id="apples">-</strong></div>
-      <div class="row"><span>Teddy gevonden</span><strong id="teddy">-</strong></div>
-      <button id="refreshBtn" style="width:100%;margin-top:10px">VERVERS STATUS</button>
+      <div class="metricGrid">
+        <div class="metric"><span>👥 SPELERS</span><strong id="players">-</strong></div>
+        <div class="metric"><span>🟢 ACTIEF 24U</span><strong id="active24">-</strong></div>
+        <div class="metric"><span>📅 ACTIEF 7D</span><strong id="active7">-</strong></div>
+        <div class="metric"><span>✨ NIEUW 7D</span><strong id="new7">-</strong></div>
+        <div class="metric"><span>🎮 POTJES</span><strong id="games">-</strong></div>
+        <div class="metric"><span>👾 APPELIETEN</span><strong id="apples">-</strong></div>
+        <div class="metric"><span>💀 DEATHS</span><strong id="deaths">-</strong></div>
+        <div class="metric"><span>🐈 TEDDY</span><strong id="teddy">-</strong></div>
+        <div class="metric"><span>💬 CAFÉ</span><strong id="postCount">-</strong></div>
+      </div>
+      <div class="row"><span>Potjes / speler</span><strong id="gamesPerPlayer">-</strong></div>
+      <div class="row"><span>Appelieten / potje</span><strong id="applesPerGame">-</strong></div>
+      <div class="row"><span>Laatste refresh</span><strong id="lastRefresh">-</strong></div>
+      <button id="refreshBtn" style="width:100%;margin-top:10px">VERVERS DASHBOARD</button>
+    </div>
+
+    <div class="card">
+      <h2>👥 Spelers</h2>
+      <input id="playerSearch" type="search" placeholder="Zoek naam of speler-ID" style="width:100%;margin-bottom:10px">
+      <div id="playerList"></div>
+    </div>
+
+    <div class="card">
+      <h2>🏰 Levels</h2>
+      <div class="small">Starts · voltooid · deaths · voltooiingspercentage</div>
+      <div id="levelAnalytics"></div>
+    </div>
+
+    <div class="card">
+      <h2>🎁 Bonusvoorwerpen</h2>
+      <div id="bonusAnalytics"></div>
+    </div>
+
+    <div class="card">
+      <h2>📱 Platform & audio</h2>
+      <h3>Platform</h3>
+      <div id="platformAnalytics"></div>
+      <h3>Geluid</h3>
+      <div id="audioAnalytics"></div>
+    </div>
+
+    <div class="card">
+      <h2>🐈 Teddy ontdekkingen</h2>
+      <div class="teddyDiscoveryGrid">
+        <div>
+          <h3>🎮 Teddy Encounter · +2000</h3>
+          <div id="teddyEncounterList" class="discoveryList"></div>
+        </div>
+        <div>
+          <h3>🥚 Verborgen Easter Egg · +1000</h3>
+          <div id="teddyEasterList" class="discoveryList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🕒 Recente activiteit</h2><div class="small">Spelersnaam wordt getoond; device-ID blijft alleen achter de schermen als technische koppeling.</div>
+      <div id="recentEvents"></div>
     </div>
 
     <div class="card">
@@ -47,8 +100,8 @@
   </section>
 </div>
 
-<script src="config.js"></script>
-<script src="admin.js" defer></script>
+<script src="config.js?v=220"></script>
+<script src="admin.js?v=220" defer></script>
 
 </body>
 </html>

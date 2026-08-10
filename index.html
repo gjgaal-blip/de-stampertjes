@@ -6,29 +6,30 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.15.5</title>
-<link rel="stylesheet" href="game.css">
+<title>De Stampertjes v2.20</title>
+<link rel="stylesheet" href="game.css?v=220">
 
 </head>
 <body>
-<audio id="menuSoundtrack" preload="auto" loop playsinline>
-  <source src="the-castle-awakens.mp3" type="audio/mpeg">
-</audio>
+<audio id="menuSoundtrack" src="music-menu.mp3" preload="auto" loop playsinline></audio>
 <div id="overlay">
   <div id="panel">
-    <canvas id="introCanvas" width="420" height="180"></canvas>
+    <canvas id="introCanvas" width="504" height="216"></canvas>
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <div id="versionMusicRow">
-      <div id="versionLabel">v2.15.5</div>
+      <div id="versionLabel">v2.20</div>
       <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
     </div>
+    <div id="betaBadge">🧪 v2.20 · OFFICIËLE RELEASE</div>
+    <div id="castleSlogan">EEN KASTEEL DAT NOOIT HELEMAAL HETZELFDE IS.</div>
+    <div id="dailyCastleMessage" class="dailyCastleMessage"></div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
     <div id="attractPrompt" class="hidden">DRUK OP SPELEN</div>
 
     <div id="teddyEgg" class="hidden" aria-hidden="true">
       <div class="teddyCat">ᓚᘏᗢ</div>
-      <div>TEDDY WAS HERE +100</div>
+      <div>TEDDY WAS HERE +1000</div>
     </div>
     <div id="mainMenu" class="mainMenuGroups">
       <section class="menuGroup">
@@ -100,6 +101,7 @@
 
     <div id="roadmapSection" class="menuSection hidden">
       <h2>📰 KASTEELKRANT</h2>
+<article class="newsItem featured"><div class="newsVersion">🎉 v2.20 · OFFICIËLE RELEASE</div><h3>De poorten van het vernieuwde kasteel zijn open!</h3><p><strong>v2.20 is uit.</strong> Na de bèta- en RC-periode is dit de officiële stabiele release van De Stampertjes.</p><p>Vier verdiepingen, vijf kasteelzalen, verbeterde ladders, een langere attract-demo, bonus-FX en geluiden en uitgebreide online statistieken maken het kasteel levendiger dan ooit.</p><p>Teddy dwaalt heel sporadisch door het kasteel: bereik hem tijdens het spel voor <strong>+2000</strong>. Het verborgen Teddy Easter Egg levert <strong>+1000</strong> op. Beide ontdekkingen worden apart bijgehouden.</p><p>Nieuw: deel na Game Over je score en daag vrienden uit om jouw score en de wereldwijde Top 10 te verslaan.</p></article>
       <article class="newsItem featured"><div class="newsVersion">📖 v2.15</div><h3>Het kasteel krijgt een eigen geschiedenis</h3><p>De Kronieken, Hall of Fame en Kasteelkrant vormen samen steeds meer de wereld rond het spel. Het uitgangspunt voor toekomstige updates is simpel:</p><p style="text-align:center"><strong>“Elke update maakt De Stampertjes niet alleen groter, maar ook levendiger.”</strong></p><p><strong>🙏 Speciale dank aan Vera</strong><br>Voor het uitgebreid testen van de testversies en het melden van bugs. Dankzij haar feedback wordt De Stampertjes iedere update weer een stukje beter.</p></article>
       <article class="newsItem rumor"><div class="newsVersion">🕯️ GERUCHTEN UIT HET KASTEEL</div><h3>Wat fluistert men in de gangen?</h3><p>📰 Een avonturier beweert iets goudkleurigs te hebben gezien bij een afgesloten trap.<br><br>📰 Uit de westelijke toren klinkt 's nachts een melodie die niemand kent.<br><br>📰 In de bibliotheek zou een kaart liggen waarop verdiepingen staan die op geen enkele bouwtekening voorkomen.<br><br>📰 Teddy is opnieuw tussen de oude muren gezien. Sommigen noemen hem inmiddels de Wachter van het Kasteel.<br><br>📰 Diep onder de kelder is een zware poort gevonden. Niemand heeft hem nog kunnen openen.</p><p><em>Geruchten zijn geruchten... tot een volgende update het tegendeel bewijst.</em></p></article>
       <h3>📜 UIT DE ARCHIEVEN</h3>
@@ -109,11 +111,11 @@
       <article class="newsItem"><div class="newsVersion">🏰 v2.00</div><p>De grote remake: een nieuwe engine, levels, geluid en de eerste publieke versie van het vernieuwde kasteel.</p></article>
       <article class="newsItem"><div class="newsVersion">🍏 v1.00</div><p>Het allereerste speelbare prototype. Eén Stampertje, een vloer en de eerste Appelieten.</p></article>
       <h3>🔮 ROADMAP</h3>
-      <article class="newsItem featured roadmapCard"><div class="newsVersion">🌙 v2.20</div><h3>Het Kasteel Leeft</h3><p><strong>🏰 Sfeer:</strong> bewegende fakkels, mist, stof, vleermuizen, vallende steentjes, bewegende vlaggen, ramen die soms open of dicht staan en kleine veranderingen waardoor het kasteel niet iedere keer exact hetzelfde voelt.</p><p><strong>💡 Dagberichten:</strong> bij het starten kan een willekeurige tip, grap, Teddy-bericht, Café-verwijzing of gerucht verschijnen.</p><p><strong>🏅 Mijlpalen:</strong> speciale berichten bij bijvoorbeeld 10, 50, 100, 250, 500 en 1.000 gespeelde potjes.</p><p><strong>🎵 Muziek:</strong> eigen muziek per level, omgevingsgeluiden en een Jukebox met vrijgespeelde nummers.</p><p><strong>📖 Wereld:</strong> korte intro's per level, nieuwe geheimen en meer Kronieken.</p><p><strong>🐈 Teddy:</strong> heel af en toe op een balkon, achter een raam of in de verte — zeldzaam genoeg om bijzonder te blijven.</p></article>
+      <article class="newsItem featured"><div class="newsVersion">🌙 v2.20 · HET KASTEEL LEEFT</div><h3>De grote verbouwing nadert zijn einde</h3><p><strong>✓ Gebouwd:</strong> vier verdiepingen, levende fakkels, mist, stof en vallende steentjes, wisselende kasteelzalen, langere attract-demo, bonusvoorwerpen met eigen FX, spelersnamen en uitgebreide live statistieken.</p><p><strong>✓ Beta 6.9.4:</strong> dagberichten, mijlpalen, zaalintro's, zeldzame Teddy-ontmoetingen met een speciaal +2000 dansmoment en extra levende details zoals vleermuizen, vlaggen en veranderende ramen.</p><p><strong>🎵 Doorgeschoven naar v2.50:</strong> eigen muziek per zaal, ambient kasteelgeluiden en de Jukebox. Zo krijgt die versie een duidelijke eigen identiteit: <em>Het Kasteel Klinkt</em>.</p></article>
       <article class="newsItem roadmapCard"><div class="newsVersion">🎄 v2.20+</div><h3>Seizoenen &amp; Verrassingen</h3><p>Halloween, Sinterklaas, Kerst, Oud &amp; Nieuw, Pasen en zomer kunnen subtiele tijdelijke veranderingen krijgen. Denk aan een ander dagbericht, decoratie of sfeer.</p><p>Heel af en toe kan het kasteel de speler verrassen met een bijzondere melding, een zeldzame verschijning of een kleine bonus. Niet vaak — juist daarom speciaal.</p><p>Op de verjaardag van De Stampertjes kan het startscherm voor één dag feestelijk veranderen met bijvoorbeeld slingers, confetti en een eigen bericht van GJ Studios.</p></article>
       <article class="newsItem roadmapCard"><div class="newsVersion">👾 v2.30</div><h3>Nieuwe Appelieten</h3><p>Nieuwe soorten Appelieten met ieder hun eigen gedrag, snelheid en tactiek. De exacte varianten worden pas definitief zodra ze echt in het spel worden gebouwd.</p></article>
       <article class="newsItem roadmapCard"><div class="newsVersion">⭐ v2.40</div><h3>Power-ups</h3><p>Nieuwe hulpmiddelen en tijdelijke krachten, zoals een Superstamp, extra leven, tijdvertraging, snelheid en andere verrassingen die de gameplay tactischer maken.</p></article>
-      <article class="newsItem roadmapCard"><div class="newsVersion">🌍 v2.50</div><h3>Community</h3><p>Dagelijkse uitdagingen, weekklassementen, spelerprofielen, community-events en een uitgebreidere Hall of Fame met bijzondere titels en prestaties.</p></article>
+      <article class="newsItem roadmapCard"><div class="newsVersion">🎵 v2.50</div><h3>Het Kasteel Klinkt</h3><p>Iedere zaal krijgt een duidelijkere muzikale identiteit, met subtiele omgevingsgeluiden van wind, vuur, deuren en oude kettingen.</p><p>Een nieuwe Jukebox laat ontdekte en vrijgespeelde nummers terugluisteren. Verborgen tracks en muzikale geheimen kunnen spelers iets extra's geven om te verzamelen.</p><p>Dagelijkse uitdagingen, weekklassementen en uitgebreidere communityprofielen blijven ideeën voor een latere community-update.</p></article>
       <article class="newsItem featured roadmapCard"><div class="newsVersion">👑 v3.00</div><h3>De Appelkoning</h3><p>Een groot eindhoofdstuk met een eindbaas in meerdere fases, een eindkasteel, eigen muziek, intro- en eindscènes, eindcredits en misschien zelfs een verborgen einde.</p></article>
       <article class="newsItem featured roadmapCard"><div class="newsVersion">🏰 v4.00</div><h3>The Living Castle</h3><p>De verre toekomstvisie: een kasteel dat echt als een levende wereld voelt. NPC's kunnen rondlopen, een bibliothecaris kan nieuwe verhalen brengen, een smid kan hints geven, Teddy kan soms iets aanwijzen en geheime kamers kunnen pas na langere tijd of tijdens wereldgebeurtenissen verschijnen.</p><p>Het doel is niet om alles drukker te maken, maar om spelers regelmatig te laten denken: <strong>“Hé... dat heb ik nog nooit gezien.”</strong></p></article>
       <p class="cafeInvite">💡 Heb jij een idee voor een level, geheim, verhaal of toekomstige functie? Laat het achter in het <strong>Stampertjes Café</strong>.</p>
@@ -240,9 +242,14 @@
       <h2>WERELDWIJDE TOP 10</h2>
       <div id="scoreListLegacy"></div>
     </div>
+    <div id="shareScoreBox" class="hidden">
+      <h2>🏆 DAAG IEMAND UIT</h2>
+      <p id="shareScorePreview"></p>
+      <button id="shareScoreBtn">📤 DEEL MIJN SCORE</button>
+    </div>
   </div>
 </div>
-<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">🎉 NIEUWE VERSIE</div><h2>v2.15.5</h2><div class="updateList"><div>✓ Uitleg opgeschoond en afgestemd op de huidige gameplay</div><div>✓ Toekomstige Appeliet-varianten uit de Uitleg verwijderd</div><div>✓ Roadmap uitgebreid met “Het Kasteel Leeft”</div><div>✓ Dagberichten, mijlpalen, seizoenen en verrassingen toegevoegd aan de toekomstplannen</div><div>✓ Lange termijnvisie richting v4.00 toegevoegd</div></div><p><strong>De huidige spelregels zijn duidelijker — en de toekomst van het kasteel groter dan ooit.</strong></p><p><strong>— GJ Studios</strong></p><button id="closeUpdateBtn">BEKIJK HET SPEL</button></div></div>
+<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">🎉 v2.20 · OFFICIËLE RELEASE</div><h2>De Stampertjes v2.20 is uit!</h2><div class="updateIntro">De testfase is afgerond. Welkom in de officiële v2.20-versie van het vernieuwde kasteel.</div><div class="updateList"><div>✓ Vier verdiepingen en vijf kasteelzalen</div><div>✓ Verbeterde ladders, attract-demo, bonus-FX en geluiden</div><div>✓ Teddy Encounter +2000 en verborgen Easter Egg +1000</div><div>✓ Uitgebreide live statistieken en Developer Portal</div><div>✓ Deel na Game Over je score en daag vrienden uit</div></div><div class="updateMore">Lees het volledige verhaal bovenaan in de Kasteelkrant.</div><div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.20</button></div></div></div>
 
 <div id="deathOverlay" class="hidden">
   <div id="deathCard">
@@ -266,7 +273,7 @@
 </div>
 <div id="wrap">
   <div id="title">DE STAMPERTJES</div>
-  <canvas id="game" width="480" height="320"></canvas>
+  <canvas id="game" width="480" height="382"></canvas>
   <div id="controlLabels">
     <span>KLIMMEN</span><span></span><span>LOPEN</span>
   </div>
@@ -284,8 +291,8 @@
   <div id="keyboardHint">Pijltjes = bewegen • Spatie = stampen • P = pauze • M = muziek</div>
   <div class="small">3× stampen voor een gat. Stamp daarna de gevangen appel weg.</div>
 </div>
-<script src="config.js"></script>
-<script src="game.js" defer></script>
+<script src="config.js?v=220"></script>
+<script src="game-220.js" defer></script>
 
 </body>
 </html>

@@ -15,3 +15,28 @@ button:disabled{opacity:.5}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .small{font-size:12px;opacity:.8}
 @media(max-width:560px){.grid{grid-template-columns:1fr}}
+
+/* Live analytics dashboard */
+.metricGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.metric{border:1px solid #777;padding:10px;min-height:70px;display:flex;flex-direction:column;justify-content:space-between}
+.metric span{font-size:10px;letter-spacing:1px;color:#bbb}.metric strong{font-size:24px;text-align:right;margin-top:7px}
+.playerCard{border:1px solid #777;margin:8px 0;background:#0e0e0e}
+.playerCard summary{padding:12px;display:flex;justify-content:space-between;gap:10px;cursor:pointer}
+.playerRight{text-align:right}.playerStats{border-top:1px dotted #666;padding:8px 12px}
+.playerStats>div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dotted #444}
+.playerStats>div:last-child{border-bottom:0}.playerStats span{color:#bbb}.idText{font-size:10px;overflow-wrap:anywhere;text-align:right}
+.analyticsRow{display:grid;grid-template-columns:minmax(78px,1.2fr) repeat(3,1fr) auto;gap:7px;align-items:center;padding:8px 0;border-bottom:1px dotted #555;font-size:11px}
+.analyticsRow b{text-align:right}.eventRow{display:grid;grid-template-columns:1.6fr .9fr .55fr .9fr;gap:6px;padding:7px 0;border-bottom:1px dotted #444;font-size:10px;align-items:center}
+.eventRow small{grid-column:1/-1;color:#999}.emptyBox{border:1px dashed #666;padding:12px;margin-top:8px;line-height:1.5}
+@media(min-width:720px){.metricGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Player cleanup */
+.playerDeleteRow{display:block !important;border-bottom:0 !important;padding-top:12px !important}
+.dangerBtn{width:100%;border-color:#fff;background:#111;color:#fff}
+.dangerBtn:disabled{opacity:.55}
+
+/* Beta 6.9.6 Teddy discoveries */
+.teddyDiscoveryGrid{display:grid;gap:14px}
+.discoveryRow{display:grid;grid-template-columns:1.3fr .8fr 1.2fr;gap:7px;padding:8px 0;border-bottom:1px dotted #555;font-size:11px;align-items:center}
+.discoveryRow small{text-align:right;color:#999}
+@media(min-width:760px){.teddyDiscoveryGrid{grid-template-columns:1fr 1fr}}
