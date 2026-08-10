@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.22.1</title>
-<link rel="stylesheet" href="game.css?v=2221">
+<title>De Stampertjes v2.22.3</title>
+<link rel="stylesheet" href="game.css?v=2223">
 
 </head>
 <body>
@@ -18,10 +18,10 @@
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <div id="versionMusicRow">
-      <div id="versionLabel">v2.22.1</div>
+      <div id="versionLabel">v2.22.3</div>
       <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
     </div>
-    <div id="betaBadge">🛠️ v2.22.1 · PORTAL FIX</div>
+    <div id="betaBadge">👕 v2.22.3 · STAMPERTJES SHIRT</div>
     <div id="castleSlogan">EEN KASTEEL DAT NOOIT HELEMAAL HETZELFDE IS.</div>
     <div id="dailyCastleMessage" class="dailyCastleMessage"></div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
@@ -55,6 +55,7 @@
         <div class="menuGrid">
           <button id="cafeMenuBtn">CAFÉ</button>
           <button id="hallMenuBtn">HALL OF FAME</button>
+          <button id="merchMenuBtn" class="merchMenuBtn">👕 STAMPERTJES SHIRT</button>
         </div>
       </section>
     </div>
@@ -101,7 +102,7 @@
 
     <div id="roadmapSection" class="menuSection hidden">
       <h2>📰 KASTEELKRANT</h2>
-<article class="newsItem featured"><div class="newsVersion">📊 v2.22 · HET KASTEEL ONTHOUDT</div><h3>De kroniekschrijvers houden voortaan veel meer bij</h3><p>Vanaf v2.22 bouwt De Stampertjes een rijker spelarchief op. Speeltijd, levels, stamps, Appelieten, bonussen, Teddy-momenten en persoonlijke records kunnen voortaan veel uitgebreider worden geregistreerd.</p><p>Ook de fundamenten onder het kasteel zijn verstevigd: publieke statistieken lopen via gecontroleerde Supabase-functies en de database is voorbereid op strengere toegangsregels. Alleen gegevens die nuttig zijn voor het spel worden bewaard; geen exacte GPS-locatie of permanente IP-geschiedenis.</p><p>Met deze gegevens kunnen toekomstige Hall of Fame-records, achievements en kasteeluitdagingen veel persoonlijker worden.</p></article>
+<article class="newsItem featured"><div class="newsVersion">📊 v2.22 · HET KASTEEL ONTHOUDT</div><h3>De kroniekschrijvers houden voortaan veel meer bij</h3><p>Vanaf v2.22 bouwt De Stampertjes een rijker spelarchief op. Speeltijd, levels, stamps, Appelieten, bonussen, Teddy-momenten en persoonlijke records kunnen voortaan veel uitgebreider worden geregistreerd.</p><p>Ook de fundamenten onder het kasteel zijn verstevigd: publieke statistieken lopen via gecontroleerde Supabase-functies en de database is voorbereid op strengere toegangsregels. Alleen gegevens die nuttig zijn voor het spel worden bewaard; geen exacte GPS-locatie of permanente IP-geschiedenis.</p><p>Met deze gegevens kunnen toekomstige Hall of Fame-records, achievements en kasteeluitdagingen veel persoonlijker worden.</p><p>Daarnaast test GJ Studios voorzichtig een eerste stukje merchandise: spelers kunnen in het spel vrijblijvend aangeven welk Stampertjes-shirt ze het leukst vinden.</p></article>
 
 
 <article class="newsItem"><div class="newsVersion">🏛️ v2.21 · POLISH &amp; EREGALERIJ</div><h3>Het kasteel kreeg zijn eregalerij</h3><p>Na de grote v2.20-release zijn de mobiele layout, Kasteelkrant en Roadmap opgepoetst. De Hall of Fame groeide uit tot een interactieve eregalerij met records, Top 5-lijsten, persoonlijke posities en bijzondere onderscheidingen.</p></article>
@@ -175,6 +176,66 @@
         <div id="hallModalList"></div>
       </div>
     </div>
+
+
+<div id="merchSection" class="menuSection hidden">
+  <div class="merchTitleRow">
+    <h2>👕 STAMPERTJES SHIRT</h2>
+    <span class="merchComing">INTERESSEPEILING</span>
+  </div>
+  <p class="merchIntro">Zou jij er eentje willen? Kies je favoriete ontwerp. Dit is <strong>nog geen bestelling</strong>.</p>
+
+  <div id="merchDesigns" class="merchDesigns">
+    <button type="button" class="merchDesign selected" data-design="classic">
+      <span class="merchDesignLabel">1. CLASSIC</span>
+      <img src="merch-classic.png" alt="De Stampertjes Classic shirt">
+      <small>Klassiek logo voorop, epische kasteelscène achterop.</small>
+    </button>
+    <button type="button" class="merchDesign" data-design="boss">
+      <span class="merchDesignLabel">2. APPELIET BOSS</span>
+      <img src="merch-boss.png" alt="De Stampertjes Appeliet Boss shirt">
+      <small>De strijd tegen de Opper-Appeliet. Voor echte kasteelhelden.</small>
+    </button>
+    <button type="button" class="merchDesign" data-design="held">
+      <span class="merchDesignLabel">3. KASTEELHELD</span>
+      <img src="merch-held.png" alt="De Stampertjes gepersonaliseerd Kasteelheld shirt">
+      <small>Jouw spelersnaam op je eigen Kasteelheld-shirt.</small>
+    </button>
+  </div>
+
+  <div class="merchOptions">
+    <fieldset>
+      <legend>KIES JE MAAT</legend>
+      <div id="merchSizes" class="merchChoiceRow">
+        <button type="button" data-size="S">S</button>
+        <button type="button" data-size="M">M</button>
+        <button type="button" data-size="L" class="selected">L</button>
+        <button type="button" data-size="XL">XL</button>
+        <button type="button" data-size="XXL">XXL</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>PERSONALISATIE</legend>
+      <div id="merchPersonalization" class="merchChoiceRow">
+        <button type="button" data-personalized="false" class="selected">STANDAARD</button>
+        <button type="button" data-personalized="true">MET NAAM</button>
+      </div>
+    </fieldset>
+
+    <label class="merchNameLabel">JOUW SPELERSNAAM
+      <input id="merchPlayerName" maxlength="12" autocomplete="nickname">
+    </label>
+  </div>
+
+  <div class="merchNotice">👕 We noteren alleen je interesse. Geen betaling, adres of bestelling.</div>
+  <div id="merchStatus" class="merchStatus"></div>
+  <div class="merchActions">
+    <button id="merchInterestBtn" type="button">♥ IK HEB INTERESSE!</button>
+    <button id="merchLaterBtn" type="button">✕ MISSCHIEN LATER</button>
+  </div>
+  <button class="backBtn" data-back>TERUG</button>
+</div>
 
 <div id="cafeSection" class="menuSection hidden">
       <h2>🍏 STAMPERTJES CAFÉ</h2>
@@ -251,7 +312,7 @@
     </div>
   </div>
 </div>
-<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">🛠️ v2.22.1 · PORTAL FIX</div><h2>De beheerkamer is hersteld</h2><div class="updateIntro">Een kleine onderhoudsupdate op v2.22.</div><div class="updateList"><div>✓ Developer Portal weer volledig werkend</div><div>✓ Nieuw dashboard pas zichtbaar na admin-login</div><div>✓ Publieke statistieken correct uitgelezen</div><div>✓ Bestaand spelers-, Café- en beheerwerk behouden</div></div><div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.22.1</button></div></div></div>
+<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">👕 v2.22.3 · STAMPERTJES SHIRT</div><h2>Zou jij het kasteel dragen?</h2><div class="updateIntro">Nieuw: bekijk drie shirtontwerpen en laat vrijblijvend weten welke jij zou willen.</div><div class="updateList"><div>✓ Classic, Appeliet Boss en Kasteelheld</div><div>✓ Kies maat en eventuele personalisatie</div><div>✓ Nog géén bestelling of betaling</div></div><div class="updateAction"><button id="closeUpdateBtn">BEKIJK v2.22.3</button></div></div></div>
 
 <div id="deathOverlay" class="hidden">
   <div id="deathCard">
@@ -293,8 +354,8 @@
   <div id="keyboardHint">Pijltjes = bewegen • Spatie = stampen • P = pauze • M = muziek</div>
   <div class="small">3× stampen voor een gat. Stamp daarna de gevangen appel weg.</div>
 </div>
-<script src="config.js?v=2221"></script>
-<script src="game-2221.js" defer></script>
+<script src="config.js?v=2223"></script>
+<script src="game-2223.js" defer></script>
 
 </body>
 </html>

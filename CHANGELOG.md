@@ -1,8 +1,8 @@
 # De Stampertjes
 
-## v2.22.1
-- Developer Portal hersteld.
-- Nieuw dashboard geïntegreerd in plaats van oude DOM dynamisch achteraf te injecteren.
-- Dashboard alleen zichtbaar na admin-login.
-- get_public_stats totals-fout gecorrigeerd.
-- Bestaande beheerfunctionaliteit behouden.
+## v2.22.3
+- Stampertjes Shirt-knop toegevoegd aan hoofdmenu.
+- Drie merchandisevoorbeelden ingebouwd.
+- Maat en personalisatiekeuze toegevoegd.
+- Merchandise-interesse gekoppeld aan Supabase.
+- Favoriet shirtontwerp toegevoegd aan Developer Portal-samenvatting.

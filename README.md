@@ -1,12 +1,14 @@
-# De Stampertjes v2.22.1 — Portal Fix
+# De Stampertjes v2.22.3 — Stampertjes Shirt
 
-Gebaseerd op de werkende v2.22 Admin Portal.
+Nieuw in de game:
+- hoofdmenuknop `👕 STAMPERTJES SHIRT`;
+- drie visuele ontwerpen in de spelstijl: Classic, Appeliet Boss en Kasteelheld;
+- maat S t/m XXL;
+- standaard of gepersonaliseerd;
+- bestaande spelersnaam als personalisatie;
+- vrijblijvende interessepeiling, dus geen bestelling of betaling;
+- resultaten zichtbaar in de Merch-tab van de Developer Portal.
 
-Opgelost:
-- bestaande admin-login en DOM blijven intact;
-- nieuw dashboard staat binnen het beveiligde #portal en verschijnt dus pas na succesvolle login;
-- get_public_stats wordt correct via `stats.totals` uitgelezen;
-- bestaande spelers-, Café-, Teddy-, event- en verwijderfuncties blijven werken;
-- nieuwe v2.22 analytics, Hall of Fame en optionele merchandise-samenvatting worden daarnaast geladen.
-
-Geen nieuwe SQL nodig naast reeds gebruikte SQL 006, 007 en optioneel 008.
+SQL:
+- SQL 008 moet al actief zijn;
+- voer daarna SQL 009 uit om ook het favoriete ontwerp op te slaan.

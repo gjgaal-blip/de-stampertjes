@@ -1,11 +1,9 @@
-# v2.22.1 Portal
-- [ ] Login-scherm verschijnt eerst
-- [ ] Onjuiste admincode opent niets
-- [ ] Juiste admincode opent Portal
-- [ ] Oude live status/spelers/Café/events laden
-- [ ] Nieuw dashboard toont spelers/potjes/Appelieten/Teddy
-- [ ] Highscore en Hall of Fame laden
-- [ ] Levelanalytics laden
-- [ ] Merch toont data als SQL 008 actief is, anders nette melding
-- [ ] Speler verwijderen blijft werken
-- [ ] Uitloggen verbergt Portal
+# v2.22.3
+- [ ] Hoofdmenu toont STAMPERTJES SHIRT
+- [ ] Shirt-scherm opent en TERUG werkt
+- [ ] Drie ontwerpen zijn zichtbaar
+- [ ] Ontwerp, maat en personalisatie zijn selecteerbaar
+- [ ] Kasteelheld selecteert automatisch MET NAAM
+- [ ] Interesse opslaan werkt na SQL 008 + 009
+- [ ] Developer Portal Merch toont aantallen/maten/ontwerpen
+- [ ] SPELEN, muziek, Café, Hall of Fame en Teddy blijven werken
