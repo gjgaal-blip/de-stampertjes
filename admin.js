@@ -1,6 +1,6 @@
 const SUPABASE_URL=window.STAMPERTJES_CONFIG.supabaseUrl;
 const SUPABASE_KEY=window.STAMPERTJES_CONFIG.supabaseKey;
-console.info("De Stampertjes Developer Portal BUILD 2225 geladen");
+console.info("De Stampertjes Developer Portal BUILD 2226 geladen");
 
 const $=id=>document.getElementById(id);
 const adminCode=$("adminCode"),loginBtn=$("loginBtn"),loginStatus=$("loginStatus");
@@ -119,7 +119,7 @@ function renderPlayers(list){
         await refreshAll();
       }catch(err){
         console.error(err);
-        alert("Verwijderen is mislukt. Controleer of de v2.22.5 SQL-migratie is uitgevoerd.");
+        alert("Verwijderen is mislukt. Controleer of de v2.22.6 SQL-migratie is uitgevoerd.");
         btn.disabled=false;
         btn.textContent=original;
       }
@@ -136,7 +136,7 @@ function renderLevels(list){
       <strong>LEVEL ${n(x.level)}</strong>
       <span>${starts} starts</span><span>${done} klaar</span><span>${deaths} deaths</span><b>${pct}%</b>
     </div>`;
-  }).join(""):"<div class='small emptyBox'>Nog geen level-events geregistreerd. Speel v2.22.5 om deze data te vullen.</div>";
+  }).join(""):"<div class='small emptyBox'>Nog geen level-events geregistreerd. Speel v2.22.6 om deze data te vullen.</div>";
 }
 
 function renderBonuses(list){
@@ -194,7 +194,7 @@ function renderEvents(list){
       <span>${e.bonus_type?esc(e.bonus_type):""}</span>
       <small>${date(e.created_at)}</small>
     </div>
-  `).join(""):"<div class='small emptyBox'>Nog geen v2.22.5-events.</div>";
+  `).join(""):"<div class='small emptyBox'>Nog geen v2.22.6-events.</div>";
 }
 
 function renderPosts(list){
@@ -270,6 +270,7 @@ loginBtn?.addEventListener("click",login);
 adminCode?.addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 refreshBtn.addEventListener("click",async()=>{await refreshAll();await refreshNewDashboard();});
 $("refreshPortalDashboardBtn")?.addEventListener("click",refreshNewDashboard);
+$("addManualScoreBtn")?.addEventListener("click",addManualScore);
 initDashboardTabs();
 playerSearch?.addEventListener("input",()=>renderPlayers(dashboardPlayers));
 openGameBtn?.addEventListener("click",()=>location.href="./index.html");
@@ -279,6 +280,113 @@ logoutBtn?.addEventListener("click",()=>{
   adminCode.value="";loginStatus.textContent="Uitgelogd.";
 });
 
+
+
+let adminHighscores=[];
+
+async function loadAdminHighscores(){
+  const box=document.getElementById("recordsDashboard");
+  const status=document.getElementById("scoreAdminStatus");
+  if(!box||!activeAdminCode)return;
+  try{
+    const data=await rpc("admin_get_highscores",{p_admin_code:activeAdminCode});
+    adminHighscores=Array.isArray(data)?data:[];
+    renderAdminHighscores();
+    if(status)status.textContent=`${adminHighscores.length} scores geladen`;
+  }catch(err){
+    console.error("Highscorebeheer laden mislukt:",err);
+    box.innerHTML="<div class='small emptyBox'>Highscorebeheer niet beschikbaar. Voer SQL 012 uit.</div>";
+    if(status)status.textContent="SQL 012 vereist.";
+  }
+}
+
+function renderAdminHighscores(){
+  const box=document.getElementById("recordsDashboard");
+  if(!box)return;
+  const top=adminHighscores.slice(0,20);
+  box.innerHTML=top.length?top.map((s,i)=>`
+    <div class="adminScoreRow" data-score-id="${esc(s.id)}">
+      <span class="adminScoreRank">${i<3?["🥇","🥈","🥉"][i]:`${i+1}.`}</span>
+      <div class="adminScoreMain">
+        <strong>${esc(String(s.name||"SPELER").toUpperCase())}</strong>
+        <small>Lv${n(s.level)||1} · ${date(s.created_at)} ${s.is_manual?'<b class="manualBadge">HANDMATIG</b>':""}</small>
+      </div>
+      <b>${n(s.score).toLocaleString("nl-NL")}</b>
+      <div class="adminScoreActions">
+        <button type="button" data-edit-score="${esc(s.id)}">✏️</button>
+        <button type="button" data-delete-score="${esc(s.id)}">🗑️</button>
+      </div>
+    </div>
+  `).join(""):"<div class='small emptyBox'>Nog geen highscores.</div>";
+
+  box.querySelectorAll("[data-edit-score]").forEach(btn=>btn.addEventListener("click",()=>editAdminScore(btn.dataset.editScore)));
+  box.querySelectorAll("[data-delete-score]").forEach(btn=>btn.addEventListener("click",()=>deleteAdminScore(btn.dataset.deleteScore)));
+}
+
+async function editAdminScore(id){
+  const item=adminHighscores.find(x=>String(x.id)===String(id));
+  if(!item)return;
+  const name=prompt("Spelersnaam:",item.name||"SPELER");
+  if(name===null)return;
+  const scoreRaw=prompt("Score:",String(item.score||0));
+  if(scoreRaw===null)return;
+  const levelRaw=prompt("Level:",String(item.level||1));
+  if(levelRaw===null)return;
+  const score=Math.max(0,parseInt(scoreRaw,10)||0);
+  const level=Math.max(1,parseInt(levelRaw,10)||1);
+  try{
+    await rpc("admin_update_highscore",{
+      p_admin_code:activeAdminCode,
+      p_id:Number(id),
+      p_name:String(name).trim().slice(0,30),
+      p_score:score,
+      p_level:level
+    });
+    await loadAdminHighscores();
+    await refreshNewDashboard();
+  }catch(err){
+    console.error(err); alert("Score aanpassen mislukt. Controleer SQL 012.");
+  }
+}
+
+async function deleteAdminScore(id){
+  const item=adminHighscores.find(x=>String(x.id)===String(id));
+  if(!confirm(`Score van ${item?.name||"deze speler"} verwijderen?`))return;
+  try{
+    await rpc("admin_delete_highscore",{p_admin_code:activeAdminCode,p_id:Number(id)});
+    await loadAdminHighscores();
+    await refreshNewDashboard();
+  }catch(err){
+    console.error(err); alert("Score verwijderen mislukt. Controleer SQL 012.");
+  }
+}
+
+async function addManualScore(){
+  const name=prompt("Naam voor de handmatige score:","SPELER");
+  if(name===null)return;
+  const scoreRaw=prompt("Score:","5000");
+  if(scoreRaw===null)return;
+  const levelRaw=prompt("Level:","1");
+  if(levelRaw===null)return;
+  const score=Math.max(0,parseInt(scoreRaw,10)||0);
+  const level=Math.max(1,parseInt(levelRaw,10)||1);
+  if(!String(name).trim()||score<=0){
+    alert("Vul een naam en een score groter dan 0 in.");
+    return;
+  }
+  try{
+    await rpc("admin_add_highscore",{
+      p_admin_code:activeAdminCode,
+      p_name:String(name).trim().slice(0,30),
+      p_score:score,
+      p_level:level
+    });
+    await loadAdminHighscores();
+    await refreshNewDashboard();
+  }catch(err){
+    console.error(err); alert("Handmatige score toevoegen mislukt. Controleer SQL 012.");
+  }
+}
 
 function fmtDash(v){return Number(v||0).toLocaleString("nl-NL")}
 function fmtDuration(sec){
@@ -352,12 +460,8 @@ async function refreshNewDashboard(){
       return ["🏰",`Level ${l}`,`${c}/${s}`,s?`${Math.round(c/s*100)}% voltooid`:"nog geen v2.22-data"];
     }));
 
-    const podium=Array.isArray(hall?.podium)?hall.podium:[];
-    const rec=$("recordsDashboard");
-    if(rec)rec.innerHTML=podium.length?podium.map((x,i)=>`
-      <div class="recordAdminRow"><span>${["🥇","🥈","🥉"][i]||`${i+1}.`}</span>
-      <b>${esc(x.player_name||"SPELER")}</b><strong>${fmtDash(x.value)}</strong></div>`).join("")
-      :"Nog geen records.";
+    // Volledig highscorebeheer wordt apart geladen via SQL 012.
+    await loadAdminHighscores();
 
     const teddyList=hall?.leaderboards?.teddy||[];
     dashboardCards("teddyDashboard",[
@@ -392,7 +496,7 @@ async function refreshNewDashboard(){
   }
 }
 (async()=>{
-  const raw=window.STAMPERTJES_CONFIG?.version||"2.22.5";
+  const raw=window.STAMPERTJES_CONFIG?.version||"2.22.6";
   const version=$("portalVersion");
   if(version)version.textContent="v"+raw.replace("-beta"," Beta ");
   if(activeAdminCode){
@@ -411,11 +515,11 @@ async function loadV222Analytics(){
     const d=await r.json();
     const countries=Object.entries(d.countries||{}).map(([k,v])=>`${k}: ${v}`).join(" · ")||"nog geen landen vastgelegd";
     el.innerHTML=`<div class="statRow"><span>Nieuwe metric-events</span><b>${Number(d.total_metric_events||0).toLocaleString("nl-NL")}</b></div><div class="statRow"><span>Gemeten speeltijd</span><b>${Math.round(Number(d.total_play_seconds||0)/60)} min</b></div><div class="statRow"><span>Landen</span><b>${countries}</b></div>`;
-  }catch(e){el.textContent="v2.22.5 analytics nog niet beschikbaar — controleer SQL 007.";}
+  }catch(e){el.textContent="v2.22.6 analytics nog niet beschikbaar — controleer SQL 007.";}
 }
 loadV222Analytics();
 
-document.documentElement.dataset.adminBuild="2225";
+document.documentElement.dataset.adminBuild="2226";
 const buildMark=document.getElementById("loginStatus");
 if(buildMark && !sessionStorage.getItem("stampertjesAdminPortalCode")){
   buildMark.textContent="Portal build 2222 geladen · klaar om in te loggen.";

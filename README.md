@@ -1,12 +1,10 @@
-# De Stampertjes v2.22.5
+# De Stampertjes v2.22.6
 
-Complete opgeschoonde uploadset.
+Stille beheerupdate:
+- Publieke highscorelijst is nu Top 20.
+- Developer Portal kan highscores toevoegen, wijzigen en verwijderen.
+- Handmatige scores zijn alleen in Developer Portal als HANDMATIG zichtbaar.
+- Hoofdmenuknop heet nu MERCHANDISE, omdat deze shirts én wallpapers bevat.
+- Geen nieuwe melding hierover in Kasteelkrant of update-popup.
 
-1. Bewaar eerst je huidige live versie als backup.
-2. Verwijder daarna de oude gamebestanden uit de GitHub-map.
-3. Upload ALLE bestanden uit deze ZIP.
-4. Voer `011_wallpaper_downloads.sql` één keer uit in Supabase.
-
-Vaste namen: index.html, game.js, game.css, config.js, admin.html, admin.js, admin.css, manifest.json.
-
-Nieuw: grote T-shirtpreview, vier telefoonwallpapers, Vera Bug Tester-wallpaper en downloadtelling in Developer Portal.
+Voer SQL 012 uit in Supabase.

@@ -52,9 +52,18 @@ button:disabled{opacity:.5}
 .merchAdmin{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.merchAdmin>div{border:1px solid #555;padding:10px}.merchBig{display:flex;flex-direction:column;text-align:center}.merchBig b{font-size:32px}
 @media(max-width:700px){.portalKpis{grid-template-columns:repeat(3,1fr)}.portalTabs{grid-template-columns:repeat(2,1fr)}.dashGrid,.merchAdmin{grid-template-columns:1fr}.portalHero{padding:0 0 10px}}
 
-/* BUILD 2225 */
-html[data-admin-build="2225"] #portalVersion{font-weight:900}
+/* BUILD 2226 */
+html[data-admin-build="2226"] #portalVersion{font-weight:900}
 
 /* v2.22.3 merch dashboard */
 
 .wallAdminBox{margin-top:14px;border-top:1px dotted #666;padding-top:10px}.wallAdminBox>strong{display:block;margin-bottom:6px}
+
+/* v2.22.6 highscorebeheer */
+.scoreAdminToolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.scoreAdminToolbar h3{margin:0 0 4px}.scoreAdminToolbar button{width:auto}
+.adminScoreRow{display:grid;grid-template-columns:42px minmax(0,1fr) auto auto;gap:8px;align-items:center;border-bottom:1px dotted #555;padding:9px 0}
+.adminScoreMain{display:flex;flex-direction:column;min-width:0}.adminScoreMain strong{overflow-wrap:anywhere}.adminScoreMain small{opacity:.72}
+.adminScoreActions{display:flex;gap:4px}.adminScoreActions button{width:auto;padding:5px 7px}
+.manualBadge{display:inline-block;border:1px solid #888;padding:1px 4px;font-size:8px;margin-left:4px}
+@media(max-width:650px){.scoreAdminToolbar{align-items:flex-start;flex-direction:column}.scoreAdminToolbar button{width:100%}.adminScoreRow{grid-template-columns:34px 1fr auto}.adminScoreActions{grid-column:2/-1;justify-content:flex-end}}

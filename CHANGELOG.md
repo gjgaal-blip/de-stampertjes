@@ -1,10 +1,7 @@
-# De Stampertjes — changelog
+# De Stampertjes
 
-## v2.22.5
-- Opgeschoonde vaste bestandsnamen.
-- T-shirtontwerpen groot te bekijken.
-- Vier telefoonwallpapers toegevoegd.
-- Vera · Bug Tester wallpaper.
-- Downloadregistratie per wallpaper.
-- Wallpaper-aantallen in Developer Portal.
-- Oude v2.22.3-badge gecorrigeerd.
+## v2.22.6
+- Top 20 highscorelijst.
+- Admin highscorebeheer.
+- Handmatige scoremarkering alleen voor beheer.
+- SHIRT-menu hernoemd naar MERCHANDISE.

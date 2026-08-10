@@ -392,10 +392,10 @@ async function submitOnlineScore(name,value,reachedLevel){
   }
 }
 function renderHighscores(useLocalFallback=false){
-  const scores=(useLocalFallback ? getLocalHighscores() : onlineScores).slice(0,10);
+  const scores=(useLocalFallback ? getLocalHighscores() : onlineScores).slice(0,20);
   const medals=["🥇","🥈","🥉"];
 
-  const rows=Array.from({length:10},(_,i)=>{
+  const rows=Array.from({length:20},(_,i)=>{
     const s=scores[i];
     const rank=i<3?medals[i]:`${i+1}.`;
 
@@ -423,8 +423,8 @@ function renderHighscores(useLocalFallback=false){
   scoreList.innerHTML=rows.join("");
 }
 function qualifiesForHighscore(value){
-  const scores=onlineScores;
-  return value>0 && (scores.length<10 || value>scores[scores.length-1].score);
+  const scores=onlineScores.slice(0,20);
+  return value>0 && (scores.length<20 || value>scores[scores.length-1].score);
 }
 
 function updateMenuMusicIconVisibility(){
@@ -1659,7 +1659,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.22.5";
+const CURRENT_VERSION="2.22.6";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";

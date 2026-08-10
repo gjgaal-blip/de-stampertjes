@@ -1,5 +1,5 @@
 window.STAMPERTJES_CONFIG = {
-  version: "2.22.5",
+  version: "2.22.6",
   supabaseUrl: "https://rtmnlirxnalqxrdhussk.supabase.co",
   supabaseKey: "sb_publishable__lQ_g5HZ0fXy1aWzJuoexA_D-8QNqty",
   musicFile: "music-menu.mp3",
