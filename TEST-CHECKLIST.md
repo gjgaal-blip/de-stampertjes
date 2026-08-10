@@ -1,10 +1,11 @@
-# v2.22
-- [ ] SQL 007 uitgevoerd
-- [ ] Hoofdmenu toont v2.22
-- [ ] Kasteelkrant: v2.22 bovenaan; v2.21 samengevat; v2.20 officiële release behouden
-- [ ] Hall of Fame v2.21.2 blijft werken
-- [ ] Spel start normaal
-- [ ] Level-start/completion metrics verschijnen
-- [ ] Developer Portal toont Kasteelarchief
-- [ ] Audio/Teddy/score delen blijven werken
-- [ ] Geen exacte GPS of IP-history opgeslagen
+# v2.22.1 Portal
+- [ ] Login-scherm verschijnt eerst
+- [ ] Onjuiste admincode opent niets
+- [ ] Juiste admincode opent Portal
+- [ ] Oude live status/spelers/Café/events laden
+- [ ] Nieuw dashboard toont spelers/potjes/Appelieten/Teddy
+- [ ] Highscore en Hall of Fame laden
+- [ ] Levelanalytics laden
+- [ ] Merch toont data als SQL 008 actief is, anders nette melding
+- [ ] Speler verwijderen blijft werken
+- [ ] Uitloggen verbergt Portal

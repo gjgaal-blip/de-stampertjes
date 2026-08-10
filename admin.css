@@ -41,13 +41,13 @@ button:disabled{opacity:.5}
 .discoveryRow small{text-align:right;color:#999}
 @media(min-width:760px){.teddyDiscoveryGrid{grid-template-columns:1fr 1fr}}
 
-/* v2.22 Developer Portal dashboard */
-.portalShell{max-width:1180px;margin:0 auto;padding:18px}.portalHero{display:flex;justify-content:space-between;align-items:flex-start;border:3px double #fff;padding:18px;margin-bottom:12px}.portalHero h1{margin:4px 0;font-size:clamp(25px,5vw,46px);letter-spacing:3px}.portalHero p,.eyebrow{opacity:.75;letter-spacing:2px}.liveBadge{border:1px solid #fff;padding:7px 10px;font-weight:bold}
-.portalKpis{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:12px 0}.kpi{border:1px solid #777;padding:12px 7px;text-align:center;display:flex;flex-direction:column;gap:5px}.kpi span{font-size:23px}.kpi b{font-size:21px}.kpi small{opacity:.7}
-.portalTabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:16px 0}.portalTabs button{font-size:11px;padding:11px 5px;border:1px solid #666}.portalTabs button.active{outline:2px solid #fff}
-.portalPanel{display:none;border:3px double #fff;padding:16px;min-height:360px}.portalPanel.active{display:block}.portalPanel>h2{margin-top:0}.panelIntro{opacity:.72}
-.dashGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.dashGrid>article,.metricCard{border:1px solid #666;padding:13px;min-height:105px}.metricCard{display:flex;flex-direction:column;gap:5px}.metricCard>span{font-size:24px}.metricCard>b{font-size:22px}.metricCard small{opacity:.65}
-.miniRow,.recordAdminRow{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:1px dotted #555;padding:7px 0}.recordAdminRow{grid-template-columns:40px 1fr auto}
-.systemGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.systemGrid>div{border:1px solid #666;padding:12px;display:flex;justify-content:space-between;gap:10px}.portalRefresh{margin:16px 0;width:100%}.legacyDetails{margin-top:18px;border-top:1px dotted #777;padding-top:12px}.legacyDetails summary{cursor:pointer;font-weight:bold}
-.merchAdmin{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.merchAdmin>div{border:1px solid #666;padding:14px}.merchBig{display:flex;flex-direction:column;text-align:center}.merchBig b{font-size:42px}
-@media(max-width:720px){.portalShell{padding:9px}.portalKpis{grid-template-columns:repeat(3,1fr)}.portalTabs{grid-template-columns:repeat(2,1fr)}.dashGrid{grid-template-columns:1fr}.merchAdmin{grid-template-columns:1fr}.portalHero{padding:12px}.portalHero .liveBadge{font-size:10px}.portalPanel{padding:11px}}
+/* v2.22.1 working dashboard — lives inside authenticated #portal */
+#newPortalDashboard{border:3px double #fff;padding:14px;margin:0 0 14px}
+.portalHero{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px dotted #777;padding-bottom:12px}
+.portalHero h2{margin:4px 0}.eyebrow{font-size:10px;letter-spacing:1px;opacity:.75}.liveBadge{border:1px solid #fff;padding:6px 8px;font-weight:bold}
+.portalKpis{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin:12px 0}.kpi{border:1px solid #666;padding:9px 5px;text-align:center;display:flex;flex-direction:column;gap:4px}.kpi span{font-size:20px}.kpi b{font-size:18px}.kpi small{font-size:9px;opacity:.7}
+.portalTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}.portalTabs button{font-size:10px;padding:8px 4px;border:1px solid #666}.portalTabs button.active{outline:2px solid #fff}
+.portalDashPanel{display:none;border:1px solid #555;padding:10px}.portalDashPanel.active{display:block}.dashGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dashGrid>article,.metricCard{border:1px solid #555;padding:10px;min-height:92px}.metricCard{display:flex;flex-direction:column;gap:4px}.metricCard>span{font-size:21px}.metricCard>b{font-size:18px}.metricCard small{opacity:.7}
+.miniRow,.recordAdminRow{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:1px dotted #555;padding:6px 0}.recordAdminRow{grid-template-columns:38px 1fr auto}
+.merchAdmin{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.merchAdmin>div{border:1px solid #555;padding:10px}.merchBig{display:flex;flex-direction:column;text-align:center}.merchBig b{font-size:32px}
+@media(max-width:700px){.portalKpis{grid-template-columns:repeat(3,1fr)}.portalTabs{grid-template-columns:repeat(2,1fr)}.dashGrid,.merchAdmin{grid-template-columns:1fr}.portalHero{padding:0 0 10px}}

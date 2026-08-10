@@ -44,6 +44,7 @@ async function login(){
     sessionStorage.setItem("stampertjesAdminPortalCode",code);
     loginCard.classList.add("hidden");portal.classList.remove("hidden");
     await refreshAll();
+    await refreshNewDashboard();
   }catch(err){
     console.error(err);loginStatus.textContent="Logincontrole mislukt.";
   }finally{loginBtn.disabled=false}
@@ -117,7 +118,7 @@ function renderPlayers(list){
         await refreshAll();
       }catch(err){
         console.error(err);
-        alert("Verwijderen is mislukt. Controleer of de v2.22 SQL-migratie is uitgevoerd.");
+        alert("Verwijderen is mislukt. Controleer of de v2.22.1 SQL-migratie is uitgevoerd.");
         btn.disabled=false;
         btn.textContent=original;
       }
@@ -134,7 +135,7 @@ function renderLevels(list){
       <strong>LEVEL ${n(x.level)}</strong>
       <span>${starts} starts</span><span>${done} klaar</span><span>${deaths} deaths</span><b>${pct}%</b>
     </div>`;
-  }).join(""):"<div class='small emptyBox'>Nog geen level-events geregistreerd. Speel v2.22 om deze data te vullen.</div>";
+  }).join(""):"<div class='small emptyBox'>Nog geen level-events geregistreerd. Speel v2.22.1 om deze data te vullen.</div>";
 }
 
 function renderBonuses(list){
@@ -192,7 +193,7 @@ function renderEvents(list){
       <span>${e.bonus_type?esc(e.bonus_type):""}</span>
       <small>${date(e.created_at)}</small>
     </div>
-  `).join(""):"<div class='small emptyBox'>Nog geen v2.22-events.</div>";
+  `).join(""):"<div class='small emptyBox'>Nog geen v2.22.1-events.</div>";
 }
 
 function renderPosts(list){
@@ -266,7 +267,9 @@ async function refreshAll(){
 
 loginBtn.addEventListener("click",login);
 adminCode.addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-refreshBtn.addEventListener("click",refreshAll);
+refreshBtn.addEventListener("click",async()=>{await refreshAll();await refreshNewDashboard();});
+$("refreshPortalDashboardBtn")?.addEventListener("click",refreshNewDashboard);
+initDashboardTabs();
 playerSearch.addEventListener("input",()=>renderPlayers(dashboardPlayers));
 openGameBtn.addEventListener("click",()=>location.href="./index.html");
 logoutBtn.addEventListener("click",()=>{
@@ -275,14 +278,118 @@ logoutBtn.addEventListener("click",()=>{
   adminCode.value="";loginStatus.textContent="Uitgelogd.";
 });
 
+
+function fmtDash(v){return Number(v||0).toLocaleString("nl-NL")}
+function fmtDuration(sec){
+  sec=Number(sec||0);
+  if(!sec)return "0m";
+  const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);
+  return h?`${h}u ${m}m`:`${m}m`;
+}
+function dashboardCards(target,items){
+  const el=$(target); if(!el)return;
+  el.innerHTML=items.map(([icon,title,value,sub])=>`
+    <article class="metricCard">
+      <span>${icon}</span><h3>${esc(title)}</h3><b>${esc(value)}</b><small>${esc(sub||"")}</small>
+    </article>`).join("");
+}
+function initDashboardTabs(){
+  const tabs=[...document.querySelectorAll("#portalTabs [data-tab]")];
+  const panels=[...document.querySelectorAll("[data-dash-panel]")];
+  tabs.forEach(btn=>btn.addEventListener("click",()=>{
+    tabs.forEach(x=>x.classList.toggle("active",x===btn));
+    panels.forEach(p=>p.classList.toggle("active",p.dataset.dashPanel===btn.dataset.tab));
+  }));
+}
+async function refreshNewDashboard(){
+  if(!activeAdminCode)return;
+  const health=$("dashHealth");
+  try{
+    if(!(await verify(activeAdminCode)))throw new Error("admin verification failed");
+
+    const [stats,analytics,hall,dash]=await Promise.all([
+      rpc("get_public_stats",{}),
+      rpc("get_v222_analytics",{}),
+      rpc("get_hall_of_fame",{p_device_id:null}),
+      rpc("admin_get_player_dashboard",{p_admin_code:activeAdminCode})
+    ]);
+
+    const t=stats?.totals||{};
+    const activity=dash?.activity||{};
+    setMetric("dashPlayers",fmtDash(t.players));
+    setMetric("dashGames",fmtDash(t.games_played));
+    setMetric("dashApples",fmtDash(t.apples_defeated));
+    setMetric("dashTeddy",fmtDash(t.teddy_finders));
+    setMetric("dashPlaytime",fmtDuration(analytics?.total_play_seconds));
+
+    const champ=Array.isArray(hall?.podium)&&hall.podium.length?hall.podium[0]:null;
+    setMetric("dashHighscore",champ?fmtDash(champ.value):"—");
+    setMetric("dashMetricEvents",fmtDash(analytics?.total_metric_events));
+
+    if(health)health.innerHTML="<b>🟢 SUPABASE VERBONDEN</b><br><small>Admin- en analyticsfuncties reageren.</small>";
+    const act=$("dashActivity");
+    if(act)act.innerHTML=`<div class="miniRow"><span>Actief 24u</span><b>${fmtDash(activity.active_24h)}</b></div>
+      <div class="miniRow"><span>Actief 7d</span><b>${fmtDash(activity.active_7d)}</b></div>
+      <div class="miniRow"><span>Nieuw 7d</span><b>${fmtDash(activity.new_7d)}</b></div>`;
+
+    const countries=Object.entries(analytics?.countries||{});
+    const ce=$("dashCountries");
+    if(ce)ce.innerHTML=countries.length
+      ?countries.map(([k,v])=>`<div class="miniRow"><span>${esc(k)}</span><b>${fmtDash(v)}</b></div>`).join("")
+      :"Nog geen land/regio geregistreerd.";
+
+    dashboardCards("gameplayDashboard",[
+      ["🎮","Potjes",fmtDash(t.games_played),"totaal"],
+      ["🍎","Appelieten",fmtDash(t.apples_defeated),"verslagen"],
+      ["💀","Deaths",fmtDash(t.deaths),"totaal"],
+      ["⏱️","Speeltijd",fmtDuration(analytics?.total_play_seconds),"vanaf v2.22"]
+    ]);
+
+    const starts=analytics?.level_starts||{}, completes=analytics?.level_completions||{};
+    dashboardCards("levelsDashboard",[1,2,3,4,5].map(l=>{
+      const s=Number(starts[String(l)]||starts[l]||0),c=Number(completes[String(l)]||completes[l]||0);
+      return ["🏰",`Level ${l}`,`${c}/${s}`,s?`${Math.round(c/s*100)}% voltooid`:"nog geen v2.22-data"];
+    }));
+
+    const podium=Array.isArray(hall?.podium)?hall.podium:[];
+    const rec=$("recordsDashboard");
+    if(rec)rec.innerHTML=podium.length?podium.map((x,i)=>`
+      <div class="recordAdminRow"><span>${["🥇","🥈","🥉"][i]||`${i+1}.`}</span>
+      <b>${esc(x.player_name||"SPELER")}</b><strong>${fmtDash(x.value)}</strong></div>`).join("")
+      :"Nog geen records.";
+
+    const teddyList=hall?.leaderboards?.teddy||[];
+    dashboardCards("teddyDashboard",[
+      ["🐈","Teddy-vinders",fmtDash(t.teddy_finders),"unieke spelers"],
+      ["🐾","Top vinder",teddyList[0]?.player_name||"—",teddyList[0]?`${fmtDash(teddyList[0].value)} encounters`:""],
+      ["🥚","Eerste Easter Egg",hall?.firsts?.teddy_easter?.player_name||"—","geheimenjager"]
+    ]);
+
+    // Merch is optional: SQL 008 may not have been executed yet.
+    try{
+      const merch=await rpc("admin_get_merch_summary",{p_key:activeAdminCode});
+      setMetric("merchInterestCount",fmtDash(merch?.interested));
+      setMetric("merchPersonalized",`${fmtDash(merch?.personalized)} geïnteresseerd in personalisatie`);
+      const sizes=Object.entries(merch?.sizes||{});
+      setMetric("merchSizes",sizes.length?sizes.map(([k,v])=>`${k}: ${v}`).join(" · "):"nog geen maten");
+    }catch(_){
+      setMetric("merchInterestCount","—");
+      setMetric("merchPersonalized","SQL 008 nog niet actief");
+      setMetric("merchSizes","—");
+    }
+  }catch(err){
+    console.error("Nieuw dashboard laden mislukt:",err);
+    if(health)health.innerHTML="<b>🔴 DASHBOARD FOUT</b><br><small>Controleer SQL 006/007 en de admin-login.</small>";
+  }
+}
 (async()=>{
-  const raw=window.STAMPERTJES_CONFIG?.version||"2.22";
+  const raw=window.STAMPERTJES_CONFIG?.version||"2.22.1";
   const version=$("portalVersion");
   if(version)version.textContent="v"+raw.replace("-beta"," Beta ");
   if(activeAdminCode){
     try{
       if(await verify(activeAdminCode)){
-        loginCard.classList.add("hidden");portal.classList.remove("hidden");await refreshAll();
+        loginCard.classList.add("hidden");portal.classList.remove("hidden");await refreshAll();await refreshNewDashboard();
       }else sessionStorage.removeItem("stampertjesAdminPortalCode");
     }catch(err){console.warn(err)}
   }
@@ -295,95 +402,6 @@ async function loadV222Analytics(){
     const d=await r.json();
     const countries=Object.entries(d.countries||{}).map(([k,v])=>`${k}: ${v}`).join(" · ")||"nog geen landen vastgelegd";
     el.innerHTML=`<div class="statRow"><span>Nieuwe metric-events</span><b>${Number(d.total_metric_events||0).toLocaleString("nl-NL")}</b></div><div class="statRow"><span>Gemeten speeltijd</span><b>${Math.round(Number(d.total_play_seconds||0)/60)} min</b></div><div class="statRow"><span>Landen</span><b>${countries}</b></div>`;
-  }catch(e){el.textContent="v2.22 analytics nog niet beschikbaar — controleer SQL 007.";}
+  }catch(e){el.textContent="v2.22.1 analytics nog niet beschikbaar — controleer SQL 007.";}
 }
 loadV222Analytics();
-
-const V222_LEGACY_HTML="\n<div class=\"wrap\">\n  <h1>\ud83c\udf4f GJ STUDIOS</h1>\n  <div class=\"small\">De Stampertjes Developer Portal \u00b7 <span id=\"portalVersion\">v2.22</span></div>\n\n  <section id=\"loginCard\" class=\"card\">\n    <h2>\ud83d\udd10 Beheerlogin</h2>\n    <input id=\"adminCode\" type=\"password\" autocomplete=\"current-password\" placeholder=\"Beheercode\" style=\"width:100%\">\n    <button id=\"loginBtn\" style=\"width:100%;margin-top:8px\">INLOGGEN</button>\n    <div id=\"loginStatus\" class=\"small\" style=\"margin-top:8px\"></div>\n  </section>\n\n  <section id=\"portal\" class=\"hidden\">\n    <div class=\"card\">\n      <h2>\ud83d\udcca Live status</h2>\n      <div class=\"row\"><span>Supabase</span><strong id=\"sbStatus\">-</strong></div>\n      <div class=\"metricGrid\">\n        <div class=\"metric\"><span>\ud83d\udc65 SPELERS</span><strong id=\"players\">-</strong></div>\n        <div class=\"metric\"><span>\ud83d\udfe2 ACTIEF 24U</span><strong id=\"active24\">-</strong></div>\n        <div class=\"metric\"><span>\ud83d\udcc5 ACTIEF 7D</span><strong id=\"active7\">-</strong></div>\n        <div class=\"metric\"><span>\u2728 NIEUW 7D</span><strong id=\"new7\">-</strong></div>\n        <div class=\"metric\"><span>\ud83c\udfae POTJES</span><strong id=\"games\">-</strong></div>\n        <div class=\"metric\"><span>\ud83d\udc7e APPELIETEN</span><strong id=\"apples\">-</strong></div>\n        <div class=\"metric\"><span>\ud83d\udc80 DEATHS</span><strong id=\"deaths\">-</strong></div>\n        <div class=\"metric\"><span>\ud83d\udc08 TEDDY</span><strong id=\"teddy\">-</strong></div>\n        <div class=\"metric\"><span>\ud83d\udcac CAF\u00c9</span><strong id=\"postCount\">-</strong></div>\n      </div>\n      <div class=\"row\"><span>Potjes / speler</span><strong id=\"gamesPerPlayer\">-</strong></div>\n      <div class=\"row\"><span>Appelieten / potje</span><strong id=\"applesPerGame\">-</strong></div>\n      <div class=\"row\"><span>Laatste refresh</span><strong id=\"lastRefresh\">-</strong></div>\n      <button id=\"refreshBtn\" style=\"width:100%;margin-top:10px\">VERVERS DASHBOARD</button>\n    </div>\n\n    <div class=\"card\">\n      <h2>\ud83d\udc65 Spelers</h2>\n      <input id=\"playerSearch\" type=\"search\" placeholder=\"Zoek naam of speler-ID\" style=\"width:100%;margin-bottom:10px\">\n      <div id=\"playerList\"></div>\n    </div>\n\n    <div class=\"card\">\n      <h2>\ud83c\udff0 Levels</h2>\n      <div class=\"small\">Starts \u00b7 voltooid \u00b7 deaths \u00b7 voltooiingspercentage</div>\n      <div id=\"levelAnalytics\"></div>\n    </div>\n\n    <div class=\"card\">\n      <h2>\ud83c\udf81 Bonusvoorwerpen</h2>\n      <div id=\"bonusAnalytics\"></div>\n    </div>\n\n    <div class=\"card\">\n      <h2>\ud83d\udcf1 Platform & audio</h2>\n      <h3>Platform</h3>\n      <div id=\"platformAnalytics\"></div>\n      <h3>Geluid</h3>\n      <div id=\"audioAnalytics\"></div>\n    </div>\n\n    <div class=\"card\">\n      <h2>\ud83d\udc08 Teddy ontdekkingen</h2>\n      <div class=\"teddyDiscoveryGrid\">\n        <div>\n          <h3>\ud83c\udfae Teddy Encounter \u00b7 +2000</h3>\n          <div id=\"teddyEncounterList\" class=\"discoveryList\"></div>\n        </div>\n        <div>\n          <h3>\ud83e\udd5a Verborgen Easter Egg \u00b7 +1000</h3>\n          <div id=\"teddyEasterList\" class=\"discoveryList\"></div>\n        </div>\n      </div>\n    </div>\n\n    <div class=\"card\">\n      <h2>\ud83d\udd52 Recente activiteit</h2><div class=\"small\">Spelersnaam wordt getoond; device-ID blijft alleen achter de schermen als technische koppeling.</div>\n      <div id=\"recentEvents\"></div>\n    </div>\n\n    <div class=\"card\">\n      <h2>\ud83d\udcac Caf\u00e9 beheer</h2>\n      <div id=\"cafeStatus\" class=\"small\"></div>\n      <div id=\"posts\"></div>\n    </div>\n\n    <div class=\"card\">\n      <h2>\u2699\ufe0f Beheer</h2>\n      <div class=\"grid\">\n        <button id=\"openGameBtn\">\ud83c\udfae OPEN SPEL</button>\n        <button id=\"logoutBtn\">\ud83d\udeaa UITLOGGEN</button>\n      </div>\n    </div>\n  </section>\n</div>\n\n<script src=\"config.js?v=222\"></script>\n<script src=\"admin.js?v=222\" defer></script>\n\n<section class=\"panel\"><h2>\ud83d\udcca v2.22 Kasteelarchief</h2><div id=\"v222Analytics\">Nieuwe analytics worden geladen\u2026</div></section>";
-
-(function(){
-  const $=id=>document.getElementById(id);
-  const tabs=[...document.querySelectorAll("#portalTabs [data-tab]")];
-  const panels=[...document.querySelectorAll("[data-panel]")];
-  tabs.forEach(btn=>btn.addEventListener("click",()=>{
-    tabs.forEach(x=>x.classList.toggle("active",x===btn));
-    panels.forEach(p=>p.classList.toggle("active",p.dataset.panel===btn.dataset.tab));
-  }));
-
-  // Keep all previous admin functionality available under System.
-  const legacy=$("legacyMount");
-  if(legacy && typeof V222_LEGACY_HTML==="string") legacy.innerHTML=V222_LEGACY_HTML;
-
-  function fmt(n){return Number(n||0).toLocaleString("nl-NL")}
-  function duration(sec){
-    sec=Number(sec||0); if(!sec)return "0m";
-    const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);
-    return h?`${h}u ${m}m`:`${m}m`;
-  }
-  async function rpc(name,body={}){
-    const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{
-      method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
-      body:JSON.stringify(body)
-    });
-    if(!r.ok)throw new Error(`${name}: ${r.status}`);
-    return r.json();
-  }
-  function cards(target,items){
-    const el=$(target); if(!el)return;
-    el.innerHTML=items.map(([icon,title,value,sub])=>`<article class="metricCard"><span>${icon}</span><h3>${title}</h3><b>${value}</b><small>${sub||""}</small></article>`).join("");
-  }
-  async function refreshV222Portal(){
-    try{
-      const [pub,analytics,hall]=await Promise.all([
-        rpc("get_public_stats"),
-        rpc("get_v222_analytics"),
-        rpc("get_hall_of_fame",{p_device_id:null})
-      ]);
-      $("systemSupabase").textContent="● VERBONDEN";
-      $("dashHealth").innerHTML="<b>🟢 Supabase verbonden</b><br><small>Live functies reageren.</small>";
-      $("dashPlayers").textContent=fmt(pub?.players);
-      $("dashGames").textContent=fmt(pub?.games);
-      $("dashApples").textContent=fmt(pub?.apples);
-      $("dashTeddy").textContent=fmt(pub?.teddy);
-      $("dashPlaytime").textContent=duration(analytics?.total_play_seconds);
-      $("systemEvents").textContent=fmt(analytics?.total_metric_events);
-      const champ=hall?.podium?.[0];
-      $("dashHighscore").textContent=champ?fmt(champ.value):"—";
-      const countries=Object.entries(analytics?.countries||{});
-      $("dashCountries").innerHTML=countries.length?countries.map(([k,v])=>`<div class="miniRow"><b>${k}</b><span>${v}</span></div>`).join(""):"Nog geen land/regio geregistreerd.";
-
-      const starts=analytics?.level_starts||{}, completes=analytics?.level_completions||{};
-      const levels=[1,2,3,4,5].map(l=>{
-        const s=Number(starts[l]||0),c=Number(completes[l]||0),pct=s?Math.round(c/s*100):0;
-        return ["🏰",`Level ${l}`,`${c}/${s}`,s?`${pct}% voltooid`:"nog geen data"];
-      });
-      cards("levelsDashboard",levels);
-      cards("gameplayDashboard",[
-        ["🎮","Potjes",fmt(pub?.games),"totaal"],
-        ["🍎","Appelieten",fmt(pub?.apples),"verslagen"],
-        ["💀","Deaths",fmt(pub?.deaths),"totaal"],
-        ["⏱️","Speeltijd",duration(analytics?.total_play_seconds),"vanaf v2.22"]
-      ]);
-      const teddy=hall?.leaderboards?.teddy||[];
-      cards("teddyDashboard",[
-        ["🐈","Ontmoetingen",fmt(pub?.teddy),"geregistreerd"],
-        ["🐾","Top vinder",teddy[0]?.player_name||"—",teddy[0]?`${teddy[0].value} keer`:""],
-        ["🥚","Eerste Easter Egg",hall?.firsts?.teddy_easter?.player_name||"—","geheimenjager"]
-      ]);
-      const bonus=hall?.leaderboards?.bonus||[];
-      cards("bonusDashboard",[
-        ["🎁","Top bonusjager",bonus[0]?.player_name||"—",bonus[0]?`${bonus[0].value} gepakt`:""],
-        ["📊","Tracking","ACTIEF","spawn/collect vanaf v2.22"]
-      ]);
-      $("recordsDashboard").innerHTML=(hall?.podium||[]).map((x,i)=>`<div class="recordAdminRow"><span>${["🥇","🥈","🥉"][i]||i+1}</span><b>${x.player_name}</b><strong>${fmt(x.value)}</strong></div>`).join("")||"Nog geen records.";
-      $("dashRecent").textContent="Gebruik het bestaande activiteitenoverzicht onder Systeem voor de volledige live eventfeed.";
-      $("dashTrend").innerHTML="📈 Vanaf v2.22 bouwen we historische level- en speeltijddata op.<br><small>Dag/weekgrafieken kunnen hierna zonder nieuwe tracking worden toegevoegd.</small>";
-    }catch(e){
-      console.error(e);
-      if($("systemSupabase"))$("systemSupabase").textContent="⚠ CONTROLEER SQL";
-      if($("dashHealth"))$("dashHealth").innerHTML="<b>⚠ Dashboarddata niet volledig bereikbaar.</b><br><small>Controleer SQL 006/007 en ververs.</small>";
-    }
-  }
-  $("refreshPortalBtn")?.addEventListener("click",refreshV222Portal);
-  setTimeout(refreshV222Portal,150);
-})();

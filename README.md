@@ -1,11 +1,12 @@
-# De Stampertjes v2.22 — Het Kasteel Onthoudt
+# De Stampertjes v2.22.1 — Portal Fix
 
-Grote analytics/security-basis voor toekomstige Hall of Fame-records, achievements en challenges.
+Gebaseerd op de werkende v2.22 Admin Portal.
 
-Voer `007_v222_analytics_security.sql` uit vóór publicatie.
+Opgelost:
+- bestaande admin-login en DOM blijven intact;
+- nieuw dashboard staat binnen het beveiligde #portal en verschijnt dus pas na succesvolle login;
+- get_public_stats wordt correct via `stats.totals` uitgelezen;
+- bestaande spelers-, Café-, Teddy-, event- en verwijderfuncties blijven werken;
+- nieuwe v2.22 analytics, Hall of Fame en optionele merchandise-samenvatting worden daarnaast geladen.
 
-Privacykeuze:
-- geen exacte GPS;
-- geen permanente IP-history;
-- alleen optioneel land/regio;
-- nieuwe metrics zijn gameplaygegevens.
+Geen nieuwe SQL nodig naast reeds gebruikte SQL 006, 007 en optioneel 008.
