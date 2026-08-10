@@ -6,9 +6,11 @@ const startBtn=document.getElementById("startBtn");
 const introCanvas=document.getElementById("introCanvas");
 const ictx=introCanvas.getContext("2d");
 ictx.imageSmoothingEnabled=false;
+const INTRO_LOGICAL_W=420,INTRO_LOGICAL_H=180;
 const highscoreEntry=document.getElementById("highscoreEntry");
 const nameInput=document.getElementById("nameInput");
 const saveScoreBtn=document.getElementById("saveScoreBtn");
+const shareScoreBox=document.getElementById("shareScoreBox"),shareScoreBtn=document.getElementById("shareScoreBtn"),shareScorePreview=document.getElementById("shareScorePreview");
 const scoreList=document.getElementById("scoreList");
 const introText=document.getElementById("introText");
 const mainMenu=document.getElementById("mainMenu");
@@ -38,10 +40,53 @@ const hallMenuBtn=document.getElementById("hallMenuBtn");
 const hallSection=document.getElementById("hallSection");
 const hallChampion=document.getElementById("hallChampion");
 const hallChampionScore=document.getElementById("hallChampionScore");
+const hallSecond=document.getElementById("hallSecond");
+const hallSecondScore=document.getElementById("hallSecondScore");
+const hallThird=document.getElementById("hallThird");
+const hallThirdScore=document.getElementById("hallThirdScore");
+const hallApples=document.getElementById("hallApples");
+const hallGames=document.getElementById("hallGames");
+const hallTeddyBadge=document.getElementById("hallTeddyBadge");
 const hallHighestLevel=document.getElementById("hallHighestLevel");
 const hallTeddyFinders=document.getElementById("hallTeddyFinders");
 const hallStatus=document.getElementById("hallStatus");
+const hallRecordGrid=document.getElementById("hallRecordGrid");
+const hallRecordModal=document.getElementById("hallRecordModal");
+const hallRecordModalCard=document.getElementById("hallRecordModalCard");
+const hallModalTitle=document.getElementById("hallModalTitle");
+const hallModalList=document.getElementById("hallModalList");
+const hallModalClose=document.getElementById("hallModalClose");
+const myHallRanks=document.getElementById("myHallRanks");
+const firstTeddyFinder=document.getElementById("firstTeddyFinder");
+const firstEasterFinder=document.getElementById("firstEasterFinder");
+const recordApplesName=document.getElementById("recordApplesName"),recordApplesValue=document.getElementById("recordApplesValue");
+const recordLevelName=document.getElementById("recordLevelName"),recordLevelValue=document.getElementById("recordLevelValue");
+const recordGamesName=document.getElementById("recordGamesName"),recordGamesValue=document.getElementById("recordGamesValue");
+const recordTeddyName=document.getElementById("recordTeddyName"),recordTeddyValue=document.getElementById("recordTeddyValue");
+const recordBonusName=document.getElementById("recordBonusName"),recordBonusValue=document.getElementById("recordBonusValue");
+const recordDeathsName=document.getElementById("recordDeathsName"),recordDeathsValue=document.getElementById("recordDeathsValue");
+let hallDataCache=null;
 
+
+const merchMenuBtn=document.getElementById("merchMenuBtn");
+const merchSection=document.getElementById("merchSection");
+const merchDesigns=document.getElementById("merchDesigns");
+const merchSizes=document.getElementById("merchSizes");
+const merchPersonalization=document.getElementById("merchPersonalization");
+const merchPlayerName=document.getElementById("merchPlayerName");
+const merchInterestBtn=document.getElementById("merchInterestBtn");
+const merchLaterBtn=document.getElementById("merchLaterBtn");
+const merchStatus=document.getElementById("merchStatus");
+const wallpaperGrid=document.getElementById("wallpaperGrid");
+const mediaViewer=document.getElementById("mediaViewer");
+const mediaViewerTitle=document.getElementById("mediaViewerTitle");
+const mediaViewerImage=document.getElementById("mediaViewerImage");
+const mediaViewerClose=document.getElementById("mediaViewerClose");
+const mediaViewerDownload=document.getElementById("mediaViewerDownload");
+const mediaViewerHint=document.getElementById("mediaViewerHint");
+let activeDownloadWallpaper=null;
+
+let merchChoice={design:"classic",size:"L",personalized:false};
 const cafeMenuBtn=document.getElementById("cafeMenuBtn");
 const cafeSection=document.getElementById("cafeSection");
 const cafeName=document.getElementById("cafeName");
@@ -65,12 +110,14 @@ const versionLabel=document.getElementById("versionLabel");
 const studioLine=document.getElementById("studioLine");
 const teddyEgg=document.getElementById("teddyEgg");
 const attractPrompt=document.getElementById("attractPrompt");
+const dailyCastleMessage=document.getElementById("dailyCastleMessage");
 const levelOverlay=document.getElementById("levelOverlay");
 const levelTitle=document.getElementById("levelTitle");
 const levelSubtitle=document.getElementById("levelSubtitle");
 let levelTransitioning=false;
 
 function showLevelTransition(completedLevel,nextLevel){
+  logGameEvent("level_complete",{level:completedLevel,score});
   if(musicOn&&!menuSoundtrack.paused)menuSoundtrack.volume=.06;
   const transitionStats=getStats();
   transitionStats.bestScore=Math.max(Number(transitionStats.bestScore)||0,Number(score)||0);
@@ -80,12 +127,13 @@ function showLevelTransition(completedLevel,nextLevel){
   state="transition";
   document.body.classList.remove("gameplayActive");
   levelTitle.textContent=`LEVEL ${completedLevel} VOLTOOID`;
-  levelSubtitle.textContent=`NIEUWE ZAAL — LEVEL ${nextLevel}`;
+  levelSubtitle.textContent=`NIEUWE ZAAL — ${CASTLE_ROOM_THEMES[roomIndexForLevel(nextLevel)].name}`;
   levelOverlay.classList.remove("hidden");
 
   setTimeout(()=>{
-    levelTitle.textContent=`LEVEL ${nextLevel}`;
-    levelSubtitle.textContent="MAAK JE KLAAR!";
+    const nextRoom=CASTLE_ROOM_THEMES[roomIndexForLevel(nextLevel)];
+    levelTitle.textContent=nextRoom.name;
+    levelSubtitle.textContent=`LEVEL ${nextLevel} · MAAK JE KLAAR!`;
   },900);
 
   setTimeout(()=>{
@@ -93,6 +141,7 @@ function showLevelTransition(completedLevel,nextLevel){
     levelTransitioning=false;
     state="play";
     spawnLevel();
+    logGameEvent("level_start",{level:nextLevel,score});
     if(musicOn){
       if(menuSoundtrack.paused)startMusic();
       else applyMusicVolume();
@@ -101,8 +150,61 @@ function showLevelTransition(completedLevel,nextLevel){
   },1900);
 }
 
+
+const DAILY_CASTLE_MESSAGES=[
+  "💡 TIP · Blijf bewegen. Een ladder dichtbij is soms meer waard dan punten.",
+  "🕯️ GERUCHT · In de westelijke toren brandde vannacht licht zonder dat iemand binnen was.",
+  "🐈 TEDDY · Er zijn pootafdrukken gevonden bij een raam op de bovenste verdieping.",
+  "☕ CAFÉ · Helden praten na. Kijk af en toe in het Stampertjes Café.",
+  "🍏 WAARSCHUWING · Appelieten leren je routes kennen. Wissel lopen en klimmen af.",
+  "🏰 KASTEELBERICHT · Niet ieder raam blijft de hele dag hetzelfde.",
+  "👂 GERUCHT · Wachters zweren dat er iets langs de kantelen vloog.",
+  "🎁 TIP · Een bonus kondigt zichzelf nu aan. Luister goed."
+];
+function seededDailyMessage(){
+  const d=new Date();
+  const seed=(d.getFullYear()*372+d.getMonth()*31+d.getDate());
+  return DAILY_CASTLE_MESSAGES[seed%DAILY_CASTLE_MESSAGES.length];
+}
+function refreshDailyCastleMessage(){
+  if(dailyCastleMessage)dailyCastleMessage.textContent=seededDailyMessage();
+}
+const GAME_MILESTONES=[10,50,100,250,500,1000];
+function milestoneForGames(games){
+  return GAME_MILESTONES.includes(Number(games))?Number(games):0;
+}
+function showMilestone(games){
+  const mark=milestoneForGames(games);
+  if(!mark)return;
+  const key=`stampertjesMilestoneShown_${mark}`;
+  if(localStorage.getItem(key)==="1")return;
+  localStorage.setItem(key,"1");
+  levelTransitioning=true;
+  state="transition";
+  levelTitle.textContent=`🏅 ${mark} POTJES`;
+  levelSubtitle.textContent=mark>=500?"EEN LEGENDE VAN HET KASTEEL!":"MIJLPAAL BEREIKT!";
+  levelOverlay.classList.remove("hidden");
+  setTimeout(()=>{
+    levelOverlay.classList.add("hidden");
+    levelTransitioning=false;
+    state="play";
+    document.body.classList.add("gameplayActive");
+  },1500);
+}
+
 let introFrame=0;
+let introScenario=0;
+let introScenarioSeed=Math.random()*1000;
+let introScenarioStarted=performance.now();
 let pendingScore=0;
+
+function randomizeIntroScenario(){
+  introScenario=Math.floor(Math.random()*5);
+  introScenarioSeed=Math.random()*1000;
+  introScenarioStarted=performance.now();
+  // Start at a different moment in the choreography so repeats feel less scripted.
+  introFrame=Math.floor(Math.random()*900);
+}
 
 const SUPABASE_URL=window.STAMPERTJES_CONFIG.supabaseUrl;
 const SUPABASE_KEY=window.STAMPERTJES_CONFIG.supabaseKey;
@@ -131,49 +233,125 @@ function normalizeScores(rows){
     })
     .slice(0,10);
 }
+function hallValueLabel(type,value){
+  const n=Number(value)||0;
+  if(type==="level")return `LEVEL ${n}`;
+  if(type==="teddy")return `${n} ontmoeting${n===1?"":"en"}`;
+  if(type==="bonus")return `${n} bonus${n===1?"":"sen"}`;
+  if(type==="deaths")return `${n} keer gevallen`;
+  if(type==="games")return `${n} potje${n===1?"":"s"}`;
+  if(type==="apples")return `${n} Appeliet${n===1?"":"en"}`;
+  if(type==="score")return `${n.toLocaleString("nl-NL")} punten`;
+  return String(n);
+}
+
+function setRecordPreview(list,nameEl,valueEl,type){
+  const top=Array.isArray(list)&&list.length?list[0]:null;
+  nameEl.textContent=top?String(top.player_name||"SPELER").toUpperCase():"NOG VRIJ";
+  valueEl.textContent=top?hallValueLabel(type,top.value):"—";
+}
+
+function renderHallModal(type){
+  if(!hallDataCache)return;
+  const meta={
+    apples:["🍎 APPELIETENJAGERS","apples"],
+    level:["🏰 DIEPSTE AVONTURIERS","level"],
+    games:["🎮 DOORZETTERS","games"],
+    teddy:["🐈 TEDDY WHISPERERS","teddy"],
+    bonus:["🎁 BONUSJAGERS","bonus"],
+    deaths:["💀 EEUWIGE STAMPERS","deaths"]
+  };
+  const [title,valueType]=meta[type]||["KASTEELRECORD",type];
+  const list=hallDataCache?.leaderboards?.[type]||[];
+  hallModalTitle.textContent=title;
+  hallModalList.innerHTML=list.length?list.map((p,i)=>`
+    <div class="hallRankRow">
+      <span>${i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}.`}</span>
+      <strong>${escapeHtml(p.player_name||"SPELER")}</strong>
+      <b>${hallValueLabel(valueType,p.value)}</b>
+    </div>
+  `).join(""):`<div class="small emptyBox">Nog geen records in deze categorie.</div>`;
+  hallRecordModal.classList.remove("hidden");
+  hallRecordModal.setAttribute("aria-hidden","false");
+}
+
+function closeHallModal(){
+  hallRecordModal.classList.add("hidden");
+  hallRecordModal.setAttribute("aria-hidden","true");
+}
+
+function renderMyHallRanks(ranks){
+  const items=[
+    ["🏆 Highscore","score"],
+    ["🍎 Appelietenjager","apples"],
+    ["🏰 Diepste avonturier","level"],
+    ["🎮 Doorzetter","games"],
+    ["🐈 Teddy Whisperer","teddy"],
+    ["🎁 Bonusjager","bonus"]
+  ];
+  myHallRanks.innerHTML=items.map(([label,key])=>{
+    const r=ranks?.[key];
+    if(!r||!r.rank)return `<div class="myRankRow"><span>${label}</span><strong>—</strong><small>nog geen positie</small></div>`;
+    return `<div class="myRankRow"><span>${label}</span><strong>#${Number(r.rank)}</strong><small>${hallValueLabel(key,Number(r.value)||0)}</small></div>`;
+  }).join("");
+}
+
 async function loadHallOfFame(){
   hallStatus.textContent="Live gegevens worden uit het kasteel opgehaald…";
   try{
-    const [scoreResponse,statsResponse]=await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=1`,{
-        headers:{
-          "apikey":SUPABASE_KEY,
-          "Authorization":`Bearer ${SUPABASE_KEY}`
-        }
-      }),
-      fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_stats`,{
-        method:"POST",
-        headers:{
-          "apikey":SUPABASE_KEY,
-          "Authorization":`Bearer ${SUPABASE_KEY}`,
-          "Content-Type":"application/json"
-        },
-        body:"{}"
-      })
-    ]);
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_hall_of_fame`,{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({p_device_id:getStatsDeviceId()})
+    });
+    if(!response.ok)throw new Error(`Hall ${response.status}: ${await response.text()}`);
+    const data=await response.json();
+    hallDataCache=data||{};
+    const podium=Array.isArray(data?.podium)?data.podium:[];
+    const setPodium=(entry,nameEl,scoreEl)=>{
+      nameEl.textContent=entry?String(entry.player_name||"SPELER").toUpperCase():"NOG VRIJ";
+      scoreEl.textContent=entry?`${Number(entry.value)||0} punten`:"—";
+    };
+    setPodium(podium[0],hallChampion,hallChampionScore);
+    setPodium(podium[1],hallSecond,hallSecondScore);
+    setPodium(podium[2],hallThird,hallThirdScore);
 
-    if(!scoreResponse.ok)throw new Error(`Scores ${scoreResponse.status}`);
-    if(!statsResponse.ok)throw new Error(`Stats ${statsResponse.status}`);
+    const lb=data?.leaderboards||{};
+    setRecordPreview(lb.apples,recordApplesName,recordApplesValue,"apples");
+    setRecordPreview(lb.level,recordLevelName,recordLevelValue,"level");
+    setRecordPreview(lb.games,recordGamesName,recordGamesValue,"games");
+    setRecordPreview(lb.teddy,recordTeddyName,recordTeddyValue,"teddy");
+    setRecordPreview(lb.bonus,recordBonusName,recordBonusValue,"bonus");
+    setRecordPreview(lb.deaths,recordDeathsName,recordDeathsValue,"deaths");
 
-    const scores=await scoreResponse.json();
-    const stats=await statsResponse.json();
-    const champion=Array.isArray(scores)&&scores.length?scores[0]:null;
-    const totals=stats?.totals||{};
+    renderMyHallRanks(data?.self_ranks||{});
+    firstTeddyFinder.textContent=data?.firsts?.teddy_encounter?.player_name
+      ? String(data.firsts.teddy_encounter.player_name).toUpperCase()
+      : "NOG NIET VASTGELEGD";
+    firstEasterFinder.textContent=data?.firsts?.teddy_easter?.player_name
+      ? String(data.firsts.teddy_easter.player_name).toUpperCase()
+      : "NOG NIET VASTGELEGD";
 
-    hallChampion.textContent=champion?String(champion.name||"SPELER").toUpperCase():"NOG GEEN";
-    hallChampionScore.textContent=champion?`${Number(champion.score)||0} punten · Lv${Number(champion.level)||1}`:"De troon is nog vrij";
-    hallHighestLevel.textContent=`LEVEL ${Number(totals.highest_level)||1}`;
-    hallTeddyFinders.textContent=String(Number(totals.teddy_finders)||0);
-    hallStatus.textContent="Hall of Fame bijgewerkt vanuit de wereldstatistieken.";
+    hallStatus.textContent="Eregalerij live bijgewerkt vanuit de wereldstatistieken.";
   }catch(err){
     console.error("Hall of Fame laden mislukt:",err);
-    hallChampion.textContent="NIET BEREIKBAAR";
-    hallChampionScore.textContent="probeer later opnieuw";
-    hallHighestLevel.textContent="—";
-    hallTeddyFinders.textContent="—";
     hallStatus.textContent="Live Hall of Fame-gegevens zijn tijdelijk niet bereikbaar.";
+    myHallRanks.innerHTML="<div class='small'>Jouw posities konden niet worden geladen.</div>";
   }
 }
+
+hallRecordGrid.addEventListener("click",e=>{
+  const tile=e.target.closest("[data-record]");
+  if(tile)renderHallModal(tile.dataset.record);
+});
+hallModalClose.addEventListener("click",closeHallModal);
+hallRecordModal.addEventListener("pointerdown",e=>{
+  if(e.target===hallRecordModal)closeHallModal();
+});
 
 async function loadOnlineHighscores(){
   scoreList.innerHTML="<div>Online scores laden…</div>";
@@ -257,6 +435,7 @@ function updateMenuMusicIconVisibility(){
 }
 
 function showMainMenu(){
+  setMusicContext("menu",{playNow:true});
   document.body.classList.remove("scoreMode");
   document.body.classList.remove("gameplayActive");
   if(!attractActive){
@@ -270,6 +449,7 @@ function showMainMenu(){
   roadmapSection.classList.add("hidden");
   hallSection.classList.add("hidden");
   cafeSection.classList.add("hidden");
+  merchSection.classList.add("hidden");
   statsSection.classList.add("hidden");
   highscoreEntry.classList.add("hidden");
   document.getElementById("highscoreBox").classList.add("hidden");
@@ -278,6 +458,10 @@ function showMainMenu(){
   updateMenuMusicIconVisibility();
 }
 function showMenuSection(section){
+  if(section===cafeSection)setMusicContext("cafe",{playNow:true});
+  else if(section===historySection)setMusicContext("chronicles",{playNow:true});
+  else if(section===hallSection)setMusicContext("special",{playNow:true});
+  else setMusicContext("menu",{playNow:true});
   mainMenu.classList.add("hidden");
   scoresSection.classList.add("hidden");
   helpSection.classList.add("hidden");
@@ -285,13 +469,21 @@ function showMenuSection(section){
   roadmapSection.classList.add("hidden");
   hallSection.classList.add("hidden");
   cafeSection.classList.add("hidden");
+  merchSection.classList.add("hidden");
   statsSection.classList.add("hidden");
   section.classList.remove("hidden");
   updateMenuMusicIconVisibility();
 }
+let menuTouchScrollUntil=0;
+
 function activateButton(button,handler){
   let locked=false;
-  const run=e=>{
+  let touchStartX=0;
+  let touchStartY=0;
+  let touchMoved=false;
+  let lastTouchEnd=0;
+
+  const execute=e=>{
     if(e){
       e.preventDefault();
       e.stopPropagation();
@@ -301,11 +493,100 @@ function activateButton(button,handler){
     handler();
     setTimeout(()=>{locked=false},220);
   };
-  button.addEventListener("click",run);
-  button.addEventListener("touchend",run,{passive:false});
+
+  // Desktop/muis blijft een normale klik.
+  button.addEventListener("click",e=>{
+    // Safari genereert na touchend vaak nog een synthetische click.
+    if(Date.now()-lastTouchEnd<700)return;
+    execute(e);
+  });
+
+  button.addEventListener("touchstart",e=>{
+    if(!e.touches||!e.touches.length)return;
+    const t=e.touches[0];
+    touchStartX=t.clientX;
+    touchStartY=t.clientY;
+    touchMoved=false;
+  },{passive:true});
+
+  button.addEventListener("touchmove",e=>{
+    if(!e.touches||!e.touches.length)return;
+    const t=e.touches[0];
+    const dx=Math.abs(t.clientX-touchStartX);
+    const dy=Math.abs(t.clientY-touchStartY);
+
+    // Zodra de vinger duidelijk beweegt is dit scrollen, geen knopdruk.
+    if(dx>10||dy>10){
+      touchMoved=true;
+      menuTouchScrollUntil=Date.now()+260;
+    }
+  },{passive:true});
+
+  button.addEventListener("touchend",e=>{
+    lastTouchEnd=Date.now();
+
+    // Een swipe of loslaten vlak na scrollen opent niets.
+    if(touchMoved||Date.now()<menuTouchScrollUntil){
+      touchMoved=false;
+      return;
+    }
+
+    execute(e);
+  },{passive:false});
+
+  button.addEventListener("touchcancel",()=>{
+    touchMoved=true;
+    menuTouchScrollUntil=Date.now()+260;
+  },{passive:true});
 }
 
-activateButton(playMenuBtn,()=>startGame());
+
+let menuScrollStartY=0;
+let menuScrollTracking=false;
+
+document.addEventListener("touchstart",e=>{
+  if(state!=="intro"||!e.touches||!e.touches.length)return;
+  menuScrollStartY=e.touches[0].clientY;
+  menuScrollTracking=true;
+},{passive:true});
+
+document.addEventListener("touchmove",e=>{
+  if(!menuScrollTracking||state!=="intro"||!e.touches||!e.touches.length)return;
+  if(Math.abs(e.touches[0].clientY-menuScrollStartY)>10){
+    menuTouchScrollUntil=Date.now()+280;
+  }
+},{passive:true});
+
+document.addEventListener("touchend",()=>{
+  menuScrollTracking=false;
+},{passive:true});
+
+document.addEventListener("touchcancel",()=>{
+  menuScrollTracking=false;
+  menuTouchScrollUntil=Date.now()+280;
+},{passive:true});
+
+
+async function registerCoarseLocation(){
+  try{
+    if(sessionStorage.getItem("stampertjesGeoDone")==="1")return;
+    const r=await fetch("https://ipapi.co/json/",{cache:"no-store"});
+    if(!r.ok)return;
+    const j=await r.json();
+    const country=String(j.country_code||"").trim().toUpperCase().slice(0,2);
+    const region=String(j.region||"").trim().slice(0,80);
+    if(!country)return;
+    const save=await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_player_location`,{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
+      body:JSON.stringify({p_device_id:getStatsDeviceId(),p_country_code:country,p_region_name:region||null})
+    });
+    if(save.ok)sessionStorage.setItem("stampertjesGeoDone","1");
+  }catch(_){}
+}
+setTimeout(registerCoarseLocation,1800);
+
+activateButton(playMenuBtn,()=>{ensurePlayerName();startGame();});
 activateButton(statsMenuBtn,async()=>{
   stopAttractMode();
   showMenuSection(statsSection);
@@ -344,6 +625,112 @@ activateButton(hallMenuBtn,async()=>{
   stopAttractMode();
   showMenuSection(hallSection);
   await loadHallOfFame();
+});
+
+
+function updateMerchUI(){
+  
+function openMediaViewer({src,title,downloadKey=null}){
+  activeDownloadWallpaper=downloadKey;
+  mediaViewerTitle.textContent=title||"BEKIJK GROOT";
+  mediaViewerImage.src=src;
+  mediaViewerDownload.classList.toggle("hidden",!downloadKey);
+  mediaViewerHint.classList.toggle("hidden",!downloadKey);
+  if(downloadKey){mediaViewerDownload.href=src;mediaViewerDownload.download=`de-stampertjes-${downloadKey}.png`;}
+  else{mediaViewerDownload.removeAttribute("href");mediaViewerDownload.removeAttribute("download");}
+  mediaViewer.classList.remove("hidden");mediaViewer.setAttribute("aria-hidden","false");
+}
+function closeMediaViewer(){mediaViewer.classList.add("hidden");mediaViewer.setAttribute("aria-hidden","true");activeDownloadWallpaper=null;}
+async function registerWallpaperDownload(){if(!activeDownloadWallpaper)return;try{await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_wallpaper_download`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({p_device_id:getStatsDeviceId(),p_wallpaper_key:activeDownloadWallpaper})});}catch(_){}}
+mediaViewerClose.addEventListener("click",e=>{e.preventDefault();closeMediaViewer()});
+mediaViewer.addEventListener("click",e=>{if(e.target===mediaViewer)closeMediaViewer()});
+mediaViewerDownload.addEventListener("click",registerWallpaperDownload);
+merchDesigns.querySelectorAll(".merchDesign img").forEach(img=>{
+  const open=e=>{e.preventDefault();e.stopPropagation();const card=img.closest(".merchDesign");const label=card?.querySelector(".merchDesignLabel")?.textContent||"STAMPERTJES SHIRT";openMediaViewer({src:img.getAttribute("src"),title:label});};
+  img.addEventListener("click",open);img.addEventListener("touchend",open,{passive:false});
+});
+wallpaperGrid.querySelectorAll("[data-wallpaper]").forEach(card=>activateButton(card,()=>openMediaViewer({src:card.dataset.src,title:card.dataset.title,downloadKey:card.dataset.wallpaper})));
+
+merchDesigns.querySelectorAll("[data-design]").forEach(btn=>btn.classList.toggle("selected",btn.dataset.design===merchChoice.design));
+  merchSizes.querySelectorAll("[data-size]").forEach(btn=>btn.classList.toggle("selected",btn.dataset.size===merchChoice.size));
+  merchPersonalization.querySelectorAll("[data-personalized]").forEach(btn=>btn.classList.toggle("selected",String(merchChoice.personalized)===btn.dataset.personalized));
+  const existing=getPlayerName();
+  if(!merchPlayerName.value || merchPlayerName.value==="SPELER")merchPlayerName.value=existing==="SPELER"?"":existing;
+  merchPlayerName.disabled=!merchChoice.personalized;
+  merchPlayerName.closest(".merchNameLabel")?.classList.toggle("disabled",!merchChoice.personalized);
+}
+
+async function submitMerchInterest(interested){
+  merchStatus.textContent=interested?"Interesse wordt genoteerd…":"Prima — misschien later!";
+  if(!interested){
+    try{
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_merch_interest`,{
+        method:"POST",
+        headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
+        body:JSON.stringify({
+          p_device_id:getStatsDeviceId(),
+          p_interested:false,
+          p_personalized:false,
+          p_shirt_size:null,
+          p_player_name:getPlayerName()
+        })
+      });
+    }catch(_){}
+    setTimeout(()=>showMainMenu(),500);
+    return;
+  }
+
+  const chosenName=merchChoice.personalized
+    ? String(merchPlayerName.value||getPlayerName()).trim().toUpperCase().slice(0,12)
+    : getPlayerName();
+
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_merch_interest`,{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
+      body:JSON.stringify({
+        p_device_id:getStatsDeviceId(),
+        p_interested:true,
+        p_personalized:merchChoice.personalized,
+        p_shirt_size:merchChoice.size,
+        p_player_name:chosenName,
+          p_shirt_design:merchChoice.design
+      })
+    });
+    if(!response.ok)throw new Error(`${response.status}: ${await response.text()}`);
+    localStorage.setItem("stampertjesMerchDesign",merchChoice.design);
+    localStorage.setItem("stampertjesMerchSize",merchChoice.size);
+    localStorage.setItem("stampertjesMerchPersonalized",String(merchChoice.personalized));
+    merchStatus.innerHTML=`✓ INTERESSE GENOTEERD<br><small>${merchChoice.design.toUpperCase()} · ${merchChoice.size}${merchChoice.personalized?` · ${escapeHtml(chosenName)}`:""}</small>`;
+    tone(440,.07,"square",.025,660);
+    setTimeout(()=>tone(660,.1,"square",.025,880),90);
+  }catch(err){
+    console.error("Merchandise interesse opslaan mislukt:",err);
+    merchStatus.textContent="Opslaan lukt nog niet. Controleer of SQL 008 actief is.";
+  }
+}
+
+merchDesigns.querySelectorAll("[data-design]").forEach(btn=>activateButton(btn,()=>{
+  merchChoice.design=btn.dataset.design;
+  if(merchChoice.design==="held")merchChoice.personalized=true;
+  updateMerchUI();
+}));
+merchSizes.querySelectorAll("[data-size]").forEach(btn=>activateButton(btn,()=>{merchChoice.size=btn.dataset.size;updateMerchUI();}));
+merchPersonalization.querySelectorAll("[data-personalized]").forEach(btn=>activateButton(btn,()=>{
+  merchChoice.personalized=btn.dataset.personalized==="true";
+  updateMerchUI();
+}));
+activateButton(merchInterestBtn,()=>submitMerchInterest(true));
+activateButton(merchLaterBtn,()=>submitMerchInterest(false));
+
+activateButton(merchMenuBtn,()=>{
+  stopAttractMode();
+  merchChoice.design=localStorage.getItem("stampertjesMerchDesign")||"classic";
+  merchChoice.size=localStorage.getItem("stampertjesMerchSize")||"L";
+  merchChoice.personalized=localStorage.getItem("stampertjesMerchPersonalized")==="true";
+  merchStatus.textContent="";
+  updateMerchUI();
+  showMenuSection(merchSection);
 });
 
 activateButton(cafeMenuBtn,async()=>{
@@ -409,6 +796,26 @@ function getPlayerName(){
   );
 }
 
+function ensurePlayerName(){
+  const existing=String(localStorage.getItem("stampertjesPlayerName")||"").trim();
+  if(existing && existing!=="SPELER")return existing;
+
+  // Ask once on this device. Cancelling keeps the anonymous fallback.
+  if(localStorage.getItem("stampertjesNameAsked")==="1")return "SPELER";
+  localStorage.setItem("stampertjesNameAsked","1");
+
+  const entered=window.prompt("HOE MOGEN WE JE NOEMEN?\\n(maximaal 10 tekens — overslaan mag)");
+  const clean=rememberPlayerName(entered);
+  if(clean){
+    if(nameInput)nameInput.value=clean;
+    if(cafeName && !getLockedCafeName())cafeName.value=clean;
+    queueStatsSync(getStats());
+    updatePlayerContextOnline();
+    return clean;
+  }
+  return "SPELER";
+}
+
 function updateProgressStats(){
   const s=getStats();
   s.bestScore=Math.max(Number(s.bestScore)||0,Number(score)||0);
@@ -467,6 +874,92 @@ async function syncOnlineStats(stats=getStats()){
   if(!response.ok){
     const text=await response.text();
     throw new Error(`${response.status}: ${text}`);
+  }
+}
+
+function detectGamePlatform(){
+  const ua=navigator.userAgent||"";
+  if(/iPhone/i.test(ua))return "iPhone";
+  if(/iPad/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1))return "iPad";
+  if(/Android/i.test(ua))return "Android";
+  if(navigator.maxTouchPoints>1&&innerWidth<800)return "Mobile";
+  return "Desktop";
+}
+
+async function updatePlayerContextOnline(){
+  try{
+    const payload={
+      p_device_id:getStatsDeviceId(),
+      p_player_name:getPlayerName(),
+      p_platform:detectGamePlatform(),
+      p_audio_mode:audioMode,
+      p_game_version:CURRENT_VERSION
+    };
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_player_context`,{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(payload)
+    });
+    if(!response.ok)throw new Error(`${response.status}: ${await response.text()}`);
+  }catch(err){
+    console.warn("Spelercontext synchroniseren mislukt:",err);
+  }
+}
+
+async function logGameEvent(eventType,extra={}){
+  try{
+    const payload={
+      p_device_id:getStatsDeviceId(),
+      p_event_type:eventType,
+      p_level:extra.level??level??null,
+      p_score:extra.score??score??null,
+      p_bonus_type:extra.bonusType??null,
+      p_room:extra.room??(typeof currentCastleTheme==="function"?currentCastleTheme().name:null),
+      p_platform:detectGamePlatform(),
+      p_game_version:CURRENT_VERSION
+    };
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/log_stampertjes_event`,{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(payload)
+    });
+    if(!response.ok)throw new Error(`${response.status}: ${await response.text()}`);
+  }catch(err){
+    // Analytics must never interrupt gameplay.
+    console.warn("Game-event kon niet worden geregistreerd:",eventType,err);
+  }
+}
+
+async function registerTeddyDiscovery(discoveryType){
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_teddy_discovery`,{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        p_device_id:getStatsDeviceId(),
+        p_player_name:getPlayerName(),
+        p_discovery_type:discoveryType,
+        p_level:state==="play"||state==="teddy"?level:null,
+        p_score:state==="play"||state==="teddy"?score:null,
+        p_platform:detectGamePlatform(),
+        p_game_version:CURRENT_VERSION
+      })
+    });
+    if(!response.ok)throw new Error(`${response.status}: ${await response.text()}`);
+  }catch(err){
+    console.warn("Teddy-ontdekking kon niet apart worden geregistreerd:",err);
   }
 }
 
@@ -659,6 +1152,7 @@ let chronicleIndex=0;
 let chronicleTurning=false;
 
 async function sfxPageTurn(){
+  if(!fxOn)return;
   const ready=await audio();
   if(!ready||!audioCtx)return;
   const now=audioCtx.currentTime;
@@ -1062,7 +1556,10 @@ function renderCafePosts(posts){
   });
 }
 
-nameInput.addEventListener("input",()=>rememberPlayerName(nameInput.value));
+nameInput.addEventListener("input",()=>{
+  rememberPlayerName(nameInput.value);
+  queueStatsSync(getStats());
+});
 
 cafeName.addEventListener("input",()=>{
   const locked=getLockedCafeName();
@@ -1162,7 +1659,31 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.15.5";
+const CURRENT_VERSION="2.22.5";
+
+// v2.22 richer analytics — failures never interrupt gameplay.
+const V222_SESSION_KEY="stampertjes_v222_session";
+let v222Session={startedAt:0,levelStartedAt:0,level:1,stamps:0,holes:0,apples:0,bonuses:0};
+function v222BeginSession(){
+  v222Session={startedAt:Date.now(),levelStartedAt:Date.now(),level:1,stamps:0,holes:0,apples:0,bonuses:0};
+}
+async function v222Metric(metric,value=1,extra={}){
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/rpc/record_game_metric`,{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
+      body:JSON.stringify({p_device_id:getStatsDeviceId(),p_metric:String(metric),p_value:Number(value)||0,p_extra:extra||{}})
+    });
+  }catch(_){}
+}
+function v222LevelStart(levelNo){
+  v222Session.level=Number(levelNo)||1; v222Session.levelStartedAt=Date.now();
+  v222Metric("level_start",1,{level:v222Session.level});
+}
+function v222LevelComplete(levelNo){
+  const seconds=Math.max(0,Math.round((Date.now()-v222Session.levelStartedAt)/1000));
+  v222Metric("level_complete",seconds,{level:Number(levelNo)||v222Session.level});
+}
 function showUpdateOnce(){
   const seen=localStorage.getItem("stampertjesSeenVersion");
   if(seen!==CURRENT_VERSION){
@@ -1209,10 +1730,18 @@ activateButton(versionLabel,()=>{
     const teddyStats=getStats();
     teddyStats.teddyFound=true;
     if(!Array.isArray(teddyStats.achievements))teddyStats.achievements=[];
-    if(!teddyStats.achievements.includes("teddy")){
-      teddyStats.achievements.push("teddy");
-    }
+    if(!teddyStats.achievements.includes("teddy_easter"))teddyStats.achievements.push("teddy_easter");
     saveStats(teddyStats);
+
+    // The hidden menu Easter egg is worth 1000 real points, once per device.
+    // Because the Easter egg lives in the menu, the bonus is applied to the next game.
+    if(localStorage.getItem("stampertjesTeddyEasterRewarded")!=="1"){
+      localStorage.setItem("stampertjesTeddyEasterRewarded","1");
+      localStorage.setItem("stampertjesPendingTeddyBonus","1000");
+    }
+
+    updatePlayerContextOnline();
+    registerTeddyDiscovery("easter");
 
     teddyEgg.classList.remove("hidden");
     duckMenuMusic(500);
@@ -1239,49 +1768,46 @@ let attractCycleTimer=null;
 
 function stopAttractMode(){
   clearTimeout(attractTimer);
-  clearTimeout(attractCycleTimer);
+  clearInterval(attractCycleTimer);
   attractActive=false;
   document.body.classList.remove("attractMode");
   attractPrompt.classList.add("hidden");
 }
+
 function startAttractMode(){
   if(!updateOverlay.classList.contains("hidden"))return;
   if(state!=="intro"||mainMenu.classList.contains("hidden"))return;
+
   attractActive=true;
+  randomizeIntroScenario();
+  document.body.classList.remove("scoreMode");
   document.body.classList.add("attractMode");
+  attractPrompt.textContent="TIK OM TERUG TE KEREN";
   attractPrompt.classList.remove("hidden");
 
-  attractCycleTimer=setTimeout(async()=>{
-    if(!attractActive)return;
-    document.body.classList.add("scoreMode");
-    showMenuSection(scoresSection);
-    await loadOnlineHighscores();
+  // Force an immediate repaint after changing to fullscreen.
+  requestAnimationFrame(()=>{introCanvas.style.visibility="visible";});
 
-    attractCycleTimer=setTimeout(()=>{
-      if(!attractActive)return;
-      document.body.classList.remove("scoreMode");
-      showMainMenu();
-      document.body.classList.add("attractMode");
-      attractPrompt.classList.remove("hidden");
-    },5000);
-  },12000);
+  // A new randomised attract sequence every minute.
+  clearInterval(attractCycleTimer);
+  attractCycleTimer=setInterval(()=>{
+    if(!attractActive)return;
+    randomizeIntroScenario();
+  },60000);
 }
+
 function armAttractMode(){
   clearTimeout(attractTimer);
   if(state!=="intro")return;
-  attractTimer=setTimeout(startAttractMode,15000);
+  attractTimer=setTimeout(startAttractMode,12000);
 }
+
 ["pointerdown","touchstart","keydown"].forEach(ev=>{
   window.addEventListener(ev,()=>{
     if(state==="intro"){
       const wasAttractActive=attractActive;
       stopAttractMode();
-
-      // Alleen vanuit de automatische attract mode terug naar het hoofdmenu.
-      // Normale taps op Uitleg, Highscores, Historie of Ontwikkeling
-      // mogen het gekozen scherm niet meteen weer sluiten.
       if(wasAttractActive)showMainMenu();
-
       armAttractMode();
     }
   },{passive:true,capture:false});
@@ -1310,21 +1836,74 @@ function startGame(){
   playMenuBtn.textContent="SPELEN";
   audio();
   score=0;level=1;lives=3;state="play";
+  const pendingTeddyBonus=Math.max(0,Number(localStorage.getItem("stampertjesPendingTeddyBonus"))||0);
+  if(pendingTeddyBonus){
+    score+=pendingTeddyBonus;
+    localStorage.removeItem("stampertjesPendingTeddyBonus");
+    effects.push({type:"score",x:145,y:90,t:120,text:`EASTER TEDDY +${pendingTeddyBonus}`});
+  }
   updateProgressStats();
-  if(musicOn)startMusic();
+  setMusicContext("gameplay",{playNow:true});
+  if(musicOn&&menuSoundtrack.paused)startMusic();
   const gameStats=getStats();
   gameStats.gamesPlayed=(Number(gameStats.gamesPlayed)||0)+1;
-  saveStats(gameStats);player.fastStamp=0;pauseOverlay.classList.add("hidden");pauseToggle.textContent="⏸ PAUZE";
+  saveStats(gameStats);
+  const reachedMilestone=milestoneForGames(gameStats.gamesPlayed);
+  updatePlayerContextOnline();
+  logGameEvent("game_start",{level:1,score:0});
+  player.fastStamp=0;pauseOverlay.classList.add("hidden");pauseToggle.textContent="⏸ PAUZE";
+  livingCastle.teddy=null;
+  livingCastle.teddyCelebrating=false;
+  livingCastle.teddyEligibleThisGame=Math.random()<0.30;
+  livingCastle.teddyAttemptedThisGame=false;
+  livingCastle.teddyFoundThisGame=false;
+  livingCastle.gameStartedAt=performance.now();
+  // Even eligible games wait at least 60 seconds; then one appearance only.
+  livingCastle.nextTeddy=livingCastle.teddyEligibleThisGame
+    ? livingCastle.gameStartedAt+60000+Math.random()*30000
+    : Infinity;
   spawnLevel();
+  logGameEvent("level_start",{level:1,score:0});
   clearStartZone();
   startFreeze=90;
   overlay.classList.add("hidden");
+  shareScoreBox.classList.add("hidden");
+  if(reachedMilestone)setTimeout(()=>showMilestone(reachedMilestone),320);
   setTimeout(()=>{startingGame=false},250);
+}
+
+function scoreShareText(){
+  const name=(getPlayerName()||"EEN STAMPERTJE").toUpperCase();
+  return `${name} bereikte level ${level} en scoorde ${score.toLocaleString("nl-NL")} punten in De Stampertjes. Kun jij deze score verslaan?`;
+}
+async function shareCurrentScore(){
+  const text=scoreShareText(),url=location.href.split("#")[0];
+  try{
+    if(navigator.share){
+      await navigator.share({title:"De Stampertjes · Score Challenge",text,url});
+      logGameEvent("score_share",{level,score});
+      return;
+    }
+  }catch(err){
+    if(err&&err.name==="AbortError")return;
+    console.warn("Native delen mislukt:",err);
+  }
+  try{
+    await navigator.clipboard.writeText(`${text}\n${url}`);
+    shareScoreBtn.textContent="✓ CHALLENGE GEKOPIEERD";
+    setTimeout(()=>shareScoreBtn.textContent="📤 DEEL MIJN SCORE",1800);
+    logGameEvent("score_share",{level,score});
+  }catch(err){
+    shareScoreBtn.textContent="DELEN NIET BESCHIKBAAR";
+    setTimeout(()=>shareScoreBtn.textContent="📤 DEEL MIJN SCORE",1800);
+  }
 }
 function showGameOverPanel(){
   updateProgressStats();
+  logGameEvent("game_over",{level,score});
   document.body.classList.remove("gameplayActive");
-  if(musicOn)startMusic();
+  setMusicContext("menu",{playNow:true});
+  if(musicOn&&menuSoundtrack.paused)startMusic();
   pendingScore=score;
   overlay.classList.remove("hidden");
   mainMenu.classList.add("hidden");
@@ -1334,9 +1913,12 @@ function showGameOverPanel(){
   roadmapSection.classList.add("hidden");
   hallSection.classList.add("hidden");
   cafeSection.classList.add("hidden");
+  merchSection.classList.add("hidden");
   statsSection.classList.add("hidden");
   startBtn.classList.add("hidden");
   document.getElementById("introText").textContent=`Je eindscore: ${score}`;
+  shareScorePreview.textContent=scoreShareText();
+  shareScoreBox.classList.remove("hidden");
   document.getElementById("highscoreBox").classList.toggle("hidden",qualifiesForHighscore(score));
   highscoreEntry.classList.toggle("hidden",!qualifiesForHighscore(score));
   if(qualifiesForHighscore(score)){
@@ -1347,6 +1929,7 @@ function showGameOverPanel(){
     playMenuBtn.textContent="OPNIEUW SPELEN";
   }
 }
+shareScoreBtn.addEventListener("pointerdown",e=>{e.preventDefault();shareCurrentScore();});
 startBtn.addEventListener("pointerdown",e=>{
   e.preventDefault();
   startBtn.textContent="START SPEL";
@@ -1386,6 +1969,9 @@ saveScoreBtn.addEventListener("pointerdown",async e=>{
   }
 });
 
+function drawIntroCastleBackdrop(){ictx.save();ictx.fillStyle="#c9c9c9";ictx.fillRect(7,7,406,166);ictx.strokeStyle="#888";ictx.lineWidth=1;for(let y=8,row=0;y<174;y+=16,row++){ictx.beginPath();ictx.moveTo(7,y);ictx.lineTo(413,y);ictx.stroke();const off=row%2?15:0;for(let x=7-off;x<413;x+=30){ictx.beginPath();ictx.moveTo(x,y);ictx.lineTo(x,y+16);ictx.stroke()}}const win=(x,y)=>{ictx.fillStyle="#777";ictx.fillRect(x,y+7,34,28);ictx.beginPath();ictx.arc(x+17,y+8,17,Math.PI,0);ictx.fill();ictx.strokeStyle="#ddd";ictx.lineWidth=2;ictx.strokeRect(x,y+8,34,27);ictx.beginPath();ictx.moveTo(x+17,y+1);ictx.lineTo(x+17,y+35);ictx.stroke()};win(20,18);win(366,18);const torch=(x,y,p)=>{const f=.6+.4*Math.sin(introFrame*.14+p);ictx.fillStyle="#333";ictx.fillRect(x-2,y+4,4,9);ictx.fillRect(x-6,y+11,12,2);ictx.fillStyle="#fff";ictx.beginPath();ictx.moveTo(x,y-10-f*4);ictx.lineTo(x-4,y+3);ictx.lineTo(x+4,y+3);ictx.closePath();ictx.fill()};torch(112,41,0);torch(307,41,2);ictx.globalAlpha=.35;ictx.fillStyle="#eee";const off=(introFrame*.45)%500;for(let i=0;i<3;i++){const x=((off+i*155)%520)-70;ictx.beginPath();ictx.ellipse(x,154+i%2*7,55,7,0,0,Math.PI*2);ictx.fill()}ictx.restore()}
+function drawIntroCastleLadder(x,y1,y2){ictx.fillStyle="#444";ictx.fillRect(x-2,y1,4,y2-y1);ictx.fillRect(x+19,y1,4,y2-y1);ictx.fillStyle="#777";for(let y=y1+7;y<y2;y+=10)ictx.fillRect(x,y,21,3)}
+function drawIntroCastleFloor(y,holeX=null,crackStage=0){ictx.fillStyle="#333";if(holeX===null)ictx.fillRect(12,y-5,396,10);else{ictx.fillRect(12,y-5,holeX-12,10);ictx.fillRect(holeX+42,y-5,408-(holeX+42),10)}ictx.fillStyle="#eee";ictx.fillRect(12,y-5,396,2);ictx.strokeStyle="#999";for(let x=14;x<407;x+=22){if(holeX!==null&&x>holeX-8&&x<holeX+45)continue;ictx.strokeRect(x,y-3,20,7)}ictx.fillStyle="#111";ictx.strokeStyle="#111";if(crackStage>0){ictx.lineWidth=2;ictx.beginPath();ictx.moveTo(holeX+10,y-7);ictx.lineTo(holeX+20,y);ictx.lineTo(holeX+13,y+7);if(crackStage>1){ictx.moveTo(holeX+32,y-7);ictx.lineTo(holeX+23,y);ictx.lineTo(holeX+31,y+7)}ictx.stroke()}}
 function drawIntroPlayer(x,y,pose="walk"){
   ictx.fillStyle="#111";
   ictx.fillRect(x+7,y,10,8);
@@ -1467,93 +2053,123 @@ function drawIntroDust(x,y,size){
   ictx.beginPath();ictx.arc(x,y-size*.35,size*.55,0,Math.PI*2);ictx.fill();
 }
 function drawIntro(){
+  ictx.save();
+  ictx.setTransform(introCanvas.width/INTRO_LOGICAL_W,0,0,introCanvas.height/INTRO_LOGICAL_H,0,0);
   introFrame++;
-  const phase=introFrame%420;
+
+  const scenarioOffset=(introScenario*173+Math.floor(introScenarioSeed))%1080;
+  const macroPhase=(introFrame+scenarioOffset)%3600;
+  const attractSegment=Math.floor(macroPhase/600);
+  const segmentOffsets=[0,520,180,760,340,900];
+  const phase=(macroPhase+segmentOffsets[(attractSegment+introScenario)%segmentOffsets.length])%1080;
 
   ictx.fillStyle="#fff";
   ictx.fillRect(0,0,420,180);
+  drawIntroCastleBackdrop();
   ictx.fillStyle="#111";
   ictx.strokeStyle="#111";
   ictx.lineWidth=4;
   ictx.strokeRect(6,6,408,168);
 
-  drawIntroLadder(70,48,96);
-  drawIntroLadder(282,96,144);
+  // Four visible demo floors, matching the taller main game.
+  const introFloors=[38,78,118,158];
 
-  // Extra attract-mode detail: een Appeliet klimt rustig op de linker ladder.
-  const ladderCycle=introFrame%300;
-  if(ladderCycle<110){
-    const climbProgress=ladderCycle/110;
-    drawIntroApple(66,70-(climbProgress*46),false,false);
+  // Two connecting ladders; positions vary by attract scenario.
+  const ladderA=55+(introScenario*31)%100;
+  const ladderB=245+(introScenario*37)%100;
+  const ladderC=145+(introScenario*43)%115;
+  drawIntroCastleLadder(ladderA,introFloors[0],introFloors[1]);
+  drawIntroCastleLadder(ladderB,introFloors[1],introFloors[2]);
+  drawIntroCastleLadder(ladderC,introFloors[2],introFloors[3]);
+
+  let crackStage=0,holeOpen=false;
+  if(phase>=430&&phase<475)crackStage=1;
+  if(phase>=475&&phase<520)crackStage=2;
+  if(phase>=520)holeOpen=true;
+
+  drawIntroCastleFloor(introFloors[0]);
+  drawIntroCastleFloor(introFloors[1]);
+  drawIntroCastleFloor(introFloors[2],holeOpen?274:null,crackStage);
+  drawIntroCastleFloor(introFloors[3]);
+
+  // Appeliet on upper floors / ladder.
+  if(phase<220){
+    drawIntroApple(330-phase*.7,introFloors[0]-26,false,false);
+  }else if(phase<360){
+    const p=(phase-220)/140;
+    drawIntroApple(ladderA-4,(introFloors[1]-26)-p*(introFloors[1]-introFloors[0]),false,false);
   }
 
-  let crackStage=0;
-  let holeOpen=false;
-  if(phase>=80&&phase<115)crackStage=1;
-  if(phase>=115&&phase<150)crackStage=2;
-  if(phase>=150)holeOpen=true;
-
-  drawIntroFloor(48);
-  drawIntroFloor(96);
-  drawIntroFloor(144,holeOpen?274:null,crackStage);
-
-  // Player movement and stamping
-  let px=34,pose="walk";
-  if(phase<70){
-    px=34+phase*2.8;
-  }else if(phase<150){
-    px=230;pose="stamp";
-  }else if(phase<250){
-    px=230;
-  }else if(phase<330){
-    px=230+(phase-250)*.55;
-  }else if(phase<400){
-    px=274;pose="stamp";
+  // Player starts on the third floor, demonstrates a trap, then climbs.
+  let px=28,py=introFloors[2]-28,pose="walk";
+  if(phase<260)px=28+(phase/260)*178;
+  else if(phase<390)px=206;
+  else if(phase<430)px=206+((phase-390)/40)*38;
+  else if(phase<520){px=244;pose="stamp"}
+  else if(phase<670)px=244;
+  else if(phase<790){px=270;pose=(Math.floor((phase-670)/20)%2===0)?"stamp":"walk"}
+  else if(phase<900)px=270+((phase-790)/110)*Math.max(0,ladderB-270);
+  else if(phase<1010){
+    const p=(phase-900)/110;
+    px=ladderB;
+    py=(introFloors[2]-28)-p*(introFloors[2]-introFloors[1]);
   }else{
-    px=274-(phase-400)*3.2;
+    px=ladderB+((phase-1010)/70)*70;
+    py=introFloors[1]-28;
   }
 
-  // Apple approaches and gets trapped
-  let ax=355,ay=116,trapped=false,panic=false,visible=true;
-  if(phase<150){
-    ax=355-(phase*.45);
-  }else if(phase<235){
+  let ax=365,ay=introFloors[2]-28,trapped=false,panic=false,visible=true;
+  if(phase<390)visible=false;
+  else if(phase<520)ax=365-((phase-390)/130)*58;
+  else if(phase<650)ax=307-((phase-520)/130)*20;
+  else if(phase<790){
     ax=287;
-    ay=128;
-    trapped=true;panic=true;
-  }else if(phase<330){
-    ax=287;ay=128;trapped=true;panic=true;
-  }else if(phase<365){
-    ax=287;ay=132;trapped=true;panic=true;
-  }else{
-    visible=false;
-  }
+    ay=introFloors[2]-16;
+    trapped=true;
+    panic=true;
+  }else visible=false;
 
-  drawIntroPlayer(px,116,pose);
+  drawIntroPlayer(px,py,pose);
   if(visible)drawIntroApple(ax,ay,trapped,panic);
 
-  // Text effects
-  ictx.font="bold 12px monospace";
-  if(phase>=80&&phase<115)ictx.fillText("KRAK!",235,112);
-  if(phase>=115&&phase<150)ictx.fillText("KRAK!!",232,112);
-  if(phase>=150&&phase<175)ictx.fillText("GAT!",242,112);
-  if(phase>=330&&phase<350)ictx.fillText("BAM!",250,106);
-  if(phase>=350&&phase<370)ictx.fillText("BAM!!",246,106);
-  if(phase>=365&&phase<400){
-    drawIntroDust(292,136,Math.min((phase-365)*.7,14));
-    ictx.fillText("+300",276,105);
+  // Extra Appeliet on the bottom floor makes all four levels feel active.
+  if(phase>=760){
+    const bx=35+((phase-760)*.43)%210;
+    drawIntroApple(bx,introFloors[3]-26,false,false);
   }
 
-  // Teddy easter egg runs through intro when active
+  ictx.font="bold 10px monospace";
+  if(phase<90)ictx.fillText("VIER VERDIEPINGEN · BLIJF BEWEGEN",103,173);
+  if(phase>=430&&phase<460)ictx.fillText("STAMP 1 — KRAK!",210,106);
+  if(phase>=460&&phase<490)ictx.fillText("STAMP 2 — KRAK!!",198,106);
+  if(phase>=490&&phase<530)ictx.fillText("STAMP 3 — GAT!",205,106);
+  if(phase>=640&&phase<690)ictx.fillText("GEVANGEN!",266,101);
+  if(phase>=690&&phase<730)ictx.fillText("BAM!",258,100);
+  if(phase>=730&&phase<770)ictx.fillText("BAM!!",254,100);
+  if(phase>=770&&phase<820){
+    drawIntroDust(292,introFloors[2]-8,Math.min((phase-770)*.35,13));
+    ictx.fillText("+300",278,99);
+  }
+  if(phase>=895&&phase<980)ictx.fillText("KLIM NAAR DE VOLGENDE VERDIEPING",102,173);
+  if(phase>=1010)ictx.fillText("KLAAR VOOR HET KASTEEL?",127,173);
+
+  ictx.font="8px monospace";
+  if(phase>=350&&phase<600)ictx.fillText("3× STAMPEN MAAKT EEN GAT",128,15);
+  else if(phase>=600&&phase<840)ictx.fillText("VANG · STAMP · SCOOR",151,15);
+  else if(phase>=840)ictx.fillText("GEBRUIK LADDERS OM TE ONTSNAPPEN",113,15);
+
   if(teddyEggActive){
-    const tx=20+((introFrame*1.8)%360);
+    const tx=20+((introFrame*1.1)%360);
     ictx.font="20px monospace";
-    ictx.fillText("ᓚᘏᗢ",tx,38);
+    ictx.fillText("ᓚᘏᗢ",tx,31);
   }
 
+  ictx.restore();
   requestAnimationFrame(drawIntro);
 }
+
 window.addEventListener("load",()=>{
+  refreshDailyCastleMessage();
   openIntro();
   drawIntro();
   setTimeout(tryImmediateMenuAutoplay,200);
@@ -1561,47 +2177,62 @@ window.addEventListener("load",()=>{
 });
 ctx.imageSmoothingEnabled=false;
 const W=c.width,H=c.height;
-const floors=[74,136,198,260,310];
+const floors=[64,126,188,250,312,372];
 const FLOOR_HITS=3;
 const ladderLayouts=[
+  // 1 Entreehal — beginner friendly, alternating routes and two safe exits at the start floor.
   [
-    {x:78,top:74,bottom:136},{x:308,top:74,bottom:136},
-    {x:180,top:136,bottom:198},{x:398,top:136,bottom:198},
-    {x:72,top:198,bottom:260},{x:292,top:198,bottom:260},
-    {x:210,top:260,bottom:310},{x:420,top:260,bottom:310}
+    {x:72,top:64,bottom:126},{x:310,top:64,bottom:126},
+    {x:176,top:126,bottom:188},{x:402,top:126,bottom:188},
+    {x:68,top:188,bottom:250},{x:286,top:188,bottom:250},
+    {x:190,top:250,bottom:312},{x:405,top:250,bottom:312},
+    {x:92,top:312,bottom:372},{x:335,top:312,bottom:372}
   ],
+  // 2 Wapenzaal — fixed: no ladder stack between the two lowest bands.
   [
-    {x:150,top:74,bottom:136},{x:390,top:74,bottom:136},
-    {x:55,top:136,bottom:198},{x:270,top:136,bottom:198},
-    {x:165,top:198,bottom:260},{x:405,top:198,bottom:260},
-    {x:85,top:260,bottom:310},{x:315,top:260,bottom:310}
+    {x:145,top:64,bottom:126},{x:386,top:64,bottom:126},
+    {x:52,top:126,bottom:188},{x:265,top:126,bottom:188},
+    {x:160,top:188,bottom:250},{x:400,top:188,bottom:250},
+    {x:80,top:250,bottom:312},{x:310,top:250,bottom:312},
+    {x:150,top:312,bottom:372},{x:390,top:312,bottom:372}
   ],
+  // 3 Bibliotheek — clear zig-zag routes without vertical ladder stacks.
   [
-    {x:50,top:74,bottom:136},{x:235,top:74,bottom:136},
-    {x:355,top:136,bottom:198},{x:120,top:136,bottom:198},
-    {x:245,top:198,bottom:260},{x:420,top:198,bottom:260},
-    {x:155,top:260,bottom:310},{x:365,top:260,bottom:310}
+    {x:64,top:64,bottom:126},{x:275,top:64,bottom:126},
+    {x:170,top:126,bottom:188},{x:405,top:126,bottom:188},
+    {x:55,top:188,bottom:250},{x:285,top:188,bottom:250},
+    {x:170,top:250,bottom:312},{x:395,top:250,bottom:312},
+    {x:70,top:312,bottom:372},{x:285,top:312,bottom:372}
   ],
+  // 4 Kerkers — alternating left/right paths, checked for minimum spacing.
   [
-    {x:110,top:74,bottom:136},{x:350,top:74,bottom:136},
-    {x:205,top:136,bottom:198},{x:430,top:136,bottom:198},
-    {x:45,top:198,bottom:260},{x:330,top:198,bottom:260},
-    {x:240,top:260,bottom:310},{x:405,top:260,bottom:310}
+    {x:120,top:64,bottom:126},{x:365,top:64,bottom:126},
+    {x:48,top:126,bottom:188},{x:245,top:126,bottom:188},
+    {x:145,top:188,bottom:250},{x:390,top:188,bottom:250},
+    {x:65,top:250,bottom:312},{x:285,top:250,bottom:312},
+    {x:160,top:312,bottom:372},{x:400,top:312,bottom:372}
   ],
+  // 5 Troonzaal — broad alternating routes and two reachable bottom exits.
   [
-    {x:60,top:74,bottom:136},{x:275,top:74,bottom:136},
-    {x:155,top:136,bottom:198},{x:370,top:136,bottom:198},
-    {x:95,top:198,bottom:260},{x:255,top:198,bottom:260},
-    {x:175,top:260,bottom:310},{x:390,top:260,bottom:310}
+    {x:82,top:64,bottom:126},{x:330,top:64,bottom:126},
+    {x:190,top:126,bottom:188},{x:405,top:126,bottom:188},
+    {x:60,top:188,bottom:250},{x:260,top:188,bottom:250},
+    {x:155,top:250,bottom:312},{x:390,top:250,bottom:312},
+    {x:65,top:312,bottom:372},{x:290,top:312,bottom:372}
   ]
-];
+]
 let ladders=ladderLayouts[0];
 let currentLayoutIndex=0;
+const CASTLE_ROOM_THEMES=[
+  {name:"ENTREEHAL",kind:"hall"},{name:"WAPENZAAL",kind:"arms"},{name:"BIBLIOTHEEK",kind:"books"},{name:"KERKERS",kind:"cells"},{name:"TROONZAAL",kind:"throne"}
+];
+function currentCastleTheme(){return CASTLE_ROOM_THEMES[currentLayoutIndex%CASTLE_ROOM_THEMES.length]}
+
 
 let keys={left:false,right:false,up:false,down:false};
 let frame=0,score=0,level=1,lives=3,state="intro",shake=0,startFreeze=0,deathAnimating=false,deathFrame=0;
 let holes=[],cracks=[],enemies=[],effects=[],bonus=null,bonusSpawnTimer=420,combo=0,comboTimer=0,enemyIdCounter=1;
-let player={x:30,y:282,w:24,h:28,onLadder:false,cool:0,dir:1,invulnerable:0};
+let player={x:30,y:344,w:24,h:28,onLadder:false,cool:0,dir:1,invulnerable:0};
 
 let audioCtx=null;
 let audioUnlocked=false;
@@ -1652,9 +2283,32 @@ const sfxKill=()=>{tone(120,.2,"sawtooth",.08,45);setTimeout(()=>tone(520,.1,"sq
 const sfxHurt=()=>tone(170,.22,"sawtooth",.08,70);
 
 const menuSoundtrack=document.getElementById("menuSoundtrack");
+const MUSIC_TRACKS=window.STAMPERTJES_CONFIG.musicTracks||{
+  menu:"music-menu.mp3",gameplay:"music-gameplay.mp3",cafe:"music-cafe.mp3",
+  chronicles:"music-chronicles.mp3",special:"music-special.mp3",reserve:"music-reserve.mp3"
+};
+let currentMusicContext="menu";
+let musicContextFadeTimer=null;
+function musicTrackForContext(context){return MUSIC_TRACKS[context]||MUSIC_TRACKS.menu}
+function fadeMusicTo(target,duration=400){
+  clearInterval(musicContextFadeTimer);
+  const start=menuSoundtrack.volume||0,steps=Math.max(1,Math.round(duration/40)),diff=target-start;let n=0;
+  musicContextFadeTimer=setInterval(()=>{n++;const p=Math.min(1,n/steps);menuSoundtrack.volume=Math.max(0,Math.min(1,start+diff*p));if(p>=1){clearInterval(musicContextFadeTimer);musicContextFadeTimer=null}},40);
+}
+async function setMusicContext(context,{playNow=true}={}){
+  const next=MUSIC_TRACKS[context]?context:"menu";
+  const file=musicTrackForContext(next);
+  currentMusicContext=next;
+  const current=decodeURIComponent((menuSoundtrack.currentSrc||menuSoundtrack.src||"").split("/").pop()||"");
+  if(current!==file){menuSoundtrack.pause();menuSoundtrack.src=file;menuSoundtrack.load();menuSoundtrack.volume=0}
+  if(playNow&&musicOn){try{await menuSoundtrack.play();fadeMusicTo(targetMusicVolume(),480)}catch(err){console.warn("Muziek wacht op gebruikersactie",err)}}
+}
+
 const MUSIC_VOLUME=.16;
 const GAMEPLAY_MUSIC_VOLUME=.11;
 let musicOn=true;
+let audioMode=localStorage.getItem("stampertjesAudioMode")||"all";
+let fxOn=audioMode!=="off";
 let musicFadeFrame=null;
 let musicTimer=null;
 
@@ -1662,20 +2316,21 @@ if(localStorage.getItem("stampertjesAudioMigration")!=="2.12"){
   localStorage.setItem("stampertjesMusic","1");
   localStorage.setItem("stampertjesAudioMigration","2.12");
 }
-musicOn=localStorage.getItem("stampertjesMusic")!=="0";
+musicOn=audioMode==="all";
 
 function setMusicButton(){
-  musicToggle.textContent="MUZIEK: "+(musicOn?"AAN":"UIT");
-  menuMusicIcon.textContent=musicOn?"🔊":"🔇";
-  menuMusicIcon.classList.toggle("musicOff",!musicOn);
-  menuMusicIcon.setAttribute("aria-label",musicOn?"Muziek uitzetten":"Muziek aanzetten");
+  const labels={all:"🎵 ALLES AAN",fx:"🔊 ALLEEN FX",off:"🔇 ALLES UIT"};
+  musicToggle.textContent=labels[audioMode]||labels.all;
+  menuMusicIcon.textContent=audioMode==="all"?"🎵":audioMode==="fx"?"🔊":"🔇";
+  menuMusicIcon.classList.toggle("musicOff",audioMode==="off");
+  menuMusicIcon.setAttribute("aria-label",labels[audioMode]||labels.all);
 }
 
 function isMenuState(){
   return state==="intro"||state==="gameover";
 }
 function isGameplayState(){
-  return state==="play"||state==="paused"||state==="transition"||state==="dying";
+  return state==="play"||state==="paused"||state==="transition"||state==="dying"||state==="teddy";
 }
 function targetMusicVolume(){
   if(state==="dying")return .05;
@@ -1755,19 +2410,14 @@ function handleFirstAudioGesture(){
 });
 
 function toggleMusicFromUser(){
-  const next=!musicOn;
+  audioMode=audioMode==="all"?"fx":audioMode==="fx"?"off":"all";
+  fxOn=audioMode!=="off";
+  musicOn=audioMode==="all";
+  localStorage.setItem("stampertjesAudioMode",audioMode);
+  localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
   setMusicButton();
-  if(next){
-    musicOn=true;
-    localStorage.setItem("stampertjesMusic","1");
-    setMusicButton();
-    startMusic();
-  }else{
-    musicOn=false;
-    localStorage.setItem("stampertjesMusic","0");
-    setMusicButton();
-    stopMusic();
-  }
+  if(musicOn)startMusic(); else stopMusic();
+  updatePlayerContextOnline();
   audio();
 }
 
@@ -1864,20 +2514,19 @@ function tileX(x){return Math.max(18,Math.min(W-58,Math.floor((x+12)/40)*40))}
 function ladderNear(x,y){
   return ladders.find(l=>x+12>l.x-12&&x+12<l.x+30&&y+28>=l.top-5&&y<=l.bottom+5);
 }
-function chooseLayoutForLevel(levelNumber){
-  // Level 1 start altijd met de vertrouwde indeling.
-  if(levelNumber===1){
-    currentLayoutIndex=0;
-  }else{
-    const previous=currentLayoutIndex;
-    let next=previous;
-    while(next===previous && ladderLayouts.length>1){
-      next=Math.floor(Math.random()*ladderLayouts.length);
-    }
-    currentLayoutIndex=next;
-  }
+function roomIndexForLevel(levelNumber){
+  // Levels cycle through the five castle rooms in a fixed order:
+  // 1 Entreehal, 2 Wapenzaal, 3 Bibliotheek, 4 Kerkers, 5 Troonzaal,
+  // then the cycle repeats from level 6.
+  const n=Math.max(1,Number(levelNumber)||1);
+  return (n-1)%CASTLE_ROOM_THEMES.length;
+}
 
-  // Maak een kopie zodat latere animaties nooit de basislayout wijzigen.
+function chooseLayoutForLevel(levelNumber){
+  currentLayoutIndex=roomIndexForLevel(levelNumber);
+
+  // The room theme and ladder layout always use the SAME index.
+  // This prevents e.g. "LEVEL 2 WAPENZAAL" while the HUD says TROONZAAL.
   ladders=ladderLayouts[currentLayoutIndex].map(l=>({...l}));
 }
 
@@ -1908,7 +2557,7 @@ function ensureGameplayControlsVisible(){
 function resetPlayerSafely(){
   ensureGameplayControlsVisible();
   player.x=30;
-  player.y=floors[4]-player.h;
+  player.y=floors[floors.length-1]-player.h;
   player.onLadder=false;
   player.cool=0;
   player.invulnerable=210; // ongeveer 2,5 seconde bescherming
@@ -1917,14 +2566,15 @@ function resetPlayerSafely(){
 
 function spawnLevel(){
   chooseLayoutForLevel(level);
+  if(livingCastle.teddy&&!livingCastle.teddy.dancing)livingCastle.teddy=null;
   keys.left=keys.right=keys.up=keys.down=false;
   pauseOverlay.classList.add("hidden");
   pauseToggle.textContent="⏸ PAUZE";
   holes=[];cracks=[];enemies=[];effects=[];bonus=null;bonusSpawnTimer=300+Math.random()*300;combo=0;comboTimer=0;
-  player.x=30;player.y=floors[4]-player.h;player.onLadder=false;player.cool=0;player.invulnerable=210;
-  const count=Math.min(3+level,7);
+  player.x=30;player.y=floors[floors.length-1]-player.h;player.onLadder=false;player.cool=0;player.invulnerable=210;
+  const count=Math.min(2+level,7);
   for(let i=0;i<count;i++){
-    const fi=i%4;
+    const fi=i%(floors.length-2);
     let type="green";
     if(level>=3 && i%4===1)type="red";
     if(level>=5 && i%5===2)type="black";
@@ -1945,7 +2595,6 @@ function spawnLevel(){
   }
   clearStartZone();
 }
-spawnLevel();
 
 function trappedEnemyUnderPlayer(){
   const pc=player.x+player.w/2;
@@ -2142,35 +2791,77 @@ function startEnemyLadder(e,l,targetFloor){
 
 
 function drawDeathScene(progress){
-  dctx.fillStyle="#fff";
-  dctx.fillRect(0,0,deathCanvas.width,deathCanvas.height);
+  const w=deathCanvas.width;
+  const h=deathCanvas.height;
+
+  // Monochrome stone chamber instead of the old empty white screen.
+  dctx.fillStyle="#c7c7c7";
+  dctx.fillRect(0,0,w,h);
+
+  dctx.strokeStyle="#888";
+  dctx.lineWidth=1;
+  for(let y=0,row=0;y<h;y+=16,row++){
+    dctx.beginPath();dctx.moveTo(0,y);dctx.lineTo(w,y);dctx.stroke();
+    const off=row%2?15:0;
+    for(let x=-off;x<w;x+=30){
+      dctx.beginPath();dctx.moveTo(x,y);dctx.lineTo(x,y+16);dctx.stroke();
+    }
+  }
+
+  // Side columns and floor.
+  dctx.fillStyle="#888";
+  dctx.fillRect(0,0,10,h);
+  dctx.fillRect(w-10,0,10,h);
+
+  dctx.fillStyle="#333";
+  dctx.fillRect(8,124,w-16,9);
+  dctx.fillStyle="#efefef";
+  dctx.fillRect(8,124,w-16,2);
+
+  // Torch flicker in the death scene.
+  const torch=(x,y,phase)=>{
+    const f=.5+.5*Math.sin(progress*28+phase);
+    dctx.fillStyle="#333";
+    dctx.fillRect(x-2,y+5,4,9);
+    dctx.fillRect(x-6,y+12,12,2);
+    dctx.fillStyle="#fff";
+    dctx.beginPath();
+    dctx.moveTo(x,y-11-f*4);
+    dctx.lineTo(x-4,y+3);
+    dctx.lineTo(x+4,y+3);
+    dctx.closePath();
+    dctx.fill();
+  };
+  torch(35,57,0);
+  torch(w-35,57,2);
+
+  // Enemy stays visible as the cause of the hit.
   dctx.fillStyle="#111";
-  dctx.strokeStyle="#111";
-
-  // Ground
-  dctx.fillRect(10,125,220,7);
-
-  // Appleiet
   dctx.beginPath();
   dctx.arc(168,104,15,0,Math.PI*2);
   dctx.fill();
   dctx.fillRect(166,83,4,8);
   dctx.fillRect(156,117,7,5);
   dctx.fillRect(174,117,7,5);
-  dctx.fillStyle="#fff";
+  dctx.fillStyle="#ddd";
   dctx.fillRect(161,99,3,3);
   dctx.fillRect(173,99,3,3);
-  dctx.fillStyle="#111";
 
-  // Player falls backwards in stages
+  // Short hit freeze, then the player tips backwards and sinks down.
+  const freeze=Math.min(1,progress/.14);
+  const fallP=Math.max(0,(progress-.14)/.58);
+  const settleP=Math.max(0,(progress-.72)/.28);
+
   const x=78;
-  const y=94-Math.sin(Math.min(progress,0.55)*Math.PI)*18;
-  const angle=Math.min(progress*1.8,1.4);
+  const hop=Math.sin(Math.min(fallP,1)*Math.PI)*14;
+  const y=94-hop+(settleP*11);
+  const angle=Math.min(fallP*1.25,1.25);
+
   dctx.save();
   dctx.translate(x+12,y+14);
   dctx.rotate(-angle);
   dctx.translate(-12,-14);
-
+  dctx.fillStyle="#111";
   dctx.fillRect(7,0,10,8);
   dctx.fillRect(3,8,18,13);
   dctx.fillRect(0,12,4,8);
@@ -2179,16 +2870,45 @@ function drawDeathScene(progress){
   dctx.fillRect(14,21,7,7);
   dctx.restore();
 
-  // Stars
-  if(progress>.35){
-    dctx.font="18px monospace";
-    dctx.fillText("✦",48,58);
-    dctx.fillText("✦",92,48);
-    dctx.fillText("✦",120,66);
+  // Dust / little stone particles appear on impact.
+  if(progress>.32){
+    const p=Math.min(1,(progress-.32)/.5);
+    dctx.fillStyle="#555";
+    dctx.globalAlpha=1-p*.65;
+    const particles=[
+      [-26,-3],[-18,-13],[-8,-20],[8,-18],[18,-11],[27,-4]
+    ];
+    particles.forEach(([dx,dy],i)=>{
+      const spread=p*(12+i%3*4);
+      dctx.fillRect(
+        Math.round(x+12+dx*(.25+p*.8)),
+        Math.round(119+dy*p-spread*.15),
+        i%2?3:4,
+        i%2?3:4
+      );
+    });
+    dctx.globalAlpha=1;
   }
 
+  // Low drifting mist.
+  dctx.fillStyle="#eee";
+  dctx.globalAlpha=.35;
+  for(let i=0;i<3;i++){
+    const mx=((progress*95+i*85)%(w+70))-40;
+    dctx.beginPath();
+    dctx.ellipse(mx,132+i%2*5,38,6,0,0,Math.PI*2);
+    dctx.fill();
+  }
+  dctx.globalAlpha=1;
+
+  dctx.fillStyle="#111";
   dctx.font="bold 14px monospace";
-  if(progress>.12)dctx.fillText("BAM!",92,28);
+  if(progress>.10&&progress<.52)dctx.fillText("BAM!",92,28);
+
+  if(progress>.68){
+    dctx.font="10px monospace";
+    dctx.fillText("HET KASTEEL GEEFT NIET ZOMAAR OP...",24,151);
+  }
 }
 
 function animateDeath(startTime,duration,isGameOver){
@@ -2217,11 +2937,11 @@ function showDeathSequence(isGameOver){
 
   deathOverlay.classList.remove("hidden");
   sfxHurt();
-  animateDeath(performance.now(),1150,isGameOver);
+  animateDeath(performance.now(),1450,isGameOver);
 
   setTimeout(()=>{
-    deathText.textContent=isGameOver?"Eindscore wordt klaargemaakt...":"Nieuw leven over 1...";
-  },1150);
+    deathText.textContent=isGameOver?"Eindscore wordt klaargemaakt...":"Het kasteel zet je weer op de been...";
+  },1450);
 
   setTimeout(()=>{
     deathOverlay.classList.add("hidden");
@@ -2238,7 +2958,7 @@ function showDeathSequence(isGameOver){
       if(musicOn&&!menuSoundtrack.paused)applyMusicVolume();
       document.body.classList.add("gameplayActive");
     }
-  },2200);
+  },2450);
 }
 
 function updateEnemies(){
@@ -2393,6 +3113,7 @@ function updateEnemies(){
       deathStats.bestScore=Math.max(Number(deathStats.bestScore)||0,score);
       deathStats.highestLevel=Math.max(Number(deathStats.highestLevel)||1,level);
       saveStats(deathStats);
+      logGameEvent("death",{level,score});
       showDeathSequence(lives<=0);
       return;
     }
@@ -2409,15 +3130,33 @@ function updateEnemies(){
 }
 
 
+function sfxBonusAppear(type){
+  // Short, recognisable arcade cue when a bonus enters the castle.
+  // tone() already respects ALLES AAN / ALLEEN FX / ALLES UIT.
+  if(type==="clock"){
+    tone(880,.055,"square",.028,1040);
+    setTimeout(()=>tone(1175,.07,"square",.024,1320),65);
+  }else if(type==="banana"){
+    tone(420,.055,"square",.026,610);
+    setTimeout(()=>tone(690,.06,"square",.022,820),55);
+  }else if(type==="star"){
+    tone(760,.05,"square",.025,1080);
+    setTimeout(()=>tone(1280,.075,"square",.022,1500),50);
+  }else{
+    tone(560,.055,"square",.026,720);
+    setTimeout(()=>tone(840,.06,"square",.022,940),55);
+  }
+}
+
 function spawnBonus(){
   const types=["cherry","banana","star","clock"];
   const type=types[Math.floor(Math.random()*types.length)];
 
-  let floor=Math.floor(Math.random()*4);
+  let floor=Math.floor(Math.random()*floors.length);
   let x=60+Math.random()*(W-120);
 
   for(let tries=0;tries<20;tries++){
-    floor=Math.floor(Math.random()*4);
+    floor=Math.floor(Math.random()*floors.length);
     x=60+Math.random()*(W-120);
 
     const nearHole=holes.some(h=>h.floor===floor && Math.abs((h.x+20)-x)<55);
@@ -2430,9 +3169,12 @@ function spawnBonus(){
   }
 
   bonus={type,floor,x,y:floors[floor]-18,timer:600};
+  sfxBonusAppear(type);
+  logGameEvent("bonus_spawn",{level,score,bonusType:type});
 }
 function collectBonus(){
   if(!bonus)return;
+  const collectedBonusType=bonus.type;
   let earned=0;
   if(bonus.type==="cherry")earned=500;
   if(bonus.type==="banana")earned=1000;
@@ -2448,6 +3190,7 @@ function collectBonus(){
       updateProgressStats();
   effects.push({type:"score",x:bonus.x,y:bonus.y-12,t:70,text:`+${earned}`});
   tone(520,.08,"square",.04,760);
+  logGameEvent("bonus_collect",{level,score,bonusType:collectedBonusType});
   bonus=null;
   bonusSpawnTimer=500+Math.random()*500;
 }
@@ -2471,7 +3214,12 @@ function updateBonus(){
 
 function update(){
   if(state!=="play")return;
-  frame++;updatePlayer();updateEnemies();updateBonus();
+  frame++;
+  updatePlayer();
+  updateGameplayTeddy();
+  if(state!=="play")return; // Teddy encounter freezes enemies/bonus immediately.
+  updateEnemies();
+  updateBonus();
   holes.forEach(h=>{
     // Een bezet gat blijft bestaan zolang de appel erin zit.
     if(h.occupiedBy===null)h.timer--;
@@ -2515,12 +3263,304 @@ function drawApple(e){
   }
   ctx.restore();
 }
-function drawFloor(a,b,y){
-  ctx.fillRect(a,y-5,b-a,10);
-  ctx.fillStyle="#fff";
-  for(let x=a+8;x<b;x+=22)ctx.fillRect(x,y-1,10,2);
-  ctx.fillStyle="#111";
+const livingCastle={
+  fogOffset:0,
+  dust:Array.from({length:14},()=>({x:Math.random()*W,y:35+Math.random()*(H-70),vx:(Math.random()-.5)*.05,vy:.02+Math.random()*.04,a:.15+Math.random()*.18})),
+  pebble:null,nextPebble:performance.now()+5000,
+  bat:null,nextBat:performance.now()+4500+Math.random()*7000,
+  teddy:null,nextTeddy:Infinity,teddyCelebrating:false,teddyMusicWasPlaying:false,teddyEligibleThisGame:false,teddyAttemptedThisGame:false,teddyFoundThisGame:false,gameStartedAt:0,
+  windowShift:Math.floor(Math.random()*4),
+  flagPhase:Math.random()*6
+};
+function drawGothicWindow(x,y,closed=false){ctx.save();ctx.fillStyle=closed?"#555":"#777";ctx.fillRect(x,y+8,38,31);ctx.beginPath();ctx.arc(x+19,y+9,19,Math.PI,0);ctx.fill();ctx.strokeStyle="#ddd";ctx.lineWidth=2;ctx.strokeRect(x,y+9,38,30);ctx.beginPath();ctx.moveTo(x+19,y+1);ctx.lineTo(x+19,y+39);ctx.moveTo(x,y+24);ctx.lineTo(x+38,y+24);ctx.stroke();ctx.restore()}
+function drawCastleTorch(x,y,phase,now=performance.now()){const f=.55+.45*Math.sin(now*.011+phase);ctx.save();ctx.fillStyle="#333";ctx.fillRect(x-2,y+5,4,10);ctx.fillRect(x-7,y+13,14,3);const h=12+Math.round(f*5);ctx.fillStyle="#555";ctx.beginPath();ctx.moveTo(x,y-h);ctx.lineTo(x-6,y+5);ctx.lineTo(x,y+1);ctx.lineTo(x+6,y+5);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.moveTo(x,y-h+4);ctx.lineTo(x-2,y+3);ctx.lineTo(x+2,y+3);ctx.closePath();ctx.fill();ctx.restore()}
+
+function castleTorchPositionIsClear(x,y){
+  const padX=30;
+  const top=y-24;
+  const bottom=y+18;
+  return !ladders.some(l=>{
+    const ladderCenter=l.x+10;
+    const verticalOverlap=bottom>=l.top && top<=l.bottom;
+    return verticalOverlap && Math.abs(x-ladderCenter)<padX;
+  });
 }
+
+function drawSafeCastleTorch(preferredX,y,phase){
+  // Keep torches between ladders instead of allowing ladders to cover them.
+  const candidates=[
+    preferredX,
+    preferredX-42,
+    preferredX+42,
+    preferredX-74,
+    preferredX+74,
+    preferredX-105,
+    preferredX+105
+  ];
+
+  let x=preferredX;
+  for(const candidate of candidates){
+    if(candidate<35||candidate>W-35)continue;
+    if(castleTorchPositionIsClear(candidate,y)){
+      x=candidate;
+      break;
+    }
+  }
+
+  drawCastleTorch(x,y,phase);
+}
+
+function drawCastleBackdrop(){
+  const theme=currentCastleTheme(), top=30, bottom=H-14, bh=bottom-top;
+  ctx.save();
+  ctx.fillStyle=theme.kind==="cells"?"#b6b6b6":"#cacaca";
+  ctx.fillRect(10,top,W-20,bh);
+  ctx.strokeStyle="#8a8a8a";ctx.lineWidth=1;
+  for(let y=top+1,row=0;y<bottom;y+=17,row++){
+    ctx.beginPath();ctx.moveTo(10,y);ctx.lineTo(W-10,y);ctx.stroke();
+    const off=row%2?17:0;
+    for(let x=10-off;x<W-10;x+=34){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+17);ctx.stroke()}
+  }
+  ctx.fillStyle="#8a8a8a";ctx.fillRect(10,top,14,bh);ctx.fillRect(W-24,top,14,bh);
+  [127,343].forEach(x=>{ctx.fillStyle="#aaa";ctx.fillRect(x,top+1,16,bh-2);ctx.fillStyle="#666";ctx.fillRect(x-3,top+1,22,5);ctx.fillRect(x-3,bottom-5,22,5)});
+  if(theme.kind!=="cells"){
+    const s=livingCastle.windowShift;
+    drawGothicWindow(40,78,s===0);drawGothicWindow(220,140,s===1);
+    drawGothicWindow(401,78,s===2);drawGothicWindow(220,265,s===3);
+  }
+  if(theme.kind==="books")[[35,88],[370,88],[204,205],[45,282]].forEach(([x,y])=>{ctx.fillStyle="#666";ctx.fillRect(x,y,68,36);ctx.fillStyle="#ddd";for(let bx=x+5;bx<x+64;bx+=8)ctx.fillRect(bx,y+5,5,25)});
+  if(theme.kind==="cells")[[42,84],[365,84],[204,204],[42,276]].forEach(([x,y])=>{ctx.strokeStyle="#555";ctx.lineWidth=3;ctx.strokeRect(x,y,68,38);for(let bx=x+10;bx<x+66;bx+=12){ctx.beginPath();ctx.moveTo(bx,y);ctx.lineTo(bx,y+38);ctx.stroke()}});
+  if(theme.kind==="throne"){ctx.fillStyle="#555";ctx.fillRect(212,274,56,40);ctx.fillRect(220,257,40,20);ctx.fillStyle="#ddd";ctx.fillRect(229,264,22,8)}
+  if(theme.kind==="arms"){ctx.strokeStyle="#555";ctx.lineWidth=3;[[70,95],[390,95],[240,280]].forEach(([x,y])=>{ctx.beginPath();ctx.moveTo(x-12,y-12);ctx.lineTo(x+12,y+12);ctx.moveTo(x+12,y-12);ctx.lineTo(x-12,y+12);ctx.stroke()})}
+  // Subtle moving banners: enough motion to make the room feel inhabited.
+  const wave=Math.sin(performance.now()*.004+livingCastle.flagPhase)*4;
+  ctx.fillStyle="#666";
+  ctx.fillRect(176,38,3,42);ctx.fillRect(301,38,3,42);
+  ctx.beginPath();ctx.moveTo(179,42);ctx.lineTo(202+wave,47);ctx.lineTo(179,61);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(304,42);ctx.lineTo(328-wave,47);ctx.lineTo(304,61);ctx.closePath();ctx.fill();
+  drawSafeCastleTorch(104,98,0);drawSafeCastleTorch(376,98,1.7);drawSafeCastleTorch(155,218,3);drawSafeCastleTorch(325,218,4.4);drawSafeCastleTorch(240,330,2.2);
+  livingCastle.fogOffset=(livingCastle.fogOffset+.075)%W;ctx.globalAlpha=.35;ctx.fillStyle="#eee";
+  for(let i=0;i<4;i++){const x=((livingCastle.fogOffset+i*135)%(W+170))-105,y=H-46+(i%2)*10;ctx.beginPath();ctx.ellipse(x,y,56,8,0,0,Math.PI*2);ctx.ellipse(x+42,y+2,48,7,0,0,Math.PI*2);ctx.fill()}
+  ctx.restore()
+}
+
+function safeTeddySpawnPosition(){
+  // Teddy must always appear on a real, reachable floor and away from hazards.
+  for(let attempt=0;attempt<60;attempt++){
+    const floor=Math.floor(Math.random()*floors.length);
+    const x=42+Math.random()*(W-84);
+    const y=floors[floor]-24;
+
+    const nearLadder=ladders.some(l=>
+      (l.top===floors[floor]||l.bottom===floors[floor]) &&
+      Math.abs((l.x+10)-x)<48
+    );
+    const nearHole=holes.some(h=>h.floor===floor&&Math.abs((h.x+20)-x)<65);
+    const nearEnemy=enemies.some(e=>!e.dead&&e.floor===floor&&Math.abs((e.x+14)-x)<65);
+    const nearBonus=bonus&&bonus.floor===floor&&Math.abs(bonus.x-x)<50;
+    const nearPlayer=floorIndex(player.y+player.h)===floor&&Math.abs((player.x+12)-x)<95;
+
+    if(!nearLadder&&!nearHole&&!nearEnemy&&!nearBonus&&!nearPlayer){
+      return {floor,x,y};
+    }
+  }
+
+  // Reliable fallback on the bottom floor if random placement cannot find a slot.
+  return {floor:floors.length-1,x:W-70,y:floors[floors.length-1]-24};
+}
+
+function spawnGameplayTeddy(){
+  if(state!=="play"||livingCastle.teddy||livingCastle.teddyCelebrating)return;
+  const pos=safeTeddySpawnPosition();
+  livingCastle.teddy={
+    floor:pos.floor,
+    x:pos.x,
+    y:pos.y,
+    spawnedAt:performance.now(),
+    expiresAt:performance.now()+8000,
+    dancing:false,
+    danceStarted:0
+  };
+}
+
+function drawGameplayTeddy(teddy){
+  if(!teddy)return;
+  const now=performance.now();
+  let x=teddy.x,y=teddy.y;
+
+  if(teddy.dancing){
+    const elapsed=now-teddy.danceStarted;
+    const beat=elapsed/115;
+    x+=Math.sin(beat)*7;
+    y-=Math.abs(Math.sin(beat*1.15))*10;
+  }else{
+    y-=Math.sin(now*.008)*1.5;
+  }
+
+  ctx.save();
+  ctx.globalAlpha=1;
+  ctx.fillStyle="#111";
+
+  // Pixel-cat Teddy: ears, head, body, paws and tail.
+  ctx.fillRect(Math.round(x-9),Math.round(y-17),18,12);
+  ctx.fillRect(Math.round(x-10),Math.round(y-21),5,6);
+  ctx.fillRect(Math.round(x+5),Math.round(y-21),5,6);
+  ctx.fillRect(Math.round(x-8),Math.round(y-6),16,13);
+  ctx.fillRect(Math.round(x-9),Math.round(y+6),5,5);
+  ctx.fillRect(Math.round(x+4),Math.round(y+6),5,5);
+  ctx.fillRect(Math.round(x+8),Math.round(y-4),8,4);
+  ctx.fillRect(Math.round(x+13),Math.round(y-10),4,8);
+
+  ctx.fillStyle="#eee";
+  ctx.fillRect(Math.round(x-5),Math.round(y-14),3,3);
+  ctx.fillRect(Math.round(x+3),Math.round(y-14),3,3);
+
+  if(!teddy.dancing){
+    ctx.fillStyle="#111";
+    ctx.font="bold 8px monospace";
+    ctx.textAlign="center";
+    ctx.fillText("TEDDY",Math.round(x),Math.round(y-27));
+  }
+  ctx.restore();
+}
+
+function playTeddyJingle(){
+  if(!fxOn)return;
+  const notes=[
+    [659,0],[784,170],[988,340],[784,520],
+    [880,700],[1047,870],[1319,1040],[1047,1230],
+    [988,1430],[1175,1600],[1319,1770],[1568,1960],
+    [1319,2180],[1047,2380],[1319,2580]
+  ];
+  notes.forEach(([freq,delay],i)=>{
+    setTimeout(()=>{
+      if(audioMode==="off")return;
+      tone(freq,i===notes.length-1?.24:.11,"square",.035,freq*(i%3===0?1.06:1));
+    },delay);
+  });
+}
+
+function finishTeddyMoment(){
+  livingCastle.teddy=null;
+  livingCastle.teddyCelebrating=false;
+  livingCastle.teddyFoundThisGame=true;
+  livingCastle.teddyAttemptedThisGame=true;
+  livingCastle.nextTeddy=Infinity;
+
+  if(state==="teddy"){
+    state="play";
+    startFreeze=45;
+    document.body.classList.add("gameplayActive");
+  }
+
+  // Resume the exact gameplay soundtrack where it was paused.
+  if(livingCastle.teddyMusicWasPlaying&&musicOn){
+    applyMusicVolume();
+    menuSoundtrack.play().catch(err=>console.warn("Muziek hervatten na Teddy lukte niet:",err));
+  }
+  livingCastle.teddyMusicWasPlaying=false;
+}
+
+function triggerTeddyMoment(){
+  const teddy=livingCastle.teddy;
+  if(!teddy||teddy.dancing||livingCastle.teddyCelebrating)return;
+
+  livingCastle.teddyCelebrating=true;
+  teddy.dancing=true;
+  teddy.danceStarted=performance.now();
+
+  // This is a special moment: gameplay and enemies freeze, normal music stops completely.
+  keys.left=keys.right=keys.up=keys.down=false;
+  state="teddy";
+  livingCastle.teddyMusicWasPlaying=musicOn&&!menuSoundtrack.paused;
+  if(!menuSoundtrack.paused)menuSoundtrack.pause();
+
+  score+=2000;
+  const teddyStats=getStats();
+  teddyStats.teddyFound=true;
+  teddyStats.bestScore=Math.max(Number(teddyStats.bestScore)||0,score);
+  if(!Array.isArray(teddyStats.achievements))teddyStats.achievements=[];
+  if(!teddyStats.achievements.includes("teddy_encounter"))teddyStats.achievements.push("teddy_encounter");
+  saveStats(teddyStats);
+  updatePlayerContextOnline();
+  registerTeddyDiscovery("encounter");
+
+  effects.push({type:"score",x:teddy.x-25,y:teddy.y-35,t:150,text:"TEDDY GEVONDEN! +2000"});
+  playTeddyJingle();
+
+  setTimeout(finishTeddyMoment,3000);
+}
+
+function updateGameplayTeddy(){
+  const now=performance.now();
+
+  if(!livingCastle.teddy){
+    if(
+      state==="play" &&
+      !livingCastle.teddyCelebrating &&
+      livingCastle.teddyEligibleThisGame &&
+      !livingCastle.teddyAttemptedThisGame &&
+      now>=livingCastle.nextTeddy
+    ){
+      livingCastle.teddyAttemptedThisGame=true;
+      spawnGameplayTeddy();
+    }
+    return;
+  }
+
+  const teddy=livingCastle.teddy;
+  if(teddy.dancing)return;
+
+  if(now>=teddy.expiresAt){
+    livingCastle.teddy=null;
+    // Missing Teddy ends the single Teddy chance for this game.
+    livingCastle.nextTeddy=Infinity;
+    return;
+  }
+
+  // Physical encounter: the Stampertje must actually reach Teddy on the same floor.
+  const playerFloor=floorIndex(player.y+player.h);
+  const sameFloor=playerFloor===teddy.floor;
+  const touching=sameFloor &&
+    Math.abs((player.x+player.w/2)-teddy.x)<23 &&
+    Math.abs((player.y+player.h)-(teddy.y+24))<10;
+
+  if(touching)triggerTeddyMoment();
+}
+
+function drawLivingCastle(){
+  if(state!=="play"&&state!=="paused"&&state!=="teddy")return;
+  ctx.save();
+  livingCastle.dust.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.y>H-20){p.y=38;p.x=Math.random()*W}
+    ctx.globalAlpha=p.a;ctx.fillStyle="#555";ctx.fillRect(Math.round(p.x),Math.round(p.y),2,2)
+  });
+  const now=performance.now();
+
+  if(!livingCastle.pebble&&now>livingCastle.nextPebble)livingCastle.pebble={x:40+Math.random()*(W-80),y:34,vy:.75};
+  if(livingCastle.pebble){
+    livingCastle.pebble.y+=livingCastle.pebble.vy;ctx.globalAlpha=.7;ctx.fillStyle="#444";
+    ctx.fillRect(livingCastle.pebble.x,livingCastle.pebble.y,3,3);
+    if(livingCastle.pebble.y>H-20){livingCastle.pebble=null;livingCastle.nextPebble=now+6000+Math.random()*9000}
+  }
+
+  // Rare bat crosses the upper castle.
+  if(!livingCastle.bat&&now>livingCastle.nextBat)livingCastle.bat={x:-18,y:42+Math.random()*65,vx:1.15+Math.random()*.55};
+  if(livingCastle.bat){
+    const b=livingCastle.bat;b.x+=b.vx;ctx.globalAlpha=.75;ctx.fillStyle="#222";
+    const flap=Math.sin(now*.018)*4;
+    ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x-9,b.y-4-flap);ctx.lineTo(b.x-5,b.y+4);ctx.lineTo(b.x,b.y+1);ctx.lineTo(b.x+5,b.y+4);ctx.lineTo(b.x+9,b.y-4-flap);ctx.closePath();ctx.fill();
+    if(b.x>W+20){livingCastle.bat=null;livingCastle.nextBat=now+8000+Math.random()*15000}
+  }
+
+  // Gameplay Teddy is drawn on a reachable floor; the player must walk into him.
+  if(livingCastle.teddy)drawGameplayTeddy(livingCastle.teddy);
+  ctx.restore();
+}
+function drawCastleFloor(a,b,y){ctx.save();ctx.fillStyle="#333";ctx.fillRect(a,y-7,b-a,14);ctx.fillStyle="#eee";ctx.fillRect(a,y-7,b-a,2);ctx.strokeStyle="#999";for(let x=a+2;x<b;x+=22)ctx.strokeRect(x,y-5,20,10);ctx.restore();ctx.fillStyle="#111";ctx.strokeStyle="#111"}
+function drawCastleLadder(l){ctx.save();ctx.fillStyle="#444";ctx.fillRect(l.x-2,l.top,4,l.bottom-l.top);ctx.fillRect(l.x+18,l.top,4,l.bottom-l.top);ctx.fillStyle="#777";for(let y=l.top+7;y<l.bottom;y+=10)ctx.fillRect(l.x,y,20,3);ctx.restore()}
+function drawFloor(a,b,y){drawCastleFloor(a,b,y)}
 function drawEffects(){
   effects.forEach(e=>{
     if(e.type==="dust"){
@@ -2529,7 +3569,20 @@ function drawEffects(){
       ctx.beginPath();ctx.arc(e.x+r,e.y,r*.45,0,Math.PI*2);ctx.fill();
       ctx.beginPath();ctx.arc(e.x,e.y-r*.35,r*.55,0,Math.PI*2);ctx.fill();
     }else if(e.type==="score"){
-      ctx.font="bold 12px monospace";ctx.fillText(e.text,e.x,e.y-(55-e.t)*.3);
+      const isTeddy=String(e.text||"").includes("TEDDY");
+      ctx.font=isTeddy?"bold 14px monospace":"bold 12px monospace";
+      if(isTeddy){
+        ctx.save();
+        ctx.fillStyle="#fff";
+        ctx.strokeStyle="#111";
+        ctx.lineWidth=4;
+        ctx.strokeText(e.text,Math.max(18,e.x),Math.max(52,e.y-(150-e.t)*.15));
+        ctx.fillStyle="#111";
+        ctx.fillText(e.text,Math.max(18,e.x),Math.max(52,e.y-(150-e.t)*.15));
+        ctx.restore();
+      }else{
+        ctx.fillText(e.text,e.x,e.y-(55-e.t)*.3);
+      }
     }else if(e.type==="combo"){
       ctx.font="bold 11px monospace";ctx.fillText(e.text,e.x,e.y-(70-e.t)*.25);
     }else if(e.type==="escape"){
@@ -2542,14 +3595,71 @@ function drawEffects(){
 
 function drawBonus(){
   if(!bonus)return;
-  const x=bonus.x,y=bonus.y;
+
+  const x=bonus.x;
+  const y=bonus.y+Math.sin(frame*.085)*2;
+
   ctx.save();
-  ctx.font="bold 16px monospace";
-  const symbol=bonus.type==="cherry"?"●●":bonus.type==="banana"?")":bonus.type==="star"?"★":"◷";
-  ctx.fillText(symbol,x-8,y);
-  if(bonus.timer<120 && Math.floor(bonus.timer/8)%2===0){
-    ctx.fillStyle="#fff";ctx.fillRect(x-12,y-18,30,24);
+  ctx.globalAlpha=1;
+
+  ctx.fillStyle="#111";
+  ctx.globalAlpha=.18;
+  ctx.beginPath();
+  ctx.ellipse(x,y+9,14,3,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.globalAlpha=1;
+  ctx.fillStyle="#111";
+  ctx.strokeStyle="#111";
+  ctx.lineWidth=2;
+
+  if(bonus.type==="banana"){
+    ctx.lineWidth=6;
+    ctx.beginPath();
+    ctx.arc(x-2,y-7,13,-.38*Math.PI,.57*Math.PI);
+    ctx.stroke();
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(x+8,y-16);ctx.lineTo(x+13,y-20);
+    ctx.stroke();
+  }else if(bonus.type==="cherry"){
+    ctx.beginPath();ctx.arc(x-8,y-4,8,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(x+8,y-3,8,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x-6,y-11);ctx.lineTo(x+1,y-23);ctx.lineTo(x+8,y-10);
+    ctx.stroke();
+  }else if(bonus.type==="star"){
+    ctx.font="bold 29px monospace";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText("★",x,y-6);
+  }else{
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.arc(x,y-7,13,0,Math.PI*2);
+    ctx.stroke();
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(x,y-7);ctx.lineTo(x,y-16);
+    ctx.moveTo(x,y-7);ctx.lineTo(x+8,y-2);
+    ctx.stroke();
+    ctx.fillRect(x-2,y-23,4,4);
+    ctx.fillRect(x-8,y-21,4,2);
+    ctx.fillRect(x+4,y-21,4,2);
   }
+
+  if(bonus.timer<120){
+    const s=Math.floor(frame/10)%4;
+    ctx.fillStyle="#555";
+    const dots=[[x-18,y-19],[x+18,y-13],[x-16,y+5],[x+17,y+4]];
+    for(let i=0;i<dots.length;i++){
+      if((i+s)%2===0){
+        const [dx,dy]=dots[i];
+        ctx.fillRect(Math.round(dx),Math.round(dy),2,2);
+      }
+    }
+  }
+
   ctx.restore();
 }
 
@@ -2557,15 +3667,17 @@ function draw(){
   ctx.save();
   if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
   ctx.fillStyle="#fff";ctx.fillRect(-10,-10,W+20,H+20);
+  drawCastleBackdrop();
   ctx.fillStyle="#111";ctx.strokeStyle="#111";
-  ctx.font="12px monospace";
-  ctx.fillText(`SCORE ${String(score).padStart(5,"0")}`,12,18);
-  ctx.fillText(`LEVEL ${level}`,190,18);
-  ctx.fillText(`ZAAL ${currentLayoutIndex+1}`,270,18);
-  ctx.fillText(`LEVENS ${lives}`,385,18);
+  ctx.fillStyle="#222";ctx.fillRect(8,6,W-16,20);ctx.strokeStyle="#888";ctx.strokeRect(8,6,W-16,20);ctx.fillStyle="#fff";ctx.font="11px monospace";
+  ctx.fillText(`SCORE ${String(score).padStart(5,"0")}`,14,20);
+  ctx.fillText(`LV ${level}`,180,20);
+  ctx.fillText(currentCastleTheme().name,228,20);
+  ctx.fillText(`♥ ${lives}`,425,20);
+  ctx.fillStyle="#111";ctx.strokeStyle="#111";
   if(player.invulnerable>0){
     ctx.font="10px monospace";
-    ctx.fillText("VEILIGE START",14,298);
+    ctx.fillText("VEILIGE START",14,H-18);
     ctx.font="12px monospace";
   }
   ctx.lineWidth=3;ctx.strokeRect(8,28,W-16,H-32);
@@ -2591,21 +3703,16 @@ function draw(){
     ctx.stroke();
   });
 
-  ladders.forEach(l=>{
-    ctx.lineWidth=2;ctx.beginPath();
-    ctx.moveTo(l.x,l.top);ctx.lineTo(l.x,l.bottom);
-    ctx.moveTo(l.x+20,l.top);ctx.lineTo(l.x+20,l.bottom);ctx.stroke();
-    for(let y=l.top+8;y<l.bottom;y+=10){
-      ctx.beginPath();ctx.moveTo(l.x,y);ctx.lineTo(l.x+20,y);ctx.stroke();
-    }
-  });
+  ladders.forEach(drawCastleLadder);
 
+  ctx.save();ctx.globalAlpha=.18;ctx.fillStyle="#111";ctx.beginPath();ctx.ellipse(player.x+player.w/2,player.y+player.h+2,10,2.5,0,0,Math.PI*2);ctx.fill();enemies.forEach(e=>{if(!e.dead){ctx.beginPath();ctx.ellipse(e.x+14,e.y+25,10,2.5,0,0,Math.PI*2);ctx.fill()}});ctx.restore();
   if(player.invulnerable<=0 || Math.floor(player.invulnerable/8)%2===0){
     drawPlayer(Math.round(player.x),Math.round(player.y));
   }
   enemies.forEach(drawApple);
   drawBonus();
   drawEffects();
+  drawLivingCastle();
 
   if(state==="gameover"){
     ctx.fillStyle="rgba(255,255,255,.95)";ctx.fillRect(70,108,340,92);

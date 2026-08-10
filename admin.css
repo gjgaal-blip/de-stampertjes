@@ -51,3 +51,10 @@ button:disabled{opacity:.5}
 .miniRow,.recordAdminRow{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:1px dotted #555;padding:6px 0}.recordAdminRow{grid-template-columns:38px 1fr auto}
 .merchAdmin{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.merchAdmin>div{border:1px solid #555;padding:10px}.merchBig{display:flex;flex-direction:column;text-align:center}.merchBig b{font-size:32px}
 @media(max-width:700px){.portalKpis{grid-template-columns:repeat(3,1fr)}.portalTabs{grid-template-columns:repeat(2,1fr)}.dashGrid,.merchAdmin{grid-template-columns:1fr}.portalHero{padding:0 0 10px}}
+
+/* BUILD 2225 */
+html[data-admin-build="2225"] #portalVersion{font-weight:900}
+
+/* v2.22.3 merch dashboard */
+
+.wallAdminBox{margin-top:14px;border-top:1px dotted #666;padding-top:10px}.wallAdminBox>strong{display:block;margin-bottom:6px}

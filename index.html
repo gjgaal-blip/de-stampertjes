@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.22.4</title>
-<link rel="stylesheet" href="game.css?v=2224">
+<title>De Stampertjes v2.22.5</title>
+<link rel="stylesheet" href="game.css?v=2225">
 
 </head>
 <body>
@@ -18,10 +18,10 @@
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <div id="versionMusicRow">
-      <div id="versionLabel">v2.22.4</div>
+      <div id="versionLabel">v2.22.5</div>
       <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
     </div>
-    <div id="betaBadge">👕 v2.22.3 · STAMPERTJES SHIRT</div>
+    <div id="betaBadge">📱 v2.22.5 · WALLPAPERS & MERCH</div>
     <div id="castleSlogan">EEN KASTEEL DAT NOOIT HELEMAAL HETZELFDE IS.</div>
     <div id="dailyCastleMessage" class="dailyCastleMessage"></div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
@@ -89,7 +89,7 @@
 
     <div id="roadmapSection" class="menuSection hidden">
       <h2>📰 KASTEELKRANT</h2>
-<article class="newsItem featured"><div class="newsVersion">📊 v2.22 · HET KASTEEL ONTHOUDT</div><h3>De kroniekschrijvers houden voortaan veel meer bij</h3><p>Vanaf v2.22 bouwt De Stampertjes een rijker spelarchief op. Speeltijd, levels, stamps, Appelieten, bonussen, Teddy-momenten en persoonlijke records kunnen voortaan veel uitgebreider worden geregistreerd.</p><p>Ook de fundamenten onder het kasteel zijn verstevigd: publieke statistieken lopen via gecontroleerde Supabase-functies en de database is voorbereid op strengere toegangsregels. Alleen gegevens die nuttig zijn voor het spel worden bewaard; geen exacte GPS-locatie of permanente IP-geschiedenis.</p><p>Met deze gegevens kunnen toekomstige Hall of Fame-records, achievements en kasteeluitdagingen veel persoonlijker worden.</p><p>Daarnaast test GJ Studios voorzichtig een eerste stukje merchandise: spelers kunnen in het spel vrijblijvend aangeven welk Stampertjes-shirt ze het leukst vinden.</p></article>
+<article class="newsItem featured"><div class="newsVersion">📊 v2.22 · HET KASTEEL ONTHOUDT</div><h3>De kroniekschrijvers houden voortaan veel meer bij</h3><p>Vanaf v2.22 bouwt De Stampertjes een rijker spelarchief op. Speeltijd, levels, stamps, Appelieten, bonussen, Teddy-momenten en persoonlijke records kunnen voortaan veel uitgebreider worden geregistreerd.</p><p>Ook de fundamenten onder het kasteel zijn verstevigd: publieke statistieken lopen via gecontroleerde Supabase-functies en de database is voorbereid op strengere toegangsregels. Alleen gegevens die nuttig zijn voor het spel worden bewaard; geen exacte GPS-locatie of permanente IP-geschiedenis.</p><p>Met deze gegevens kunnen toekomstige Hall of Fame-records, achievements en kasteeluitdagingen veel persoonlijker worden.</p><p>Daarnaast test GJ Studios voorzichtig een eerste stukje merchandise: spelers kunnen in het spel vrijblijvend aangeven welk Stampertjes-shirt ze het leukst vinden.</p><p>De merchandise-hoek is inmiddels uitgebreid met beter bekijkbare shirtontwerpen en gratis telefoonwallpapers in de stijl van het kasteel.</p></article>
 
 
 <article class="newsItem"><div class="newsVersion">🏛️ v2.21 · POLISH &amp; EREGALERIJ</div><h3>Het kasteel kreeg zijn eregalerij</h3><p>Na de grote v2.20-release zijn de mobiele layout, Kasteelkrant en Roadmap opgepoetst. De Hall of Fame groeide uit tot een interactieve eregalerij met records, Top 5-lijsten, persoonlijke posities en bijzondere onderscheidingen.</p></article>
@@ -215,7 +215,8 @@
     </label>
   </div>
 
-  <div class="merchNotice">👕 We noteren alleen je interesse. Geen betaling, adres of bestelling.</div>
+  <section class="wallpaperShop"><div class="wallpaperHeading"><h3>📱 TELEFOON WALLPAPERS</h3><span>GRATIS</span></div><p class="wallpaperIntro">Tik op een achtergrond om hem groot te bekijken. Daarna kun je hem bewaren op je telefoon.</p><div id="wallpaperGrid" class="wallpaperGrid"><button type="button" class="wallpaperCard" data-wallpaper="kasteel_nacht" data-src="wallpaper-kasteel-nacht.png" data-title="KASTEEL IN DE NACHT"><img src="wallpaper-kasteel-nacht.png" alt="Kasteel in de nacht"><strong>KASTEEL IN DE NACHT</strong></button><button type="button" class="wallpaperCard" data-wallpaper="entreehal" data-src="wallpaper-entreehal.png" data-title="ENTREEHAL"><img src="wallpaper-entreehal.png" alt="Entreehal"><strong>ENTREEHAL</strong></button><button type="button" class="wallpaperCard" data-wallpaper="kasteel_banner" data-src="wallpaper-kasteel-banner.png" data-title="KASTEELBANNER"><img src="wallpaper-kasteel-banner.png" alt="Kasteelbanner"><strong>KASTEELBANNER</strong></button><button type="button" class="wallpaperCard veraWallpaper" data-wallpaper="vera_bug_tester" data-src="wallpaper-vera-bug-tester.png" data-title="VERA · BUG TESTER"><img src="wallpaper-vera-bug-tester.png" alt="Vera Bug Tester"><strong>VERA · BUG TESTER</strong></button></div></section>
+<div class="merchNotice">👕 We noteren alleen je interesse. Geen betaling, adres of bestelling.</div>
   <div id="merchStatus" class="merchStatus"></div>
   <div class="merchActions">
     <button id="merchInterestBtn" type="button">♥ IK HEB INTERESSE!</button>
@@ -224,6 +225,7 @@
   <button class="backBtn" data-back>TERUG</button>
 </div>
 
+<div id="mediaViewer" class="hidden" aria-hidden="true"><div id="mediaViewerCard"><div class="mediaViewerHead"><strong id="mediaViewerTitle">BEKIJK GROOT</strong><button id="mediaViewerClose" type="button" aria-label="Sluiten">✕</button></div><img id="mediaViewerImage" alt="Grote voorvertoning"><a id="mediaViewerDownload" class="hidden" href="#" download>⬇ DOWNLOAD / BEWAAR</a><small id="mediaViewerHint" class="hidden">Op iPhone kan de afbeelding eerst openen. Houd hem daarna ingedrukt en kies ‘Bewaar in Foto’s’.</small></div></div>
 <div id="cafeSection" class="menuSection hidden">
       <h2>🍏 STAMPERTJES CAFÉ</h2>
       <div id="cafeAdminStatus" class="hidden">🛠️ GJ STUDIOS BEHEER ACTIEF</div>
@@ -299,7 +301,7 @@
     </div>
   </div>
 </div>
-<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">🏰 v2.22.4 · MENU UPDATE</div><h2>Het kasteelmenu is verbouwd</h2><div class="updateIntro">Minder zoeken, sneller spelen.</div><div class="updateList"><div>✓ Compacter hoofdmenu</div><div>✓ Logischer gegroepeerd</div><div>✓ Beter passend op mobiel</div></div><div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.22.4</button></div></div></div>
+<div id="updateOverlay" class="hidden"><div id="updateCard"><div class="updateKicker">📱 v2.22.5 · MERCH & WALLPAPERS</div><h2>Neem het kasteel mee</h2><div class="updateIntro">Merchandise is uitgebreid en beter te bekijken op mobiel.</div><div class="updateList"><div>✓ T-shirtontwerpen nu groot te bekijken</div><div>✓ Vier telefoonwallpapers om te bewaren</div><div>✓ Speciale Vera · Bug Tester-editie</div></div><div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.22.5</button></div></div></div>
 
 <div id="deathOverlay" class="hidden">
   <div id="deathCard">
@@ -341,8 +343,8 @@
   <div id="keyboardHint">Pijltjes = bewegen • Spatie = stampen • P = pauze • M = muziek</div>
   <div class="small">3× stampen voor een gat. Stamp daarna de gevangen appel weg.</div>
 </div>
-<script src="config.js?v=2224"></script>
-<script src="game-2224.js" defer></script>
+<script src="config.js?v=2225"></script>
+<script src="game.js?v=2225" defer></script>
 
 </body>
 </html>
