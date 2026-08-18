@@ -1668,7 +1668,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.24.2";
+const CURRENT_VERSION="2.24.3";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -3528,8 +3528,118 @@ function drawSafeCastleTorch(preferredX,y,phase){
   drawCastleTorch(x,y,phase);
 }
 
+
+function drawLibraryBackdrop(){
+  const top=30,bottom=H-14;
+  ctx.save();
+  ctx.fillStyle="#b8b8b8";ctx.fillRect(10,top,W-20,bottom-top);
+
+  // Houten lambrisering en staanders.
+  ctx.fillStyle="#666";
+  for(let x=18;x<W-18;x+=58)ctx.fillRect(x,top,6,bottom-top);
+
+  // Boekenkasten domineren de hele kamer.
+  const shelves=[
+    [24,48,94,66],[136,48,88,66],[256,48,88,66],[362,48,94,66],
+    [24,138,94,70],[136,138,88,70],[256,138,88,70],[362,138,94,70],
+    [24,228,94,70],[136,228,88,70],[256,228,88,70],[362,228,94,70]
+  ];
+  shelves.forEach(([x,y,w,h],si)=>{
+    ctx.fillStyle="#555";ctx.fillRect(x,y,w,h);
+    ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);
+    ctx.fillStyle="#ddd";
+    for(let sy=y+16;sy<y+h-2;sy+=18){
+      ctx.fillRect(x+4,sy,w-8,3);
+      let bx=x+7,book=0;
+      while(bx<x+w-8){
+        const bw=4+((book+si)%4), bh=9+((book*3+si)%8);
+        ctx.fillRect(bx,sy-bh,bw,bh);
+        bx+=bw+3;book++;
+      }
+    }
+  });
+
+  // Groot leesraam.
+  ctx.fillStyle="#777";
+  ctx.beginPath();ctx.arc(240,78,35,Math.PI,0);ctx.fill();
+  ctx.fillRect(205,78,70,61);
+  ctx.strokeStyle="#eee";ctx.lineWidth=3;ctx.strokeRect(205,78,70,61);
+  ctx.beginPath();ctx.moveTo(240,43);ctx.lineTo(240,139);ctx.moveTo(205,106);ctx.lineTo(275,106);ctx.stroke();
+
+  // Centrale leestafel.
+  ctx.fillStyle="#666";ctx.fillRect(181,270,118,11);
+  ctx.fillRect(197,281,12,34);ctx.fillRect(271,281,12,34);
+  ctx.fillStyle="#eee";ctx.fillRect(218,260,44,7);
+
+  // Hanglampen.
+  [[78,92],[402,92],[171,212],[309,212]].forEach(([x,y])=>{
+    ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-22);ctx.lineTo(x,y-5);ctx.stroke();
+    ctx.fillStyle="#555";ctx.fillRect(x-7,y-5,14,4);ctx.fillStyle="#fff";ctx.fillRect(x-2,y-11,4,6);
+  });
+  ctx.restore();
+}
+
+function drawWineCellarBackdrop(){
+  const top=30,bottom=H-14;
+  ctx.save();
+  ctx.fillStyle="#adadad";ctx.fillRect(10,top,W-20,bottom-top);
+
+  // Grove kelderstenen.
+  ctx.strokeStyle="#858585";ctx.lineWidth=1;
+  for(let y=42,row=0;y<bottom;y+=22,row++){
+    ctx.beginPath();ctx.moveTo(12,y);ctx.lineTo(W-12,y);ctx.stroke();
+    const off=row%2?25:0;
+    for(let x=12-off;x<W-12;x+=50){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+22);ctx.stroke();}
+  }
+
+  // Grote stenen gewelven.
+  ctx.strokeStyle="#5f5f5f";ctx.lineWidth=8;
+  [86,240,394].forEach(cx=>{
+    ctx.beginPath();ctx.arc(cx,98,72,Math.PI,0);ctx.stroke();
+    ctx.lineWidth=5;
+    ctx.beginPath();ctx.moveTo(cx-72,98);ctx.lineTo(cx-72,bottom);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+72,98);ctx.lineTo(cx+72,bottom);ctx.stroke();
+    ctx.lineWidth=8;
+  });
+
+  const barrel=(x,y,r=17)=>{
+    ctx.strokeStyle="#444";ctx.lineWidth=3;
+    ctx.beginPath();ctx.ellipse(x,y,r,r-3,0,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-r+3,y-8);ctx.lineTo(x+r-3,y-8);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-r+3,y+8);ctx.lineTo(x+r-3,y+8);ctx.stroke();
+  };
+  [[48,92],[84,92],[410,92],[446,92],[55,204],[92,204],[388,204],[425,204],
+   [52,294],[89,294],[397,294],[434,294]].forEach(([x,y])=>barrel(x,y));
+
+  // Wijnrekken.
+  [[150,72,70,52],[270,72,70,52],[155,250,66,54],[267,250,68,54]].forEach(([x,y,w,h])=>{
+    ctx.fillStyle="#555";ctx.fillRect(x,y,w,h);
+    ctx.fillStyle="#ddd";
+    for(let yy=y+10;yy<y+h-3;yy+=14)for(let xx=x+7;xx<x+w-5;xx+=12){
+      ctx.fillRect(xx,yy,5,8);ctx.fillRect(xx+1,yy-3,3,3);
+    }
+  });
+
+  // Centrale wijnpers.
+  ctx.fillStyle="#555";ctx.fillRect(208,176,64,44);
+  ctx.strokeStyle="#333";ctx.lineWidth=3;ctx.strokeRect(208,176,64,44);
+  ctx.fillRect(219,160,42,15);ctx.fillRect(237,136,6,24);
+  ctx.beginPath();ctx.moveTo(222,146);ctx.lineTo(258,146);ctx.stroke();
+
+  // Lage kelderlampen.
+  [[125,112],[355,112],[240,328]].forEach(([x,y])=>{
+    ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-20);ctx.lineTo(x,y-5);ctx.stroke();
+    ctx.fillStyle="#666";ctx.fillRect(x-8,y-5,16,5);ctx.fillStyle="#fff";ctx.fillRect(x-2,y-11,4,6);
+  });
+  ctx.restore();
+}
+
 function drawCastleBackdrop(){
-  const theme=currentCastleTheme(), top=30, bottom=H-14, bh=bottom-top;
+  const theme=currentCastleTheme();
+  if(theme.kind==="books"){drawLibraryBackdrop();return;}
+  if(theme.kind==="wine"){drawWineCellarBackdrop();return;}
+  const top=30,bottom=H-14,bh=bottom-top;
   ctx.save();
   ctx.fillStyle=theme.kind==="cells"?"#b6b6b6":"#cacaca";
   ctx.fillRect(10,top,W-20,bh);
@@ -3819,8 +3929,36 @@ function drawLivingCastle(){
   ctx.restore();
 }
 function drawCastleFloor(a,b,y){ctx.save();ctx.fillStyle="#333";ctx.fillRect(a,y-7,b-a,14);ctx.fillStyle="#eee";ctx.fillRect(a,y-7,b-a,2);ctx.strokeStyle="#999";for(let x=a+2;x<b;x+=22)ctx.strokeRect(x,y-5,20,10);ctx.restore();ctx.fillStyle="#111";ctx.strokeStyle="#111"}
-function drawCastleLadder(l){ctx.save();ctx.fillStyle="#444";ctx.fillRect(l.x-2,l.top,4,l.bottom-l.top);ctx.fillRect(l.x+18,l.top,4,l.bottom-l.top);ctx.fillStyle="#777";for(let y=l.top+7;y<l.bottom;y+=10)ctx.fillRect(l.x,y,20,3);ctx.restore()}
-function drawFloor(a,b,y){drawCastleFloor(a,b,y)}
+function drawCastleLadder(l){
+  ctx.save();const kind=currentCastleTheme().kind;
+  if(kind==="books"){
+    ctx.fillStyle="#555";ctx.fillRect(l.x-2,l.top,4,l.bottom-l.top);ctx.fillRect(l.x+18,l.top,4,l.bottom-l.top);
+    ctx.fillStyle="#aaa";for(let y=l.top+7;y<l.bottom;y+=10)ctx.fillRect(l.x,y,20,3);
+  }else if(kind==="wine"){
+    ctx.fillStyle="#3f3f3f";ctx.fillRect(l.x-3,l.top,5,l.bottom-l.top);ctx.fillRect(l.x+18,l.top,5,l.bottom-l.top);
+    ctx.fillStyle="#888";for(let y=l.top+8;y<l.bottom;y+=11)ctx.fillRect(l.x,y,20,4);
+  }else{
+    ctx.fillStyle="#444";ctx.fillRect(l.x-2,l.top,4,l.bottom-l.top);ctx.fillRect(l.x+18,l.top,4,l.bottom-l.top);
+    ctx.fillStyle="#777";for(let y=l.top+7;y<l.bottom;y+=10)ctx.fillRect(l.x,y,20,3);
+  }
+  ctx.restore();
+}
+function drawFloor(a,b,y){
+  const kind=currentCastleTheme().kind;
+  if(kind==="books"){
+    ctx.save();ctx.fillStyle="#4f4f4f";ctx.fillRect(a,y-7,b-a,14);
+    ctx.fillStyle="#ddd";ctx.fillRect(a,y-7,b-a,2);ctx.strokeStyle="#777";
+    for(let x=a+3;x<b;x+=28){ctx.strokeRect(x,y-5,24,10);ctx.beginPath();ctx.moveTo(x+4,y+5);ctx.lineTo(x+20,y-5);ctx.stroke();}
+    ctx.restore();ctx.fillStyle="#111";ctx.strokeStyle="#111";return;
+  }
+  if(kind==="wine"){
+    ctx.save();ctx.fillStyle="#454545";ctx.fillRect(a,y-8,b-a,16);
+    ctx.fillStyle="#bbb";ctx.fillRect(a,y-8,b-a,3);ctx.strokeStyle="#777";ctx.lineWidth=2;
+    for(let x=a+4;x<b;x+=34)ctx.strokeRect(x,y-5,30,10);
+    ctx.restore();ctx.fillStyle="#111";ctx.strokeStyle="#111";return;
+  }
+  drawCastleFloor(a,b,y);
+}
 function drawEffects(){
   effects.forEach(e=>{
     if(e.type==="dust"){
