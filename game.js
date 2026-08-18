@@ -1666,7 +1666,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.22.9";
+const CURRENT_VERSION="2.22.10";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -2594,7 +2594,7 @@ function spawnLevel(){
       id:enemyIdCounter++,
       type,
       x:410-(i*58)%330,y:floors[fi]-24,floor:fi,dir:i%2?1:-1,
-      speed:.41+level*.04+(i%3)*.03+typeSpeed,trapped:0,hitsNeeded:typeHits,
+      speed:.45+Math.min(level,12)*.045+(i%3)*.03+typeSpeed,trapped:0,hitsNeeded:typeHits,
       hitsLeft:typeHits,blink:0,dead:false,
       think:30+Math.random()*110,mood:Math.random(),ladderCooldown:0,
       onLadder:false,ladder:null,ladderTargetFloor:null,holeCooldown:0,slowTimer:0
@@ -3023,21 +3023,31 @@ function updateEnemies(){
     if(e.think<=0){
       const roll=Math.random();
 
-      // Meestal rustig richting de speler, maar niet altijd.
-      if(roll<0.64){
+      // v2.22.10: agressie loopt bewust op per level.
+      const chaseChance=Math.min(.94,
+        level<=2 ? .66+level*.03 :
+        level<=5 ? .72+level*.02 :
+        level<=9 ? .78+level*.015 :
+        .91+Math.min(level-10,3)*.01
+      );
+
+      const wanderChance=Math.max(.05,.18-level*.008);
+
+      if(roll<chaseChance){
         e.dir=pc>(e.x+14)?1:-1;
-      }else if(roll<0.82){
+      }else if(roll<chaseChance+wanderChance){
         e.dir=Math.random()<.5?-1:1;
       }else{
         e.dir=pc>(e.x+14)?-1:1;
       }
 
-      // Iets langer vasthouden aan een keuze voorkomt zenuwachtig heen-en-weer lopen.
-      e.think=60+Math.random()*150;
+      const minThink=Math.max(28,58-level*2);
+      const maxThink=Math.max(72,138-level*4);
+      e.think=minThink+Math.random()*(maxThink-minThink);
     }
 
-    // Minder vaak spontaan omdraaien.
-    if(Math.random()<0.0012)e.dir*=-1;
+    const randomTurnChance=Math.max(.00025,.0010-level*.00005);
+    if(Math.random()<randomTurnChance)e.dir*=-1;
 
     // Kies alleen een ladder wanneer de appel er echt vlakbij staat.
     // De kans is hoger wanneer de speler op een andere verdieping staat.

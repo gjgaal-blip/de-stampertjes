@@ -52,8 +52,8 @@ button:disabled{opacity:.5}
 .merchAdmin{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.merchAdmin>div{border:1px solid #555;padding:10px}.merchBig{display:flex;flex-direction:column;text-align:center}.merchBig b{font-size:32px}
 @media(max-width:700px){.portalKpis{grid-template-columns:repeat(3,1fr)}.portalTabs{grid-template-columns:repeat(2,1fr)}.dashGrid,.merchAdmin{grid-template-columns:1fr}.portalHero{padding:0 0 10px}}
 
-/* BUILD 2229 */
-html[data-admin-build="2229"] #portalVersion{font-weight:900}
+/* BUILD 2210 */
+html[data-admin-build="2210"] #portalVersion{font-weight:900}
 
 /* v2.22.3 merch dashboard */
 
