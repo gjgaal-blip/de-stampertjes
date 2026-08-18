@@ -1,6 +1,6 @@
 const SUPABASE_URL=window.STAMPERTJES_CONFIG.supabaseUrl;
 const SUPABASE_KEY=window.STAMPERTJES_CONFIG.supabaseKey;
-console.info("De Stampertjes Developer Portal BUILD 2250 geladen");
+console.info("De Stampertjes Developer Portal BUILD 2245 geladen");
 
 const $=id=>document.getElementById(id);
 const adminCode=$("adminCode"),loginBtn=$("loginBtn"),loginStatus=$("loginStatus");
@@ -524,7 +524,7 @@ async function loadV222Analytics(){
 }
 loadV222Analytics();
 
-document.documentElement.dataset.adminBuild="2250";
+document.documentElement.dataset.adminBuild="2245";
 const buildMark=document.getElementById("loginStatus");
 if(buildMark && !sessionStorage.getItem("stampertjesAdminPortalCode")){
   buildMark.textContent="Portal build 2222 geladen · klaar om in te loggen.";

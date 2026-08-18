@@ -1,8 +1,8 @@
 # De Stampertjes
 
-## v2.25
-- Volledige kleurenupdate voor het kasteel.
-- Eigen thematische kleuraccenten voor alle tien kamers.
-- Bibliotheek-kleurprototype opgenomen.
-- Decoratie vermijdt ladders en ramen.
-- Gameplay-geometrie behouden voor stabiliteit.
+## v2.25 Complete Color Rebuild
+- Alle 10 kamers eigen kleurwereld.
+- Menu-interface volledig in kleur.
+- Demo/attract mode in kleur.
+- Death scene in kleur.
+- Vrije ladderzones en logisch geplaatste decoratie.

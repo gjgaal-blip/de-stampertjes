@@ -1,3 +1,3 @@
-# De Stampertjes v2.25
+# De Stampertjes v2.25 — Complete Color Rebuild
 
-Het spel is nu in kleur. Alle tien kamers krijgen een eigen thematische sfeer en kleuraccenten, met vrije ladders/ramen en logisch geplaatste decoratie.
+Alle 10 kamers, alle menu's, attract/demo en death scene volledig in kleur. Decoratie vermijdt ladders; objecten staan logisch op vloeren of vrije muren.

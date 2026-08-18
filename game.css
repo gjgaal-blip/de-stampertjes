@@ -1280,3 +1280,26 @@ body:not(.attractMode) #panel #introCanvas{
   z-index:4200!important;
 }
 .devTestBadge{font-weight:900;margin:12px 0 4px;border-top:2px dashed #111;padding-top:10px}
+
+:root{--bg:#17130f;--panel:#241b15;--panel2:#30231a;--wood:#6f4527;--gold:#d4ad62;--cream:#f0dfbd;--red:#7f3038;--blue:#385d79;--green:#486b4e}
+body{background:var(--bg)!important;color:var(--cream)!important}
+#overlay{background:linear-gradient(rgba(20,14,10,.95),rgba(20,14,10,.98)),repeating-linear-gradient(0deg,#2b211a 0 22px,#34271e 22px 23px)!important;color:var(--cream)!important}
+#panel{background:linear-gradient(180deg,#2c2119,#211812)!important;border-color:var(--gold)!important;box-shadow:0 0 0 4px #16100c,0 0 24px rgba(0,0,0,.55)!important}
+#introCanvas{background:#26303b!important;border-color:var(--gold)!important}
+button{border-color:#b98b51!important;background:linear-gradient(180deg,#56351f,#3b281c)!important;color:var(--cream)!important}
+button:active{background:#8a5b33!important;color:#fff4d5!important}
+.menuGroup{border-color:rgba(212,173,98,.35)!important}.menuGroup h3,.updateKicker,#studioLine{color:#d6b16b!important;opacity:1!important}
+.menuSection{border-color:var(--gold)!important;background:rgba(48,35,26,.55);padding-left:8px;padding-right:8px}
+.menuSection h2,.menuSection h3{color:#e3bf73}
+.helpBlock,.newsItem,.historyItem,.hallCard,.merchCard,.statCard,.recordCard{background:rgba(57,40,28,.72)!important;border-color:#8d643b!important}
+.backBtn{background:linear-gradient(180deg,#4b3020,#2f2118)!important;border-color:var(--gold)!important}
+#cafeWelcome,.cafePost,#cafeForm,.cafeStat{background:#2b2018!important;border-color:#9e7346!important}
+.cafePost.officialPost{background:#35251a!important;border-color:#d1a354!important}
+#cafeName,#cafeType,#cafeMessage,#nameInput{background:#ead8b8!important;color:#2b2018!important;border-color:#9d7144!important}
+#updateOverlay,#pauseOverlay,#levelOverlay,#deathOverlay{background:rgba(18,13,10,.95)!important;color:var(--cream)!important}
+#updateCard,#pauseCard,#levelCard,#deathCard{background:linear-gradient(180deg,#302219,#211711)!important;border-color:var(--gold)!important;color:var(--cream)!important}
+#deathCanvas{background:#2d3540!important;border-color:var(--gold)!important}
+#teddyEgg{border-color:#d2a85c!important;background:#302218!important}.scoreRow{border-color:rgba(210,172,99,.35)!important}
+#scoresSection .scoreRow:nth-child(-n+3){color:#f2c768}
+#chronicleBook .chroniclePage{background:#e8d6ae!important;color:#2c2117!important;border-color:#765331!important}
+#gameOptions button{background:linear-gradient(180deg,#573a25,#36261c)!important}#title{color:#ead5aa!important}
