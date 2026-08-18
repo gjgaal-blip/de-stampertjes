@@ -1,3 +1,3 @@
-# De Stampertjes v2.24.5
+# De Stampertjes v2.25
 
-Bibliotheek als eerste kamer verder afgewerkt: staande boekenkasten op vloeren, vrije ladderzones, rustigere houten galerijen, leeshoek en gotisch raam.
+Het spel is nu in kleur. Alle tien kamers krijgen een eigen thematische sfeer en kleuraccenten, met vrije ladders/ramen en logisch geplaatste decoratie.

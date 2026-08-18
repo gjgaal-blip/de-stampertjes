@@ -1668,7 +1668,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.24.5";
+const CURRENT_VERSION="2.25";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -3648,6 +3648,69 @@ function drawArmoryBackdrop(){
   ctx.restore();
 }
 
+
+function drawThemeColorOverlay(){
+  const kind=currentCastleTheme().kind;
+  const themes={
+    hall:["rgba(55,75,98,.20)","#b58a52"],
+    arms:["rgba(85,62,48,.20)","#b9b5aa"],
+    books:["rgba(95,55,28,.12)","#d1a45f"],
+    wine:["rgba(105,52,42,.18)","#9d7047"],
+    kitchen:["rgba(188,132,61,.18)","#d6a55f"],
+    trophies:["rgba(112,72,38,.18)","#c59a50"],
+    treasure:["rgba(98,91,32,.18)","#d3aa3d"],
+    alchemy:["rgba(67,54,104,.20)","#65b985"],
+    tower:["rgba(47,74,112,.22)","#8aa8c2"],
+    secret:["rgba(37,94,57,.22)","#61b77a"]
+  };
+  const t=themes[kind]||themes.hall;
+  ctx.save();
+  // Very light atmosphere tint; objects/game remain readable.
+  ctx.fillStyle=t[0];ctx.fillRect(10,30,W-20,H-44);
+  // Warm/cool room edge, kept inside the frame.
+  ctx.strokeStyle=t[1];ctx.globalAlpha=.45;ctx.lineWidth=2;ctx.strokeRect(12,32,W-24,H-48);
+  ctx.restore();
+}
+
+function drawThemeDetails(){
+  const kind=currentCastleTheme().kind;
+  ctx.save();
+  // Never use ladder rectangles for decoration.
+  const blocked=(x,y,w,h)=>ladders.some(l=>x<l.x+28&&x+w>l.x-8&&y<l.bottom+4&&y+h>l.top-4);
+  const box=(x,y,w,h,fn)=>{if(!blocked(x,y,w,h))fn();};
+
+  if(kind==="hall"){
+    box(40,65,48,48,()=>{ctx.fillStyle="#7f2d2d";ctx.fillRect(40,65,48,48);ctx.fillStyle="#d2b66f";ctx.fillRect(58,74,10,22);});
+    box(365,65,48,48,()=>{ctx.fillStyle="#7f2d2d";ctx.fillRect(365,65,48,48);ctx.fillStyle="#d2b66f";ctx.fillRect(383,74,10,22);});
+  }else if(kind==="arms"){
+    box(205,310,60,55,()=>{ctx.fillStyle="#7d3030";ctx.fillRect(205,310,60,55);ctx.fillStyle="#c4a65b";ctx.fillRect(210,316,50,5);});
+  }else if(kind==="wine"){
+    // grounded barrels only
+    [[48,126],[425,126],[105,250],[365,250],[48,372],[420,372]].forEach(([x,f])=>box(x-16,f-38,32,32,()=>{
+      ctx.fillStyle="#704523";ctx.strokeStyle="#a07a4d";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,f-22,15,12,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    }));
+  }else if(kind==="kitchen"){
+    box(190,310,80,58,()=>{ctx.fillStyle="#705b45";ctx.fillRect(190,310,80,58);ctx.fillStyle="#251b15";ctx.fillRect(202,329,56,39);ctx.fillStyle="#e86e31";ctx.beginPath();ctx.moveTo(216,365);ctx.lineTo(230,340);ctx.lineTo(244,365);ctx.fill();});
+  }else if(kind==="trophies"){
+    [[35,70],[210,70],[370,70],[130,195],[305,195]].forEach(([x,y])=>box(x,y,55,38,()=>{ctx.fillStyle="#b58a52";ctx.fillRect(x,y,55,38);ctx.fillStyle="#4c6657";ctx.fillRect(x+4,y+4,47,30);}));
+  }else if(kind==="treasure"){
+    [[40,98],[335,222],[210,344]].forEach(([x,y])=>box(x,y,48,22,()=>{ctx.fillStyle="#70451f";ctx.fillRect(x,y,48,22);ctx.fillStyle="#d0a43b";ctx.fillRect(x,y+7,48,4);}));
+  }else if(kind==="alchemy"){
+    const cols=["#62c78a","#8d65b4","#4ca7a4","#c06bc2"];
+    [[35,95],[335,95],[205,220],[40,344]].forEach(([x,y],i)=>box(x,y,78,22,()=>{ctx.fillStyle="#4b3629";ctx.fillRect(x,y+17,78,5);for(let j=0;j<5;j++){ctx.fillStyle=cols[(i+j)%4];ctx.fillRect(x+8+j*14,y+5,7,12);ctx.fillRect(x+10+j*14,y+1,3,4);}}));
+  }else if(kind==="tower"){
+    [[42,58],[205,58],[365,58]].forEach(([x,y])=>box(x,y,52,58,()=>{ctx.fillStyle="#21384e";ctx.fillRect(x,y,52,58);ctx.fillStyle="#73a4c0";ctx.fillRect(x+5,y+7,42,46);ctx.strokeStyle="#d4c9a9";ctx.strokeRect(x+5,y+7,42,46);}));
+  }else if(kind==="secret"){
+    [["#43d0c0",85,100],["#9467d8",370,100],["#5acb73",230,225],["#4f8fdf",350,345]].forEach(([c,x,y])=>box(x-10,y-18,20,30,()=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x,y-16);ctx.lineTo(x+8,y);ctx.lineTo(x,y+10);ctx.lineTo(x-8,y);ctx.closePath();ctx.fill();}));
+  }
+  ctx.restore();
+}
+
+function drawColoredLadderAccent(l){
+  const kind=currentCastleTheme().kind;
+  const c={hall:"#a47c4e",arms:"#a07a50",books:"#9a6a3d",wine:"#9b7447",kitchen:"#bd925b",trophies:"#a57949",treasure:"#b08a48",alchemy:"#80698a",tower:"#887765",secret:"#708b5e"}[kind]||"#888";
+  ctx.save();ctx.fillStyle=c;ctx.globalAlpha=.75;for(let y=l.top+7;y<l.bottom;y+=10)ctx.fillRect(l.x,y,20,3);ctx.restore();
+}
 function drawCastleBackdrop(){
   const theme=currentCastleTheme();
   if(theme.kind==="books"){drawLibraryBackdrop();return;}
@@ -3975,6 +4038,9 @@ function drawFloor(a,b,y){
     ctx.restore();ctx.fillStyle="#111";ctx.strokeStyle="#111";return;
   }
   drawCastleFloor(a,b,y);
+  const floorKind=currentCastleTheme().kind;
+  const edge={hall:"#9b744c",arms:"#9a7652",kitchen:"#b98a50",trophies:"#a47643",treasure:"#c09a42",alchemy:"#765d85",tower:"#7b7064",secret:"#627b52"}[floorKind];
+  if(edge){ctx.save();ctx.fillStyle=edge;ctx.globalAlpha=.75;ctx.fillRect(a,y-7,b-a,3);ctx.restore();}
 }
 function drawEffects(){
   effects.forEach(e=>{
@@ -4084,7 +4150,7 @@ function draw(){
   ctx.save();
   if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
   ctx.fillStyle="#fff";ctx.fillRect(-10,-10,W+20,H+20);
-  drawCastleBackdrop();
+  drawCastleBackdrop();drawThemeColorOverlay();drawThemeDetails();
   ctx.fillStyle="#111";ctx.strokeStyle="#111";
   ctx.fillStyle="#222";ctx.fillRect(8,6,W-16,20);ctx.strokeStyle="#888";ctx.strokeRect(8,6,W-16,20);ctx.fillStyle="#fff";ctx.font="11px monospace";
   ctx.fillText(`SCORE ${String(score).padStart(5,"0")}`,14,20);
