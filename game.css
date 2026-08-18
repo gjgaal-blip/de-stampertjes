@@ -1254,3 +1254,16 @@ body:not(.attractMode) #panel #introCanvas{
 #pauseConfirmStop p{
   line-height:1.45;
 }
+
+/* v2.24.1 — Kasteelkrant */
+.newsSectionBlock{margin:0 0 24px}
+.newsSectionTitle{
+  border-top:3px solid #111;
+  border-bottom:3px solid #111;
+  padding:8px 0;
+  margin:10px 0 12px;
+  letter-spacing:1px;
+}
+.rumorsBlock .newsItem{border-style:dashed}
+.archiveBlock .archiveItem{padding:10px 12px}
+.archiveBlock .archiveItem p{margin:5px 0}

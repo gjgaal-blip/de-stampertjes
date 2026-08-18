@@ -1665,7 +1665,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.24";
+const CURRENT_VERSION="2.24.1";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -1979,26 +1979,51 @@ saveScoreBtn.addEventListener("pointerdown",async e=>{
 function drawIntroCastleBackdrop(){ictx.save();ictx.fillStyle="#c9c9c9";ictx.fillRect(7,7,406,166);ictx.strokeStyle="#888";ictx.lineWidth=1;for(let y=8,row=0;y<174;y+=16,row++){ictx.beginPath();ictx.moveTo(7,y);ictx.lineTo(413,y);ictx.stroke();const off=row%2?15:0;for(let x=7-off;x<413;x+=30){ictx.beginPath();ictx.moveTo(x,y);ictx.lineTo(x,y+16);ictx.stroke()}}const win=(x,y)=>{ictx.fillStyle="#777";ictx.fillRect(x,y+7,34,28);ictx.beginPath();ictx.arc(x+17,y+8,17,Math.PI,0);ictx.fill();ictx.strokeStyle="#ddd";ictx.lineWidth=2;ictx.strokeRect(x,y+8,34,27);ictx.beginPath();ictx.moveTo(x+17,y+1);ictx.lineTo(x+17,y+35);ictx.stroke()};win(20,18);win(366,18);const torch=(x,y,p)=>{const f=.6+.4*Math.sin(introFrame*.14+p);ictx.fillStyle="#333";ictx.fillRect(x-2,y+4,4,9);ictx.fillRect(x-6,y+11,12,2);ictx.fillStyle="#fff";ictx.beginPath();ictx.moveTo(x,y-10-f*4);ictx.lineTo(x-4,y+3);ictx.lineTo(x+4,y+3);ictx.closePath();ictx.fill()};torch(112,41,0);torch(307,41,2);ictx.globalAlpha=.35;ictx.fillStyle="#eee";const off=(introFrame*.45)%500;for(let i=0;i<3;i++){const x=((off+i*155)%520)-70;ictx.beginPath();ictx.ellipse(x,154+i%2*7,55,7,0,0,Math.PI*2);ictx.fill()}ictx.restore()}
 function drawIntroCastleLadder(x,y1,y2){ictx.fillStyle="#444";ictx.fillRect(x-2,y1,4,y2-y1);ictx.fillRect(x+19,y1,4,y2-y1);ictx.fillStyle="#777";for(let y=y1+7;y<y2;y+=10)ictx.fillRect(x,y,21,3)}
 function drawIntroCastleFloor(y,holeX=null,crackStage=0){ictx.fillStyle="#333";if(holeX===null)ictx.fillRect(12,y-5,396,10);else{ictx.fillRect(12,y-5,holeX-12,10);ictx.fillRect(holeX+42,y-5,408-(holeX+42),10)}ictx.fillStyle="#eee";ictx.fillRect(12,y-5,396,2);ictx.strokeStyle="#999";for(let x=14;x<407;x+=22){if(holeX!==null&&x>holeX-8&&x<holeX+45)continue;ictx.strokeRect(x,y-3,20,7)}ictx.fillStyle="#111";ictx.strokeStyle="#111";if(crackStage>0){ictx.lineWidth=2;ictx.beginPath();ictx.moveTo(holeX+10,y-7);ictx.lineTo(holeX+20,y);ictx.lineTo(holeX+13,y+7);if(crackStage>1){ictx.moveTo(holeX+32,y-7);ictx.lineTo(holeX+23,y);ictx.lineTo(holeX+31,y+7)}ictx.stroke()}}
-function drawIntroPlayer(x,y,pose="walk"){
-  ictx.fillStyle="#111";
-  ictx.fillRect(x+7,y,10,8);
-  ictx.fillRect(x+3,y+8,18,13);
-  ictx.fillRect(x,y+12,4,8);
-  ictx.fillRect(x+20,y+12,4,8);
 
-  if(pose==="stamp"){
-    ictx.fillRect(x+2,y+21,9,7);
-    ictx.fillRect(x+13,y+21,9,7);
-  }else{
-    const step=Math.floor(introFrame/7)%2;
-    if(step===0){
-      ictx.fillRect(x+3,y+21,7,7);
-      ictx.fillRect(x+14,y+21,7,7);
+function drawStampertjeSprite(targetCtx,x,y,{dir=1,step=0,climbing=false,stamping=false}={}){
+  targetCtx.save();
+  targetCtx.fillStyle="#111";
+  const headY=y+(stamping?3:0);
+
+  targetCtx.fillRect(x+7,headY,10,2);
+  targetCtx.fillRect(x+5,headY+2,14,7);
+  targetCtx.fillRect(x+7,headY+9,10,2);
+  targetCtx.fillRect(x+4,y+10,16,4);
+  targetCtx.fillRect(x+6,y+14,12,8);
+
+  targetCtx.fillStyle="#fff";
+  const eyeShift=dir>0?1:0;
+  targetCtx.fillRect(x+8+eyeShift,headY+5,2,2);
+  targetCtx.fillRect(x+14+eyeShift,headY+5,2,2);
+  targetCtx.fillStyle="#111";
+
+  if(climbing){
+    if(step%2===0){
+      targetCtx.fillRect(x+1,y+11,5,4);targetCtx.fillRect(x+18,y+17,5,4);
+      targetCtx.fillRect(x+5,y+21,5,7);targetCtx.fillRect(x+15,y+19,5,7);
     }else{
-      ictx.fillRect(x+6,y+21,7,7);
-      ictx.fillRect(x+11,y+21,7,7);
+      targetCtx.fillRect(x+1,y+17,5,4);targetCtx.fillRect(x+18,y+11,5,4);
+      targetCtx.fillRect(x+5,y+19,5,7);targetCtx.fillRect(x+15,y+21,5,7);
     }
+  }else if(stamping){
+    targetCtx.fillRect(x+1,y+14,5,5);targetCtx.fillRect(x+18,y+14,5,5);
+    targetCtx.fillRect(x+3,y+21,8,6);targetCtx.fillRect(x+14,y+21,8,6);
+  }else if(step%2===0){
+    targetCtx.fillRect(x+1,y+11,4,8);targetCtx.fillRect(x+20,y+14,4,7);
+    targetCtx.fillRect(x+4,y+21,7,7);targetCtx.fillRect(x+15,y+22,6,6);
+  }else{
+    targetCtx.fillRect(x+1,y+14,4,7);targetCtx.fillRect(x+20,y+11,4,8);
+    targetCtx.fillRect(x+5,y+22,6,6);targetCtx.fillRect(x+14,y+21,7,7);
   }
+  targetCtx.restore();
+}
+
+function drawIntroPlayer(x,y,pose="walk"){
+  drawStampertjeSprite(ictx,x,y,{
+    dir:1,
+    step:Math.floor(introFrame/7)%2,
+    stamping:pose==="stamp"
+  });
 }
 function drawIntroApple(x,y,trapped=false,panic=false){
   ictx.fillStyle="#111";
@@ -2972,14 +2997,8 @@ function drawDeathScene(progress){
   dctx.save();
   dctx.translate(x+12,y+14);
   dctx.rotate(-angle);
-  dctx.translate(-12,-14);
-  dctx.fillStyle="#111";
-  dctx.fillRect(7,0,10,8);
-  dctx.fillRect(3,8,18,13);
-  dctx.fillRect(0,12,4,8);
-  dctx.fillRect(20,12,4,8);
-  dctx.fillRect(3,21,7,7);
-  dctx.fillRect(14,21,7,7);
+  dctx.translate(-(x+12),-(y+14));
+  drawStampertjeSprite(dctx,x,y,{dir:1,step:1});
   dctx.restore();
 
   // Dust / little stone particles appear on impact.
@@ -3373,31 +3392,13 @@ function update(){
 }
 
 function drawPlayer(x,y){
-  ctx.save();ctx.fillStyle="#111";
   const walking=(keys.left||keys.right)&&!player.onLadder;
-  const step=walking?Math.floor(frame/6)%2:0;
-  const stamping=player.cool>12&&!player.onLadder;
-  const climbing=player.onLadder;
-  const headY=y+(stamping?3:0);
-
-  ctx.fillRect(x+7,headY,10,2);ctx.fillRect(x+5,headY+2,14,7);ctx.fillRect(x+7,headY+9,10,2);
-  ctx.fillRect(x+4,y+10,16,4);ctx.fillRect(x+6,y+14,12,8);
-
-  ctx.fillStyle="#fff";const eyeShift=player.dir>0?1:0;
-  ctx.fillRect(x+8+eyeShift,headY+5,2,2);ctx.fillRect(x+14+eyeShift,headY+5,2,2);ctx.fillStyle="#111";
-
-  if(climbing){
-    const c=Math.floor(frame/6)%2;
-    if(c===0){ctx.fillRect(x+1,y+11,5,4);ctx.fillRect(x+18,y+17,5,4);ctx.fillRect(x+5,y+21,5,7);ctx.fillRect(x+15,y+19,5,7)}
-    else{ctx.fillRect(x+1,y+17,5,4);ctx.fillRect(x+18,y+11,5,4);ctx.fillRect(x+5,y+19,5,7);ctx.fillRect(x+15,y+21,5,7)}
-  }else if(stamping){
-    ctx.fillRect(x+1,y+14,5,5);ctx.fillRect(x+18,y+14,5,5);ctx.fillRect(x+3,y+21,8,6);ctx.fillRect(x+14,y+21,8,6);
-  }else if(step===0){
-    ctx.fillRect(x+1,y+11,4,8);ctx.fillRect(x+20,y+14,4,7);ctx.fillRect(x+4,y+21,7,7);ctx.fillRect(x+15,y+22,6,6);
-  }else{
-    ctx.fillRect(x+1,y+14,4,7);ctx.fillRect(x+20,y+11,4,8);ctx.fillRect(x+5,y+22,6,6);ctx.fillRect(x+14,y+21,7,7);
-  }
-  ctx.restore();
+  drawStampertjeSprite(ctx,x,y,{
+    dir:player.dir,
+    step:walking?Math.floor(frame/6)%2:0,
+    climbing:player.onLadder,
+    stamping:player.cool>12&&!player.onLadder
+  });
 }
 function drawApple(e){
   if(e.trapped>0&&e.trapped<90&&Math.floor(e.blink/6)%2===0)return;
