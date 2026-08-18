@@ -1,3 +1,3 @@
-# De Stampertjes v2.24.3
+# De Stampertjes v2.24.4
 
-Bibliotheek en Wijnkelder volledig visueel herbouwd met eigen room renderer, vloeren en ladders.
+Bibliotheek, Wijnkelder en Wapenzaal opnieuw opgebouwd met vrije ladderzones en logisch geplaatste decoratie.

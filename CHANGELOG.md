@@ -1,6 +1,6 @@
 # De Stampertjes
 
-## v2.24.3
-- Bibliotheek volledig herbouwd.
-- Wijnkelder volledig herbouwd.
-- Versieweergave opgeschoond.
+## v2.24.4
+- Bibliotheek rustiger en ladders vrij.
+- Wijnvaten staan op vloeren; wijnrekken niet achter ladders.
+- Wapenzaal gebruikt vaste wapenrekken; geen wapens over ramen.

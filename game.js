@@ -1668,7 +1668,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.24.3";
+const CURRENT_VERSION="2.24.4";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -3530,108 +3530,59 @@ function drawSafeCastleTorch(preferredX,y,phase){
 
 
 function drawLibraryBackdrop(){
-  const top=30,bottom=H-14;
-  ctx.save();
-  ctx.fillStyle="#b8b8b8";ctx.fillRect(10,top,W-20,bottom-top);
-
-  // Houten lambrisering en staanders.
-  ctx.fillStyle="#666";
-  for(let x=18;x<W-18;x+=58)ctx.fillRect(x,top,6,bottom-top);
-
-  // Boekenkasten domineren de hele kamer.
-  const shelves=[
-    [24,48,94,66],[136,48,88,66],[256,48,88,66],[362,48,94,66],
-    [24,138,94,70],[136,138,88,70],[256,138,88,70],[362,138,94,70],
-    [24,228,94,70],[136,228,88,70],[256,228,88,70],[362,228,94,70]
-  ];
-  shelves.forEach(([x,y,w,h],si)=>{
-    ctx.fillStyle="#555";ctx.fillRect(x,y,w,h);
-    ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);
-    ctx.fillStyle="#ddd";
-    for(let sy=y+16;sy<y+h-2;sy+=18){
-      ctx.fillRect(x+4,sy,w-8,3);
-      let bx=x+7,book=0;
-      while(bx<x+w-8){
-        const bw=4+((book+si)%4), bh=9+((book*3+si)%8);
-        ctx.fillRect(bx,sy-bh,bw,bh);
-        bx+=bw+3;book++;
-      }
-    }
+  const top=30,bottom=H-14;ctx.save();
+  ctx.fillStyle="#c9c9c9";ctx.fillRect(10,top,W-20,bottom-top);
+  ctx.strokeStyle="#aaa";ctx.lineWidth=1;
+  for(let y=top+18;y<bottom;y+=28){ctx.beginPath();ctx.moveTo(12,y);ctx.lineTo(W-12,y);ctx.stroke();}
+  // Rustige boekenkasten in vaste wandvakken, niet overal.
+  [[28,72,78,42],[270,72,62,42],[370,72,76,42],[130,198,76,42],[326,198,84,42],[28,322,80,34],[236,322,70,34]].forEach(([x,y,w,h],si)=>{
+    ctx.fillStyle="#555";ctx.fillRect(x,y,w,h);ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);ctx.fillStyle="#ddd";
+    for(let sy=y+16;sy<y+h;sy+=17){ctx.fillRect(x+4,sy,w-8,2);for(let bx=x+7,j=0;bx<x+w-7;bx+=8,j++)ctx.fillRect(bx,sy-8-(j+si)%5,5,8+(j+si)%5);}
   });
-
-  // Groot leesraam.
-  ctx.fillStyle="#777";
-  ctx.beginPath();ctx.arc(240,78,35,Math.PI,0);ctx.fill();
-  ctx.fillRect(205,78,70,61);
-  ctx.strokeStyle="#eee";ctx.lineWidth=3;ctx.strokeRect(205,78,70,61);
-  ctx.beginPath();ctx.moveTo(240,43);ctx.lineTo(240,139);ctx.moveTo(205,106);ctx.lineTo(275,106);ctx.stroke();
-
-  // Centrale leestafel.
-  ctx.fillStyle="#666";ctx.fillRect(181,270,118,11);
-  ctx.fillRect(197,281,12,34);ctx.fillRect(271,281,12,34);
-  ctx.fillStyle="#eee";ctx.fillRect(218,260,44,7);
-
-  // Hanglampen.
-  [[78,92],[402,92],[171,212],[309,212]].forEach(([x,y])=>{
-    ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-22);ctx.lineTo(x,y-5);ctx.stroke();
-    ctx.fillStyle="#555";ctx.fillRect(x-7,y-5,14,4);ctx.fillStyle="#fff";ctx.fillRect(x-2,y-11,4,6);
-  });
+  // Groot leesraam in een eigen vrij vlak.
+  ctx.fillStyle="#777";ctx.beginPath();ctx.arc(230,92,28,Math.PI,0);ctx.fill();ctx.fillRect(202,92,56,34);
+  ctx.strokeStyle="#eee";ctx.lineWidth=3;ctx.strokeRect(202,92,56,34);ctx.beginPath();ctx.moveTo(230,64);ctx.lineTo(230,126);ctx.moveTo(202,105);ctx.lineTo(258,105);ctx.stroke();
+  // Leestafel rust op onderste vloer.
+  ctx.fillStyle="#666";ctx.fillRect(338,342,82,8);ctx.fillRect(348,350,8,22);ctx.fillRect(403,350,8,22);ctx.fillStyle="#eee";ctx.fillRect(360,336,38,5);
+  // Volledig rustige strook achter iedere ladder.
+  ctx.fillStyle="#e2e2e2";ladders.forEach(l=>ctx.fillRect(l.x-11,l.top-3,42,l.bottom-l.top+6));
   ctx.restore();
 }
-
 function drawWineCellarBackdrop(){
-  const top=30,bottom=H-14;
-  ctx.save();
-  ctx.fillStyle="#adadad";ctx.fillRect(10,top,W-20,bottom-top);
-
-  // Grove kelderstenen.
-  ctx.strokeStyle="#858585";ctx.lineWidth=1;
-  for(let y=42,row=0;y<bottom;y+=22,row++){
-    ctx.beginPath();ctx.moveTo(12,y);ctx.lineTo(W-12,y);ctx.stroke();
-    const off=row%2?25:0;
-    for(let x=12-off;x<W-12;x+=50){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+22);ctx.stroke();}
-  }
-
-  // Grote stenen gewelven.
-  ctx.strokeStyle="#5f5f5f";ctx.lineWidth=8;
-  [86,240,394].forEach(cx=>{
-    ctx.beginPath();ctx.arc(cx,98,72,Math.PI,0);ctx.stroke();
-    ctx.lineWidth=5;
-    ctx.beginPath();ctx.moveTo(cx-72,98);ctx.lineTo(cx-72,bottom);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx+72,98);ctx.lineTo(cx+72,bottom);ctx.stroke();
-    ctx.lineWidth=8;
+  const top=30,bottom=H-14;ctx.save();
+  ctx.fillStyle="#b5b5b5";ctx.fillRect(10,top,W-20,bottom-top);
+  ctx.strokeStyle="#888";ctx.lineWidth=1;
+  for(let y=44,row=0;y<bottom;y+=24,row++){ctx.beginPath();ctx.moveTo(12,y);ctx.lineTo(W-12,y);ctx.stroke();for(let x=12-(row%2?24:0);x<W-12;x+=48){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+24);ctx.stroke();}}
+  // Lage keldergewelven.
+  ctx.strokeStyle="#666";ctx.lineWidth=6;[90,240,390].forEach(cx=>{ctx.beginPath();ctx.arc(cx,100,68,Math.PI,0);ctx.stroke();});
+  // Vrije ladderzones vóór decoratie.
+  ctx.fillStyle="#dcdcdc";ladders.forEach(l=>ctx.fillRect(l.x-12,l.top-3,44,l.bottom-l.top+6));
+  // Wijnrekken alleen in gereserveerde vrije wandvakken.
+  [[130,78,72,34],[275,78,70,34],[112,202,72,34],[300,202,72,34]].forEach(([x,y,w,h])=>{
+    ctx.fillStyle="#555";ctx.fillRect(x,y,w,h);ctx.fillStyle="#ddd";
+    for(let yy=y+9;yy<y+h-3;yy+=13)for(let xx=x+7;xx<x+w-5;xx+=12){ctx.fillRect(xx,yy,5,7);ctx.fillRect(xx+1,yy-3,3,3);}
   });
-
-  const barrel=(x,y,r=17)=>{
-    ctx.strokeStyle="#444";ctx.lineWidth=3;
-    ctx.beginPath();ctx.ellipse(x,y,r,r-3,0,0,Math.PI*2);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(x-r+3,y-8);ctx.lineTo(x+r-3,y-8);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(x-r+3,y+8);ctx.lineTo(x+r-3,y+8);ctx.stroke();
-  };
-  [[48,92],[84,92],[410,92],[446,92],[55,204],[92,204],[388,204],[425,204],
-   [52,294],[89,294],[397,294],[434,294]].forEach(([x,y])=>barrel(x,y));
-
-  // Wijnrekken.
-  [[150,72,70,52],[270,72,70,52],[155,250,66,54],[267,250,68,54]].forEach(([x,y,w,h])=>{
-    ctx.fillStyle="#555";ctx.fillRect(x,y,w,h);
-    ctx.fillStyle="#ddd";
-    for(let yy=y+10;yy<y+h-3;yy+=14)for(let xx=x+7;xx<x+w-5;xx+=12){
-      ctx.fillRect(xx,yy,5,8);ctx.fillRect(xx+1,yy-3,3,3);
-    }
-  });
-
-  // Centrale wijnpers.
-  ctx.fillStyle="#555";ctx.fillRect(208,176,64,44);
-  ctx.strokeStyle="#333";ctx.lineWidth=3;ctx.strokeRect(208,176,64,44);
-  ctx.fillRect(219,160,42,15);ctx.fillRect(237,136,6,24);
-  ctx.beginPath();ctx.moveTo(222,146);ctx.lineTo(258,146);ctx.stroke();
-
-  // Lage kelderlampen.
-  [[125,112],[355,112],[240,328]].forEach(([x,y])=>{
-    ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-20);ctx.lineTo(x,y-5);ctx.stroke();
-    ctx.fillStyle="#666";ctx.fillRect(x-8,y-5,16,5);ctx.fillStyle="#fff";ctx.fillRect(x-2,y-11,4,6);
-  });
+  const barrel=(x,floorY,r=15)=>{const cy=floorY-r-7;ctx.strokeStyle="#444";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,cy,r,r-3,0,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(x-r,cy);ctx.lineTo(x+r,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(x-r+3,cy-7);ctx.lineTo(x+r-3,cy-7);ctx.moveTo(x-r+3,cy+7);ctx.lineTo(x+r-3,cy+7);ctx.stroke();};
+  // Elk vat rust aantoonbaar op een platform/floorY.
+  [[45,126],[435,126],[112,250],[360,250],[48,372],[430,372]].forEach(([x,y])=>barrel(x,y));
+  // Wijnpers op onderste vloer.
+  ctx.fillStyle="#555";ctx.fillRect(205,328,70,36);ctx.strokeStyle="#333";ctx.lineWidth=3;ctx.strokeRect(205,328,70,36);ctx.fillRect(219,316,42,12);ctx.fillRect(237,294,6,22);ctx.beginPath();ctx.moveTo(221,302);ctx.lineTo(259,302);ctx.stroke();
+  ctx.restore();
+}
+function drawArmoryBackdrop(){
+  const top=30,bottom=H-14;ctx.save();
+  ctx.fillStyle="#c4c4c4";ctx.fillRect(10,top,W-20,bottom-top);
+  ctx.strokeStyle="#929292";ctx.lineWidth=1;
+  for(let y=top+2,row=0;y<bottom;y+=20,row++){ctx.beginPath();ctx.moveTo(10,y);ctx.lineTo(W-10,y);ctx.stroke();for(let x=10-(row%2?20:0);x<W-10;x+=40){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+20);ctx.stroke();}}
+  ctx.fillStyle="#e0e0e0";ladders.forEach(l=>ctx.fillRect(l.x-11,l.top-3,42,l.bottom-l.top+6));
+  // Wapenrekken in eigen wandvlakken: geen ramen en geen losse projecties.
+  const rack=(x,y,w)=>{ctx.fillStyle="#666";ctx.fillRect(x,y,w,5);ctx.fillRect(x,y+34,w,5);ctx.strokeStyle="#444";ctx.lineWidth=2;for(let sx=x+12;sx<x+w-8;sx+=22){ctx.beginPath();ctx.moveTo(sx,y+3);ctx.lineTo(sx+10,y+31);ctx.moveTo(sx+10,y+3);ctx.lineTo(sx,y+31);ctx.stroke();}};
+  rack(30,76,72);rack(210,76,70);rack(365,76,78);rack(120,205,78);rack(300,205,80);
+  // Twee harnassen staan op de onderste vloer.
+  const armor=x=>{ctx.strokeStyle="#444";ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,326,8,0,Math.PI*2);ctx.stroke();ctx.strokeRect(x-11,334,22,22);ctx.beginPath();ctx.moveTo(x-11,338);ctx.lineTo(x-20,354);ctx.moveTo(x+11,338);ctx.lineTo(x+20,354);ctx.moveTo(x-7,356);ctx.lineTo(x-10,371);ctx.moveTo(x+7,356);ctx.lineTo(x+10,371);ctx.stroke();};
+  armor(65);armor(415);
+  // Schild op vrije centrale muur.
+  ctx.strokeStyle="#444";ctx.lineWidth=3;ctx.beginPath();ctx.arc(240,268,18,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(228,268);ctx.lineTo(252,268);ctx.moveTo(240,256);ctx.lineTo(240,280);ctx.stroke();
   ctx.restore();
 }
 
@@ -3639,6 +3590,7 @@ function drawCastleBackdrop(){
   const theme=currentCastleTheme();
   if(theme.kind==="books"){drawLibraryBackdrop();return;}
   if(theme.kind==="wine"){drawWineCellarBackdrop();return;}
+  if(theme.kind==="arms"){drawArmoryBackdrop();return;}
   const top=30,bottom=H-14,bh=bottom-top;
   ctx.save();
   ctx.fillStyle=theme.kind==="cells"?"#b6b6b6":"#cacaca";
