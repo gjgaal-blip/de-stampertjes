@@ -117,12 +117,14 @@ const levelSubtitle=document.getElementById("levelSubtitle");
 let levelTransitioning=false;
 
 function showLevelTransition(completedLevel,nextLevel){
-  logGameEvent("level_complete",{level:completedLevel,score});
+  if(!devTestActive)logGameEvent("level_complete",{level:completedLevel,score});
   if(musicOn&&!menuSoundtrack.paused)menuSoundtrack.volume=.06;
-  const transitionStats=getStats();
-  transitionStats.bestScore=Math.max(Number(transitionStats.bestScore)||0,Number(score)||0);
-  transitionStats.highestLevel=Math.max(Number(transitionStats.highestLevel)||1,Number(nextLevel)||1);
-  saveStats(transitionStats);
+  if(!devTestActive){
+    const transitionStats=getStats();
+    transitionStats.bestScore=Math.max(Number(transitionStats.bestScore)||0,Number(score)||0);
+    transitionStats.highestLevel=Math.max(Number(transitionStats.highestLevel)||1,Number(nextLevel)||1);
+    saveStats(transitionStats);
+  }
   levelTransitioning=true;
   state="transition";
   document.body.classList.remove("gameplayActive");
@@ -141,7 +143,7 @@ function showLevelTransition(completedLevel,nextLevel){
     levelTransitioning=false;
     state="play";
     spawnLevel();
-    logGameEvent("level_start",{level:nextLevel,score});
+    if(!devTestActive)logGameEvent("level_start",{level:nextLevel,score});
     if(musicOn){
       if(menuSoundtrack.paused)startMusic();
       else applyMusicVolume();
@@ -824,6 +826,7 @@ function ensurePlayerName(){
 }
 
 function updateProgressStats(){
+  if(devTestActive)return;
   const s=getStats();
   s.bestScore=Math.max(Number(s.bestScore)||0,Number(score)||0);
   s.highestLevel=Math.max(Number(s.highestLevel)||1,Number(level)||1);
@@ -1665,7 +1668,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.24.1";
+const CURRENT_VERSION="2.24.2";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -1819,6 +1822,25 @@ function armAttractMode(){
   },{passive:true,capture:false});
 });
 
+const DEV_TEST_PARAMS=new URLSearchParams(location.search);
+const DEV_TEST_LEVEL=Math.max(1,Math.min(10,Number(DEV_TEST_PARAMS.get("devlevel"))||1));
+const DEV_TEST_MODE=DEV_TEST_PARAMS.get("devtest")==="1" && DEV_TEST_PARAMS.has("devlevel");
+let devTestActive=false;
+
+function devTestRoomName(){
+  return CASTLE_ROOM_THEMES[roomIndexForLevel(level)]?.name||`LEVEL ${level}`;
+}
+function devTestSwitchLevel(delta){
+  if(!devTestActive)return;
+  level=Math.max(1,Math.min(10,level+delta));
+  score=0;lives=3;flawlessLevels=0;levelDeaths=0;state="play";
+  pauseOverlay.classList.add("hidden");
+  pauseConfirmStop.classList.add("hidden");
+  pauseMain.classList.remove("hidden");
+  pauseToggle.textContent="⏸ PAUZE";
+  spawnLevel();clearStartZone();startFreeze=60;
+  document.body.classList.add("gameplayActive");
+}
 function openIntro(){
   document.body.classList.remove("gameplayActive");
   state="intro";
@@ -1841,7 +1863,8 @@ function startGame(){
   startingGame=true;
   playMenuBtn.textContent="SPELEN";
   audio();
-  score=0;level=1;lives=3;
+  score=0;level=DEV_TEST_MODE?DEV_TEST_LEVEL:1;lives=3;
+  devTestActive=DEV_TEST_MODE;
   flawlessLevels=0;levelDeaths=0;state="play";
   const pendingTeddyBonus=Math.max(0,Number(localStorage.getItem("stampertjesPendingTeddyBonus"))||0);
   if(pendingTeddyBonus){
@@ -1849,15 +1872,18 @@ function startGame(){
     localStorage.removeItem("stampertjesPendingTeddyBonus");
     effects.push({type:"score",x:145,y:90,t:120,text:`EASTER TEDDY +${pendingTeddyBonus}`});
   }
-  updateProgressStats();
+  if(!devTestActive)updateProgressStats();
   setMusicContext("gameplay",{playNow:true});
   if(musicOn&&menuSoundtrack.paused)startMusic();
-  const gameStats=getStats();
-  gameStats.gamesPlayed=(Number(gameStats.gamesPlayed)||0)+1;
-  saveStats(gameStats);
-  const reachedMilestone=milestoneForGames(gameStats.gamesPlayed);
-  updatePlayerContextOnline();
-  logGameEvent("game_start",{level:1,score:0});
+  let reachedMilestone=0;
+  if(!devTestActive){
+    const gameStats=getStats();
+    gameStats.gamesPlayed=(Number(gameStats.gamesPlayed)||0)+1;
+    saveStats(gameStats);
+    reachedMilestone=milestoneForGames(gameStats.gamesPlayed);
+    updatePlayerContextOnline();
+    logGameEvent("game_start",{level,score:0});
+  }
   player.fastStamp=0;pauseOverlay.classList.add("hidden");pauseToggle.textContent="⏸ PAUZE";
   livingCastle.teddy=null;
   livingCastle.teddyCelebrating=false;
@@ -1870,7 +1896,7 @@ function startGame(){
     ? livingCastle.gameStartedAt+60000+Math.random()*30000
     : Infinity;
   spawnLevel();
-  logGameEvent("level_start",{level:1,score:0});
+  if(!devTestActive)logGameEvent("level_start",{level,score:0});
   clearStartZone();
   startFreeze=90;
   overlay.classList.add("hidden");
@@ -1906,6 +1932,24 @@ async function shareCurrentScore(){
   }
 }
 function showGameOverPanel(){
+  if(devTestActive){
+    state="gameover";
+    document.body.classList.remove("gameplayActive");
+    highscoreEntry.classList.add("hidden");
+    shareScoreBox.classList.add("hidden");
+    overlay.classList.remove("hidden");
+    menu.innerHTML=`<div class="menuTitle">🛠️ TEST LEVEL ${level} KLAAR</div>
+      <button id="devRetryBtn">↻ OPNIEUW</button>
+      <button id="devPrevEndBtn">← VORIG LEVEL</button>
+      <button id="devNextEndBtn">VOLGEND LEVEL →</button>
+      <button id="devExitBtn">DEVELOPER PORTAL</button>`;
+    document.getElementById("devRetryBtn")?.addEventListener("click",()=>{state="play";score=0;lives=3;spawnLevel();overlay.classList.add("hidden");document.body.classList.add("gameplayActive")});
+    document.getElementById("devPrevEndBtn")?.addEventListener("click",()=>{state="play";overlay.classList.add("hidden");devTestSwitchLevel(-1)});
+    document.getElementById("devNextEndBtn")?.addEventListener("click",()=>{state="play";overlay.classList.add("hidden");devTestSwitchLevel(1)});
+    document.getElementById("devExitBtn")?.addEventListener("click",()=>location.href="./admin.html");
+    return;
+  }
+
   updateProgressStats();
   logGameEvent("game_over",{level,score});
   document.body.classList.remove("gameplayActive");
@@ -2579,6 +2623,18 @@ function togglePause(){
     state="paused";
     pauseConfirmStop.classList.add("hidden");
     pauseMain.classList.remove("hidden");
+    let devNav=document.getElementById("devPauseNav");
+    if(devTestActive){
+      if(!devNav){
+        devNav=document.createElement("div");devNav.id="devPauseNav";
+        devNav.innerHTML='<div class="devTestBadge">🛠️ TESTMODUS</div><button id="devPrevLevelBtn">← VORIG LEVEL</button><button id="devNextLevelBtn">VOLGEND LEVEL →</button><button id="devPortalBtn">DEVELOPER PORTAL</button>';
+        pauseMain.appendChild(devNav);
+        document.getElementById("devPrevLevelBtn").onclick=()=>devTestSwitchLevel(-1);
+        document.getElementById("devNextLevelBtn").onclick=()=>devTestSwitchLevel(1);
+        document.getElementById("devPortalBtn").onclick=()=>location.href="./admin.html";
+      }
+      devNav.classList.remove("hidden");
+    }else if(devNav)devNav.classList.add("hidden");
     pauseOverlay.classList.remove("hidden");
     pauseToggle.textContent="▶ VERDER";
     musicTimer=null;
@@ -2630,6 +2686,7 @@ pauseConfirmStopBtn.addEventListener("pointerdown",e=>{
   pauseConfirmStop.classList.add("hidden");
   pauseMain.classList.remove("hidden");
   pauseToggle.textContent="⏸ PAUZE";
+  if(devTestActive){location.href="./admin.html";return;}
   logGameEvent("game_abort",{level:stoppedLevel,score:stoppedScore});
   openIntro();
 });
@@ -3928,3 +3985,7 @@ function draw(){
 }
 function loop(){update();draw();requestAnimationFrame(loop)}
 loop();
+
+window.addEventListener("load",()=>{
+  if(DEV_TEST_MODE)setTimeout(()=>startGame(),180);
+});

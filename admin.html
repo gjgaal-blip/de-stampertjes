@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>De Stampertjes - GJ Studios Admin</title>
-<link rel="stylesheet" href="admin.css?v=2227">
+<link rel="stylesheet" href="admin.css?v=2242">
 
 </head>
 <body>
 <div class="wrap">
   <h1>🍏 GJ STUDIOS</h1>
-  <div class="small">De Stampertjes Developer Portal · <span id="portalVersion">v2.24.1</span> · <strong>BUILD 2241</strong></div>
+  <div class="small">De Stampertjes Developer Portal · <span id="portalVersion">v2.24.2</span> · <strong>BUILD 2242</strong></div>
 
   <section id="loginCard" class="card">
     <h2>🔐 Beheerlogin</h2>
@@ -25,7 +25,7 @@
         <div>
           <div class="eyebrow">🍏 GJ STUDIOS · LIVE ANALYTICS</div>
           <h2>DEVELOPER DASHBOARD</h2>
-          <div class="small">Alleen zichtbaar na geldige beheerlogin. · BUILD 2241</div>
+          <div class="small">Alleen zichtbaar na geldige beheerlogin. · BUILD 2242</div>
         </div>
         <div class="liveBadge">● LIVE</div>
       </div>
@@ -96,6 +96,26 @@
       </div>
 
       <button id="refreshPortalDashboardBtn" type="button" style="width:100%;margin:12px 0 18px">↻ VERVERS NIEUW DASHBOARD</button>
+    </div>
+
+    <div class="card levelTesterCard">
+      <h2>🎮 LEVEL TESTER</h2>
+      <div class="small">Start direct in een kamer. Testmodus schrijft geen highscore, potje of publieke statistieken weg.</div>
+      <label class="levelTesterLabel">KIES LEVEL
+        <select id="devLevelSelect">
+          <option value="1">1 · Entreehal</option>
+          <option value="2">2 · Wapenzaal</option>
+          <option value="3">3 · Bibliotheek</option>
+          <option value="4">4 · Kerkers</option>
+          <option value="5">5 · Troonzaal</option>
+          <option value="6">6 · Wijnkelder</option>
+          <option value="7">7 · Alchemistenkamer</option>
+          <option value="8">8 · Schatkamer</option>
+          <option value="9">9 · Geheime Catacomben</option>
+          <option value="10">10 · Kasteeltoren</option>
+        </select>
+      </label>
+      <button id="launchDevLevelBtn" type="button">▶ SPEEL DIT LEVEL</button>
     </div>
 
     <div class="card">
@@ -178,8 +198,8 @@
   </section>
 </div>
 
-<script src="config.js?v=2227"></script>
-<script src="admin.js?v=2227" defer></script>
+<script src="config.js?v=2242"></script>
+<script src="admin.js?v=2242" defer></script>
 
-<section class="panel"><h2>📊 v2.24.1 Kasteelarchief</h2><div id="v222Analytics">Nieuwe analytics worden geladen…</div></section></body>
+<section class="panel"><h2>📊 v2.24.2 Kasteelarchief</h2><div id="v222Analytics">Nieuwe analytics worden geladen…</div></section></body>
 </html>

@@ -1,6 +1,7 @@
 # De Stampertjes
-
-## v2.24.1
-- Kasteelkrant herstructureerd.
-- Kleine updates samengevoegd.
-- Nieuw Stampertje doorgetrokken naar demo en death scene.
+## v2.24.2
+- Level Tester toegevoegd aan Developer Portal.
+- Veilige testmodus zonder publieke score/statistiekregistratie.
+- Vorig/volgend level tijdens testen.
+- Café-navigatie gecentreerd.
+- Uitleg uitgebreid.
