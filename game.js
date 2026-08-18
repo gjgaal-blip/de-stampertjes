@@ -1668,7 +1668,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.24.4";
+const CURRENT_VERSION="2.24.5";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -3530,22 +3530,77 @@ function drawSafeCastleTorch(preferredX,y,phase){
 
 
 function drawLibraryBackdrop(){
-  const top=30,bottom=H-14;ctx.save();
-  ctx.fillStyle="#c9c9c9";ctx.fillRect(10,top,W-20,bottom-top);
-  ctx.strokeStyle="#aaa";ctx.lineWidth=1;
-  for(let y=top+18;y<bottom;y+=28){ctx.beginPath();ctx.moveTo(12,y);ctx.lineTo(W-12,y);ctx.stroke();}
-  // Rustige boekenkasten in vaste wandvakken, niet overal.
-  [[28,72,78,42],[270,72,62,42],[370,72,76,42],[130,198,76,42],[326,198,84,42],[28,322,80,34],[236,322,70,34]].forEach(([x,y,w,h],si)=>{
-    ctx.fillStyle="#555";ctx.fillRect(x,y,w,h);ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);ctx.fillStyle="#ddd";
-    for(let sy=y+16;sy<y+h;sy+=17){ctx.fillRect(x+4,sy,w-8,2);for(let bx=x+7,j=0;bx<x+w-7;bx+=8,j++)ctx.fillRect(bx,sy-8-(j+si)%5,5,8+(j+si)%5);}
-  });
-  // Groot leesraam in een eigen vrij vlak.
-  ctx.fillStyle="#777";ctx.beginPath();ctx.arc(230,92,28,Math.PI,0);ctx.fill();ctx.fillRect(202,92,56,34);
-  ctx.strokeStyle="#eee";ctx.lineWidth=3;ctx.strokeRect(202,92,56,34);ctx.beginPath();ctx.moveTo(230,64);ctx.lineTo(230,126);ctx.moveTo(202,105);ctx.lineTo(258,105);ctx.stroke();
-  // Leestafel rust op onderste vloer.
-  ctx.fillStyle="#666";ctx.fillRect(338,342,82,8);ctx.fillRect(348,350,8,22);ctx.fillRect(403,350,8,22);ctx.fillStyle="#eee";ctx.fillRect(360,336,38,5);
-  // Volledig rustige strook achter iedere ladder.
-  ctx.fillStyle="#e2e2e2";ladders.forEach(l=>ctx.fillRect(l.x-11,l.top-3,42,l.bottom-l.top+6));
+  const top=30,bottom=H-14;
+  ctx.save();
+
+  // Rustige kasteelmuur: de gameplay blijft direct leesbaar.
+  ctx.fillStyle="#c9c9c9";
+  ctx.fillRect(10,top,W-20,bottom-top);
+  ctx.strokeStyle="#ababab";ctx.lineWidth=1;
+  for(let y=top+18,row=0;y<bottom;y+=24,row++){
+    ctx.beginPath();ctx.moveTo(12,y);ctx.lineTo(W-12,y);ctx.stroke();
+    for(let x=12-(row%2?22:0);x<W-12;x+=44){
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+24);ctx.stroke();
+    }
+  }
+
+  // Gotisch raam: één duidelijk architectonisch ankerpunt.
+  ctx.fillStyle="#777";
+  ctx.beginPath();ctx.arc(230,98,28,Math.PI,0);ctx.fill();
+  ctx.fillRect(202,98,56,27);
+  ctx.strokeStyle="#eee";ctx.lineWidth=3;
+  ctx.strokeRect(202,98,56,27);
+  ctx.beginPath();ctx.moveTo(230,70);ctx.lineTo(230,125);ctx.moveTo(202,107);ctx.lineTo(258,107);ctx.stroke();
+
+  // Vrije zones achter alle ladders. Geen decoratie mag hierin vallen.
+  const clearZones=ladders.map(l=>({x:l.x-12,y:l.top-4,w:44,h:l.bottom-l.top+8}));
+  ctx.fillStyle="#dedede";
+  clearZones.forEach(z=>ctx.fillRect(z.x,z.y,z.w,z.h));
+
+  // Echte staande boekenkasten: onderkant staat op een platform.
+  const bookcase=(x,floorY,w,h,seed=0)=>{
+    const y=floorY-h-7;
+    ctx.fillStyle="#4c4c4c";ctx.fillRect(x,y,w,h);
+    ctx.strokeStyle="#303030";ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);
+    ctx.fillStyle="#777";ctx.fillRect(x+3,y+3,4,h-6);ctx.fillRect(x+w-7,y+3,4,h-6);
+    for(let sy=y+18;sy<y+h-4;sy+=18){
+      ctx.fillStyle="#bdbdbd";ctx.fillRect(x+6,sy,w-12,3);
+      let bx=x+8,j=0;
+      while(bx<x+w-9){
+        const bw=4+((j+seed)%3), bh=9+((j*2+seed)%7);
+        ctx.fillStyle=(j+seed)%4===0?"#8d8d8d":"#e1e1e1";
+        ctx.fillRect(bx,sy-bh,bw,bh);
+        bx+=bw+3;j++;
+      }
+    }
+    // voet/plint: maakt duidelijk dat de kast op de vloer staat
+    ctx.fillStyle="#333";ctx.fillRect(x-2,floorY-10,w+4,4);
+  };
+
+  // Bewust maar enkele grote kasten, op echte speelvloeren en buiten ladderzones.
+  bookcase(28,126,72,49,1);
+  bookcase(360,126,82,49,3);
+  bookcase(220,250,76,49,5);
+  bookcase(34,372,70,49,7);
+  bookcase(238,372,64,49,9);
+
+  // Wandplank met enkele boeken, alleen in een rustig vlak.
+  ctx.fillStyle="#555";ctx.fillRect(326,208,96,5);
+  ctx.fillStyle="#ddd";
+  for(let x=334,j=0;x<414;x+=10,j++)ctx.fillRect(x,194-(j%3)*2,6,14+(j%3)*2);
+
+  // Leeshoek op de onderste vloer: tafel + open boek.
+  ctx.fillStyle="#555";ctx.fillRect(350,344,72,8);
+  ctx.fillRect(358,352,7,20);ctx.fillRect(407,352,7,20);
+  ctx.fillStyle="#eee";
+  ctx.beginPath();ctx.moveTo(374,340);ctx.lineTo(386,336);ctx.lineTo(386,342);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(386,336);ctx.lineTo(399,340);ctx.lineTo(386,342);ctx.closePath();ctx.fill();
+
+  // Kleine bibliotheekdetails op vrije muur, zonder ladders/platforms te kruisen.
+  ctx.strokeStyle="#555";ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(148,96,12,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(148,96);ctx.lineTo(148,87);ctx.moveTo(148,96);ctx.lineTo(155,100);ctx.stroke();
+
   ctx.restore();
 }
 function drawWineCellarBackdrop(){
@@ -3898,9 +3953,13 @@ function drawCastleLadder(l){
 function drawFloor(a,b,y){
   const kind=currentCastleTheme().kind;
   if(kind==="books"){
-    ctx.save();ctx.fillStyle="#4f4f4f";ctx.fillRect(a,y-7,b-a,14);
-    ctx.fillStyle="#ddd";ctx.fillRect(a,y-7,b-a,2);ctx.strokeStyle="#777";
-    for(let x=a+3;x<b;x+=28){ctx.strokeRect(x,y-5,24,10);ctx.beginPath();ctx.moveTo(x+4,y+5);ctx.lineTo(x+20,y-5);ctx.stroke();}
+    ctx.save();
+    // Houten galerij: duidelijke bovenrand en rustige planken.
+    ctx.fillStyle="#4b4b4b";ctx.fillRect(a,y-7,b-a,14);
+    ctx.fillStyle="#e0e0e0";ctx.fillRect(a,y-7,b-a,2);
+    ctx.strokeStyle="#777";ctx.lineWidth=1;
+    for(let x=a+6;x<b;x+=30){ctx.beginPath();ctx.moveTo(x,y-4);ctx.lineTo(x,y+5);ctx.stroke();}
+    ctx.fillStyle="#333";ctx.fillRect(a,y+4,b-a,3);
     ctx.restore();ctx.fillStyle="#111";ctx.strokeStyle="#111";return;
   }
   if(kind==="wine"){
