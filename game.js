@@ -1665,7 +1665,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.23";
+const CURRENT_VERSION="2.24";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -2226,12 +2226,61 @@ const ladderLayouts=[
     {x:60,top:188,bottom:250},{x:260,top:188,bottom:250},
     {x:155,top:250,bottom:312},{x:390,top:250,bottom:312},
     {x:65,top:312,bottom:372},{x:290,top:312,bottom:372}
+  ],
+  // 6 Wijnkelder — brede keldergangen, routes wisselen links/rechts.
+  [
+    {x:58,top:64,bottom:126},{x:250,top:64,bottom:126},
+    {x:155,top:126,bottom:188},{x:390,top:126,bottom:188},
+    {x:78,top:188,bottom:250},{x:318,top:188,bottom:250},
+    {x:205,top:250,bottom:312},{x:420,top:250,bottom:312},
+    {x:105,top:312,bottom:372},{x:350,top:312,bottom:372}
+  ],
+  // 7 Alchemistenkamer — grillige routes alsof de kamer rond werktafels is gebouwd.
+  [
+    {x:110,top:64,bottom:126},{x:405,top:64,bottom:126},
+    {x:35,top:126,bottom:188},{x:235,top:126,bottom:188},
+    {x:145,top:188,bottom:250},{x:365,top:188,bottom:250},
+    {x:55,top:250,bottom:312},{x:275,top:250,bottom:312},
+    {x:180,top:312,bottom:372},{x:415,top:312,bottom:372}
+  ],
+  // 8 Schatkamer — lange diagonale jachtroutes.
+  [
+    {x:45,top:64,bottom:126},{x:300,top:64,bottom:126},
+    {x:185,top:126,bottom:188},{x:425,top:126,bottom:188},
+    {x:95,top:188,bottom:250},{x:335,top:188,bottom:250},
+    {x:225,top:250,bottom:312},{x:405,top:250,bottom:312},
+    {x:75,top:312,bottom:372},{x:300,top:312,bottom:372}
+  ],
+  // 9 Geheime Catacomben — smallere, onheilspellende zigzag.
+  [
+    {x:135,top:64,bottom:126},{x:360,top:64,bottom:126},
+    {x:50,top:126,bottom:188},{x:275,top:126,bottom:188},
+    {x:175,top:188,bottom:250},{x:415,top:188,bottom:250},
+    {x:70,top:250,bottom:312},{x:315,top:250,bottom:312},
+    {x:155,top:312,bottom:372},{x:380,top:312,bottom:372}
+  ],
+  // 10 Kasteeltoren — snelle verticale wissels richting de top.
+  [
+    {x:70,top:64,bottom:126},{x:350,top:64,bottom:126},
+    {x:215,top:126,bottom:188},{x:420,top:126,bottom:188},
+    {x:50,top:188,bottom:250},{x:285,top:188,bottom:250},
+    {x:175,top:250,bottom:312},{x:390,top:250,bottom:312},
+    {x:85,top:312,bottom:372},{x:255,top:312,bottom:372}
   ]
 ]
 let ladders=ladderLayouts[0];
 let currentLayoutIndex=0;
 const CASTLE_ROOM_THEMES=[
-  {name:"ENTREEHAL",kind:"hall"},{name:"WAPENZAAL",kind:"arms"},{name:"BIBLIOTHEEK",kind:"books"},{name:"KERKERS",kind:"cells"},{name:"TROONZAAL",kind:"throne"}
+  {name:"ENTREEHAL",kind:"hall"},
+  {name:"WAPENZAAL",kind:"arms"},
+  {name:"BIBLIOTHEEK",kind:"books"},
+  {name:"KERKERS",kind:"cells"},
+  {name:"TROONZAAL",kind:"throne"},
+  {name:"WIJNKELDER",kind:"wine"},
+  {name:"ALCHEMISTENKAMER",kind:"alchemy"},
+  {name:"SCHATKAMER",kind:"treasure"},
+  {name:"GEHEIME CATACOMBEN",kind:"catacombs"},
+  {name:"KASTEELTOREN",kind:"tower"}
 ];
 function currentCastleTheme(){return CASTLE_ROOM_THEMES[currentLayoutIndex%CASTLE_ROOM_THEMES.length]}
 
@@ -2477,6 +2526,14 @@ const deathCanvas=document.getElementById("deathCanvas");
 const dctx=deathCanvas.getContext("2d");
 dctx.imageSmoothingEnabled=false;
 const pauseOverlay=document.getElementById("pauseOverlay");
+const pauseMain=document.getElementById("pauseMain");
+const pauseConfirmStop=document.getElementById("pauseConfirmStop");
+const pauseResumeBtn=document.getElementById("pauseResumeBtn");
+const pauseRestartBtn=document.getElementById("pauseRestartBtn");
+const pauseStopBtn=document.getElementById("pauseStopBtn");
+const pauseCancelStopBtn=document.getElementById("pauseCancelStopBtn");
+const pauseConfirmStopBtn=document.getElementById("pauseConfirmStopBtn");
+let levelStartScore=0,levelStartLives=3;
 let previousState="play";
 let pauseLocked=false;
 
@@ -2495,6 +2552,8 @@ function togglePause(){
   }else{
     previousState=state;
     state="paused";
+    pauseConfirmStop.classList.add("hidden");
+    pauseMain.classList.remove("hidden");
     pauseOverlay.classList.remove("hidden");
     pauseToggle.textContent="▶ VERDER";
     musicTimer=null;
@@ -2508,7 +2567,51 @@ pauseToggle.addEventListener("pointerdown",e=>{
   e.stopPropagation();
   togglePause();
 });
+pauseResumeBtn.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();togglePause();});
+
+pauseRestartBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();e.stopPropagation();
+  score=levelStartScore;
+  lives=levelStartLives;
+  levelDeaths=0;
+  state="play";
+  pauseOverlay.classList.add("hidden");
+  pauseConfirmStop.classList.add("hidden");
+  pauseMain.classList.remove("hidden");
+  pauseToggle.textContent="⏸ PAUZE";
+  spawnLevel();
+  startFreeze=75;
+  document.body.classList.add("gameplayActive");
+  logGameEvent("level_restart",{level,score});
+});
+
+pauseStopBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();e.stopPropagation();
+  pauseMain.classList.add("hidden");
+  pauseConfirmStop.classList.remove("hidden");
+});
+
+pauseCancelStopBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();e.stopPropagation();
+  pauseConfirmStop.classList.add("hidden");
+  pauseMain.classList.remove("hidden");
+});
+
+pauseConfirmStopBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();e.stopPropagation();
+  const stoppedLevel=level,stoppedScore=score;
+  keys.left=keys.right=keys.up=keys.down=false;
+  pauseOverlay.classList.add("hidden");
+  pauseConfirmStop.classList.add("hidden");
+  pauseMain.classList.remove("hidden");
+  pauseToggle.textContent="⏸ PAUZE";
+  logGameEvent("game_abort",{level:stoppedLevel,score:stoppedScore});
+  openIntro();
+});
+
 pauseOverlay.addEventListener("pointerdown",e=>{
+  // Alleen tikken op de donkere achtergrond hervat; knoppen handelen zichzelf af.
+  if(e.target!==pauseOverlay)return;
   e.preventDefault();
   togglePause();
 });
@@ -2523,9 +2626,8 @@ function ladderNear(x,y){
   return ladders.find(l=>x+12>l.x-12&&x+12<l.x+30&&y+28>=l.top-5&&y<=l.bottom+5);
 }
 function roomIndexForLevel(levelNumber){
-  // Levels cycle through the five castle rooms in a fixed order:
-  // 1 Entreehal, 2 Wapenzaal, 3 Bibliotheek, 4 Kerkers, 5 Troonzaal,
-  // then the cycle repeats from level 6.
+  // Levels cycle through ten castle rooms in a fixed order.
+  // Level 1-10 are all visually distinct; only from level 11 does the cycle restart.
   const n=Math.max(1,Number(levelNumber)||1);
   return (n-1)%CASTLE_ROOM_THEMES.length;
 }
@@ -2573,6 +2675,8 @@ function resetPlayerSafely(){
 }
 
 function spawnLevel(){
+  levelStartScore=score;
+  levelStartLives=lives;
   chooseLayoutForLevel(level);
   if(livingCastle.teddy&&!livingCastle.teddy.dancing)livingCastle.teddy=null;
   keys.left=keys.right=keys.up=keys.down=false;
@@ -3379,7 +3483,7 @@ function drawCastleBackdrop(){
   }
   ctx.fillStyle="#8a8a8a";ctx.fillRect(10,top,14,bh);ctx.fillRect(W-24,top,14,bh);
   [127,343].forEach(x=>{ctx.fillStyle="#aaa";ctx.fillRect(x,top+1,16,bh-2);ctx.fillStyle="#666";ctx.fillRect(x-3,top+1,22,5);ctx.fillRect(x-3,bottom-5,22,5)});
-  if(theme.kind!=="cells"){
+  if(theme.kind!=="cells"&&theme.kind!=="catacombs"){
     const s=livingCastle.windowShift;
     drawGothicWindow(40,78,s===0);drawGothicWindow(220,140,s===1);
     drawGothicWindow(401,78,s===2);drawGothicWindow(220,265,s===3);
@@ -3388,6 +3492,48 @@ function drawCastleBackdrop(){
   if(theme.kind==="cells")[[42,84],[365,84],[204,204],[42,276]].forEach(([x,y])=>{ctx.strokeStyle="#555";ctx.lineWidth=3;ctx.strokeRect(x,y,68,38);for(let bx=x+10;bx<x+66;bx+=12){ctx.beginPath();ctx.moveTo(bx,y);ctx.lineTo(bx,y+38);ctx.stroke()}});
   if(theme.kind==="throne"){ctx.fillStyle="#555";ctx.fillRect(212,274,56,40);ctx.fillRect(220,257,40,20);ctx.fillStyle="#ddd";ctx.fillRect(229,264,22,8)}
   if(theme.kind==="arms"){ctx.strokeStyle="#555";ctx.lineWidth=3;[[70,95],[390,95],[240,280]].forEach(([x,y])=>{ctx.beginPath();ctx.moveTo(x-12,y-12);ctx.lineTo(x+12,y+12);ctx.moveTo(x+12,y-12);ctx.lineTo(x-12,y+12);ctx.stroke()})}
+
+  // v2.24: vijf volledig nieuwe kamers.
+  if(theme.kind==="wine"){
+    ctx.strokeStyle="#555";ctx.lineWidth=3;
+    [[55,96],[390,96],[210,214],[62,292],[375,292]].forEach(([x,y])=>{
+      ctx.beginPath();ctx.arc(x,y,18,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x-18,y);ctx.lineTo(x+18,y);ctx.stroke();
+    });
+  }
+  if(theme.kind==="alchemy"){
+    ctx.strokeStyle="#555";ctx.fillStyle="#666";ctx.lineWidth=2;
+    [[62,102],[380,102],[220,222],[70,292]].forEach(([x,y])=>{
+      ctx.fillRect(x-22,y+8,44,6);
+      ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.stroke();
+      ctx.fillRect(x-3,y-22,6,10);
+      ctx.beginPath();ctx.moveTo(x-15,y+25);ctx.lineTo(x+15,y+25);ctx.stroke();
+    });
+  }
+  if(theme.kind==="treasure"){
+    ctx.strokeStyle="#555";ctx.fillStyle="#777";ctx.lineWidth=2;
+    [[45,102],[360,102],[190,218],[355,286]].forEach(([x,y])=>{
+      ctx.fillRect(x,y,48,24);ctx.strokeRect(x,y,48,24);
+      ctx.beginPath();ctx.arc(x+24,y,18,Math.PI,0);ctx.stroke();
+      ctx.fillStyle="#ddd";ctx.fillRect(x+21,y+10,6,7);ctx.fillStyle="#777";
+    });
+  }
+  if(theme.kind==="catacombs"){
+    ctx.fillStyle="#555";ctx.strokeStyle="#555";ctx.lineWidth=2;
+    [[58,101],[395,101],[215,215],[62,290],[375,290]].forEach(([x,y])=>{
+      ctx.beginPath();ctx.arc(x,y-8,9,0,Math.PI*2);ctx.stroke();
+      ctx.fillRect(x-3,y+1,6,18);
+      ctx.beginPath();ctx.moveTo(x-12,y+5);ctx.lineTo(x+12,y+14);ctx.moveTo(x+12,y+5);ctx.lineTo(x-12,y+14);ctx.stroke();
+    });
+  }
+  if(theme.kind==="tower"){
+    // Hoge torenramen en een maan geven level 10 een duidelijke finale-uitstraling.
+    ctx.fillStyle="#eee";ctx.globalAlpha=.7;ctx.beginPath();ctx.arc(420,66,22,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    [[42,80],[214,142],[398,80],[214,270]].forEach(([x,y])=>{
+      ctx.strokeStyle="#555";ctx.lineWidth=3;ctx.strokeRect(x,y,42,48);
+      ctx.beginPath();ctx.arc(x+21,y,21,Math.PI,0);ctx.stroke();
+    });
+  }
   // Subtle moving banners: enough motion to make the room feel inhabited.
   const wave=Math.sin(performance.now()*.004+livingCastle.flagPhase)*4;
   ctx.fillStyle="#666";

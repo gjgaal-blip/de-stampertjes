@@ -1,8 +1,9 @@
 # De Stampertjes
 
-## v2.23
-- Kasteelharten en maximaal vijf levens.
-- Extra leven na drie foutloze levels.
-- Vernieuwd geanimeerd Stampertje.
-- Highscoregegevens doorgetrokken naar Statistieken.
-- Appelbaas-teaser; baas zelf nog niet uitgebracht.
+## v2.24
+- Kasteel uitgebreid van 5 naar 10 unieke kamers.
+- Vijf nieuwe kamerontwerpen en ladderlayouts.
+- Mobiele TERUG-knop altijd bereikbaar.
+- Uitgebreid pauzemenu met verder/opnieuw/stoppen.
+- Kasteelkrant bijgewerkt; Appelbaas blijft teaser.
+- Muziek ongewijzigd.

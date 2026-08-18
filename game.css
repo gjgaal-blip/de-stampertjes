@@ -1226,3 +1226,31 @@ body:not(.attractMode) #panel #introCanvas{
     padding-bottom:max(18px, env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+
+
+/* v2.24 — mobiele navigatie: TERUG is altijd bereikbaar */
+.menuSection:not(.hidden) .backBtn{
+  position:fixed !important;
+  left:50%;
+  bottom:max(10px, env(safe-area-inset-bottom, 0px)) !important;
+  transform:translateX(-50%);
+  width:min(440px, calc(100vw - 24px)) !important;
+  z-index:4200 !important;
+  margin:0 !important;
+  box-shadow:0 -4px 0 #111;
+}
+.menuSection:not(.hidden){
+  padding-bottom:78px !important;
+}
+
+/* v2.24 — echt pauzemenu */
+#pauseCard{
+  width:min(360px, calc(100vw - 34px));
+}
+#pauseCard button{
+  width:100%;
+  margin-top:8px;
+}
+#pauseConfirmStop p{
+  line-height:1.45;
+}

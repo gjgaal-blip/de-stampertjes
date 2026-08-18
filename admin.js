@@ -1,6 +1,6 @@
 const SUPABASE_URL=window.STAMPERTJES_CONFIG.supabaseUrl;
 const SUPABASE_KEY=window.STAMPERTJES_CONFIG.supabaseKey;
-console.info("De Stampertjes Developer Portal BUILD 2230 geladen");
+console.info("De Stampertjes Developer Portal BUILD 2240 geladen");
 
 const $=id=>document.getElementById(id);
 const adminCode=$("adminCode"),loginBtn=$("loginBtn"),loginStatus=$("loginStatus");
@@ -119,7 +119,7 @@ function renderPlayers(list){
         await refreshAll();
       }catch(err){
         console.error(err);
-        alert("Verwijderen is mislukt. Controleer of de v2.23 SQL-migratie is uitgevoerd.");
+        alert("Verwijderen is mislukt. Controleer of de v2.24 SQL-migratie is uitgevoerd.");
         btn.disabled=false;
         btn.textContent=original;
       }
@@ -136,7 +136,7 @@ function renderLevels(list){
       <strong>LEVEL ${n(x.level)}</strong>
       <span>${starts} starts</span><span>${done} klaar</span><span>${deaths} deaths</span><b>${pct}%</b>
     </div>`;
-  }).join(""):"<div class='small emptyBox'>Nog geen level-events geregistreerd. Speel v2.23 om deze data te vullen.</div>";
+  }).join(""):"<div class='small emptyBox'>Nog geen level-events geregistreerd. Speel v2.24 om deze data te vullen.</div>";
 }
 
 function renderBonuses(list){
@@ -194,7 +194,7 @@ function renderEvents(list){
       <span>${e.bonus_type?esc(e.bonus_type):""}</span>
       <small>${date(e.created_at)}</small>
     </div>
-  `).join(""):"<div class='small emptyBox'>Nog geen v2.23-events.</div>";
+  `).join(""):"<div class='small emptyBox'>Nog geen v2.24-events.</div>";
 }
 
 function renderPosts(list){
@@ -497,7 +497,7 @@ async function refreshNewDashboard(){
   }
 }
 (async()=>{
-  const raw=window.STAMPERTJES_CONFIG?.version||"2.23";
+  const raw=window.STAMPERTJES_CONFIG?.version||"2.24";
   const version=$("portalVersion");
   if(version)version.textContent="v"+raw.replace("-beta"," Beta ");
   if(activeAdminCode){
@@ -516,11 +516,11 @@ async function loadV222Analytics(){
     const d=await r.json();
     const countries=Object.entries(d.countries||{}).map(([k,v])=>`${k}: ${v}`).join(" · ")||"nog geen landen vastgelegd";
     el.innerHTML=`<div class="statRow"><span>Nieuwe metric-events</span><b>${Number(d.total_metric_events||0).toLocaleString("nl-NL")}</b></div><div class="statRow"><span>Gemeten speeltijd</span><b>${Math.round(Number(d.total_play_seconds||0)/60)} min</b></div><div class="statRow"><span>Landen</span><b>${countries}</b></div>`;
-  }catch(e){el.textContent="v2.23 analytics nog niet beschikbaar — controleer SQL 007.";}
+  }catch(e){el.textContent="v2.24 analytics nog niet beschikbaar — controleer SQL 007.";}
 }
 loadV222Analytics();
 
-document.documentElement.dataset.adminBuild="2230";
+document.documentElement.dataset.adminBuild="2240";
 const buildMark=document.getElementById("loginStatus");
 if(buildMark && !sessionStorage.getItem("stampertjesAdminPortalCode")){
   buildMark.textContent="Portal build 2222 geladen · klaar om in te loggen.";
