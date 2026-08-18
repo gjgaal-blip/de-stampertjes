@@ -995,24 +995,23 @@ async function loadOnlineStats(){
   try{
     await syncOnlineStats(getStats());
 
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_stats`,{
-      method:"POST",
-      headers:{
-        "apikey":SUPABASE_KEY,
-        "Authorization":`Bearer ${SUPABASE_KEY}`,
-        "Content-Type":"application/json"
-      },
-      body:"{}"
-    });
-
-    if(!response.ok){
-      const text=await response.text();
-      throw new Error(`${response.status}: ${text}`);
-    }
-
+    const [response,highscoreResponse]=await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_stats`,{
+        method:"POST",
+        headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
+        body:"{}"
+      }),
+      fetch(`${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=200`,{
+        headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}
+      })
+    ]);
+    if(!response.ok)throw new Error(`${response.status}: ${await response.text()}`);
+    if(!highscoreResponse.ok)throw new Error(`${highscoreResponse.status}: ${await highscoreResponse.text()}`);
     const data=await response.json();
+    const highscoreRows=normalizeScores(await highscoreResponse.json());
     const totals=data?.totals||{};
-    const leaders=Array.isArray(data?.leaders)?data.leaders:[];
+    const leaders=highscoreRows.slice(0,10).map(s=>({player_name:s.name,best_score:s.score,highest_level:s.level}));
+    const highscoreHighestLevel=highscoreRows.reduce((m,s)=>Math.max(m,Number(s.level)||1),1);
 
     onlineStatsStatus.textContent="Bijgewerkt vanuit het Stampertjes-kasteel";
     onlineStatsList.innerHTML=`
@@ -1021,7 +1020,7 @@ async function loadOnlineStats(){
       <div class="statRow"><span>Appelieten verslagen</span><strong>${Number(totals.apples_defeated)||0}</strong></div>
       <div class="statRow"><span>Totaal gevallen</span><strong>${Number(totals.deaths)||0}</strong></div>
       <div class="statRow"><span>Teddy gevonden</span><strong>${Number(totals.teddy_finders)||0} spelers</strong></div>
-      <div class="statRow"><span>Hoogste level wereldwijd</span><strong>${Number(totals.highest_level)||1}</strong></div>
+      <div class="statRow"><span>Hoogste level wereldwijd</span><strong>${Math.max(Number(totals.highest_level)||1,highscoreHighestLevel)}</strong></div>
     `;
 
     if(leaders.length){
@@ -1666,7 +1665,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.22.10";
+const CURRENT_VERSION="2.23";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -1842,7 +1841,8 @@ function startGame(){
   startingGame=true;
   playMenuBtn.textContent="SPELEN";
   audio();
-  score=0;level=1;lives=3;state="play";
+  score=0;level=1;lives=3;
+  flawlessLevels=0;levelDeaths=0;state="play";
   const pendingTeddyBonus=Math.max(0,Number(localStorage.getItem("stampertjesPendingTeddyBonus"))||0);
   if(pendingTeddyBonus){
     score+=pendingTeddyBonus;
@@ -2239,6 +2239,7 @@ function currentCastleTheme(){return CASTLE_ROOM_THEMES[currentLayoutIndex%CASTL
 let keys={left:false,right:false,up:false,down:false};
 let frame=0,score=0,level=1,lives=3,state="intro",shake=0,startFreeze=0,deathAnimating=false,deathFrame=0;
 let holes=[],cracks=[],enemies=[],effects=[],bonus=null,bonusSpawnTimer=420,combo=0,comboTimer=0,enemyIdCounter=1;
+let flawlessLevels=0,levelDeaths=0; const MAX_LIVES=5;
 let player={x:30,y:344,w:24,h:28,onLadder:false,cool:0,dir:1,invulnerable:0};
 
 let audioCtx=null;
@@ -3139,6 +3140,16 @@ function updateEnemies(){
   enemies=enemies.filter(e=>!e.dead);
   if(enemies.length===0 && !levelTransitioning && state==="play"){
     score+=500;
+    if(levelDeaths===0){
+      flawlessLevels++;
+      if(flawlessLevels>=3 && lives<MAX_LIVES){
+        lives++; flawlessLevels=0;
+        effects.push({type:"score",x:115,y:92,t:130,text:"♥ EXTRA LEVEN — 3 LEVELS FOUTLOOS!"});
+        tone(660,.08,"square",.05,880);setTimeout(()=>tone(990,.12,"square",.05,1320),90);
+        logGameEvent("extra_life",{level,score,bonusType:"flawless"});
+      }
+    }else flawlessLevels=0;
+    levelDeaths=0;
     updateProgressStats();
     const completedLevel=level;
     level++;
@@ -3150,7 +3161,9 @@ function updateEnemies(){
 function sfxBonusAppear(type){
   // Short, recognisable arcade cue when a bonus enters the castle.
   // tone() already respects ALLES AAN / ALLEEN FX / ALLES UIT.
-  if(type==="clock"){
+  if(type==="heart"){
+    tone(620,.06,"square",.03,820);setTimeout(()=>tone(930,.09,"square",.026,1240),65);
+  }else if(type==="clock"){
     tone(880,.055,"square",.028,1040);
     setTimeout(()=>tone(1175,.07,"square",.024,1320),65);
   }else if(type==="banana"){
@@ -3167,7 +3180,8 @@ function sfxBonusAppear(type){
 
 function spawnBonus(){
   const types=["cherry","banana","star","clock"];
-  const type=types[Math.floor(Math.random()*types.length)];
+  const heartChance=(level>=3 && lives<MAX_LIVES)?Math.min(.12,.035+(level-3)*.006):0;
+  const type=Math.random()<heartChance?"heart":types[Math.floor(Math.random()*types.length)];
 
   let floor=Math.floor(Math.random()*floors.length);
   let x=60+Math.random()*(W-120);
@@ -3202,6 +3216,12 @@ function collectBonus(){
   if(bonus.type==="clock"){
     earned=250;
     enemies.forEach(e=>e.slowTimer=300);
+  }
+  if(bonus.type==="heart" && lives<MAX_LIVES){
+    lives++;
+    effects.push({type:"score",x:bonus.x-42,y:bonus.y-18,t:115,text:"♥ EXTRA LEVEN!"});
+    tone(660,.08,"square",.05,880);setTimeout(()=>tone(990,.12,"square",.05,1320),90);
+    logGameEvent("extra_life",{level,score,bonusType:"heart"});
   }
   score+=earned;
       updateProgressStats();
@@ -3249,12 +3269,31 @@ function update(){
 }
 
 function drawPlayer(x,y){
-  ctx.fillRect(x+7,y,10,8);
-  ctx.fillRect(x+3,y+8,18,13);
-  ctx.fillRect(x,y+12,4,8);ctx.fillRect(x+20,y+12,4,8);
-  const step=Math.floor(frame/7)%2;
-  if(step===0){ctx.fillRect(x+3,y+21,7,7);ctx.fillRect(x+14,y+21,7,7)}
-  else{ctx.fillRect(x+6,y+21,7,7);ctx.fillRect(x+11,y+21,7,7)}
+  ctx.save();ctx.fillStyle="#111";
+  const walking=(keys.left||keys.right)&&!player.onLadder;
+  const step=walking?Math.floor(frame/6)%2:0;
+  const stamping=player.cool>12&&!player.onLadder;
+  const climbing=player.onLadder;
+  const headY=y+(stamping?3:0);
+
+  ctx.fillRect(x+7,headY,10,2);ctx.fillRect(x+5,headY+2,14,7);ctx.fillRect(x+7,headY+9,10,2);
+  ctx.fillRect(x+4,y+10,16,4);ctx.fillRect(x+6,y+14,12,8);
+
+  ctx.fillStyle="#fff";const eyeShift=player.dir>0?1:0;
+  ctx.fillRect(x+8+eyeShift,headY+5,2,2);ctx.fillRect(x+14+eyeShift,headY+5,2,2);ctx.fillStyle="#111";
+
+  if(climbing){
+    const c=Math.floor(frame/6)%2;
+    if(c===0){ctx.fillRect(x+1,y+11,5,4);ctx.fillRect(x+18,y+17,5,4);ctx.fillRect(x+5,y+21,5,7);ctx.fillRect(x+15,y+19,5,7)}
+    else{ctx.fillRect(x+1,y+17,5,4);ctx.fillRect(x+18,y+11,5,4);ctx.fillRect(x+5,y+19,5,7);ctx.fillRect(x+15,y+21,5,7)}
+  }else if(stamping){
+    ctx.fillRect(x+1,y+14,5,5);ctx.fillRect(x+18,y+14,5,5);ctx.fillRect(x+3,y+21,8,6);ctx.fillRect(x+14,y+21,8,6);
+  }else if(step===0){
+    ctx.fillRect(x+1,y+11,4,8);ctx.fillRect(x+20,y+14,4,7);ctx.fillRect(x+4,y+21,7,7);ctx.fillRect(x+15,y+22,6,6);
+  }else{
+    ctx.fillRect(x+1,y+14,4,7);ctx.fillRect(x+20,y+11,4,8);ctx.fillRect(x+5,y+22,6,6);ctx.fillRect(x+14,y+21,7,7);
+  }
+  ctx.restore();
 }
 function drawApple(e){
   if(e.trapped>0&&e.trapped<90&&Math.floor(e.blink/6)%2===0)return;
@@ -3630,7 +3669,9 @@ function drawBonus(){
   ctx.strokeStyle="#111";
   ctx.lineWidth=2;
 
-  if(bonus.type==="banana"){
+  if(bonus.type==="heart"){
+    ctx.font="bold 28px monospace";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("♥",x,y-7);
+  }else if(bonus.type==="banana"){
     ctx.lineWidth=6;
     ctx.beginPath();
     ctx.arc(x-2,y-7,13,-.38*Math.PI,.57*Math.PI);
