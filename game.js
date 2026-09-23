@@ -2063,20 +2063,24 @@ function drawIntroCastleFloor(y,holeX=null,crackStage=0){ictx.fillStyle="#333";i
 
 function drawStampertjeSprite(targetCtx,x,y,{dir=1,step=0,climbing=false,stamping=false}={}){
   targetCtx.save();
-  targetCtx.fillStyle="#111";
+  targetCtx.fillStyle="#d2a66f";
   const headY=y+(stamping?3:0);
 
   targetCtx.fillRect(x+7,headY,10,2);
   targetCtx.fillRect(x+5,headY+2,14,7);
   targetCtx.fillRect(x+7,headY+9,10,2);
+  targetCtx.fillStyle="#62b9d1";
   targetCtx.fillRect(x+4,y+10,16,4);
+  targetCtx.fillStyle="#347c9d";
   targetCtx.fillRect(x+6,y+14,12,8);
+  targetCtx.fillStyle="#f3ce78";
+  targetCtx.fillRect(x+6,y+20,12,2);
 
-  targetCtx.fillStyle="#f5e7c6";
+  targetCtx.fillStyle="#202532";
   const eyeShift=dir>0?1:0;
   targetCtx.fillRect(x+8+eyeShift,headY+5,2,2);
   targetCtx.fillRect(x+14+eyeShift,headY+5,2,2);
-  targetCtx.fillStyle="#182532";
+  targetCtx.fillStyle="#b37b4c";
 
   if(climbing){
     if(step%2===0){
@@ -2107,7 +2111,7 @@ function drawIntroPlayer(x,y,pose="walk"){
   });
 }
 function drawIntroApple(x,y,trapped=false,panic=false){
-  ictx.fillStyle="#34191b";
+  ictx.fillStyle="#84b957";
   ictx.beginPath();
   ictx.arc(x+14,y+11,13,0,Math.PI*2);
   ictx.fill();
@@ -3497,6 +3501,8 @@ function drawPlayer(x,y){
 function drawApple(e){
   if(e.trapped>0&&e.trapped<90&&Math.floor(e.blink/6)%2===0)return;
   ctx.save();
+  ctx.fillStyle=({green:"#84b957",red:"#d76d68",black:"#656a85",gold:"#edc968"})[e.type]||"#84b957";
+  ctx.strokeStyle="#f4dfbd";
   if(e.type==="red")ctx.setLineDash([3,2]);
   if(e.type==="gold")ctx.lineWidth=3;
   ctx.beginPath();ctx.arc(e.x+14,e.y+11,13,0,Math.PI*2);
@@ -4152,7 +4158,9 @@ function draw(){
   ctx.fillStyle="#111";ctx.strokeStyle="#111";
   if(player.invulnerable>0){
     ctx.font="10px monospace";
+    ctx.fillStyle="#f3d794";
     ctx.fillText("VEILIGE START",14,H-18);
+    ctx.fillStyle="#111";
     ctx.font="12px monospace";
   }
   ctx.lineWidth=3;ctx.strokeRect(8,28,W-16,H-32);
