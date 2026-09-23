@@ -1,3 +1,6 @@
+const localStore=StampertjesRuntime.storage("localStorage");
+const sessionStore=StampertjesRuntime.storage("sessionStorage");
+const gameFetch=StampertjesRuntime.fetchWithTimeout;
 const c=document.getElementById('game'),ctx=c.getContext('2d');
 const overlay=document.getElementById("overlay");
 const musicToggle=document.getElementById("musicToggle");
@@ -179,8 +182,8 @@ function showMilestone(games){
   const mark=milestoneForGames(games);
   if(!mark)return;
   const key=`stampertjesMilestoneShown_${mark}`;
-  if(localStorage.getItem(key)==="1")return;
-  localStorage.setItem(key,"1");
+  if(localStore.getItem(key)==="1")return;
+  localStore.setItem(key,"1");
   levelTransitioning=true;
   state="transition";
   levelTitle.textContent=`🏅 ${mark} POTJES`;
@@ -214,15 +217,16 @@ let onlineScores=[];
 
 function getLocalHighscores(){
   try{
-    const data=JSON.parse(localStorage.getItem("stampertjesHighscores")||"[]");
+    const data=JSON.parse(localStore.getItem("stampertjesHighscores")||"[]");
     return Array.isArray(data)?data:[];
   }catch{return []}
 }
 function saveLocalHighscores(scores){
-  localStorage.setItem("stampertjesHighscores",JSON.stringify(scores));
+  localStore.setItem("stampertjesHighscores",JSON.stringify(scores));
 }
 function normalizeScores(rows){
-  return (rows||[])
+  return (Array.isArray(rows)?rows:[])
+    .filter(row=>row && typeof row==="object")
     .map(row=>({
       name:String(row.name||"SPELER").toUpperCase().slice(0,20),
       score:Number(row.score)||0,
@@ -301,7 +305,7 @@ function renderMyHallRanks(ranks){
 async function loadHallOfFame(){
   hallStatus.textContent="Live gegevens worden uit het kasteel opgehaald…";
   try{
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_hall_of_fame`,{
+    const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/get_hall_of_fame`,{
       method:"POST",
       headers:{
         "apikey":SUPABASE_KEY,
@@ -314,7 +318,7 @@ async function loadHallOfFame(){
     const data=await response.json();
     hallDataCache=data||{};
     // Zelfde bron als de publieke Top 20: ook Developer Portal-wijzigingen zijn direct zichtbaar.
-    const scoreResponse=await fetch(
+    const scoreResponse=await gameFetch(
       `${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=20`,
       {headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}}
     );
@@ -364,7 +368,7 @@ hallRecordModal.addEventListener("pointerdown",e=>{
 async function loadOnlineHighscores(){
   scoreList.innerHTML="<div>Online scores laden…</div>";
   try{
-    const response=await fetch(
+    const response=await gameFetch(
       `${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=200`,
       {
         headers:{
@@ -384,7 +388,7 @@ async function loadOnlineHighscores(){
 }
 async function submitOnlineScore(name,value,reachedLevel){
   const body={name,score:value,level:reachedLevel};
-  const response=await fetch(`${SUPABASE_URL}/rest/v1/highscores`,{
+  const response=await gameFetch(`${SUPABASE_URL}/rest/v1/highscores`,{
     method:"POST",
     headers:{
       "apikey":SUPABASE_KEY,
@@ -400,7 +404,7 @@ async function submitOnlineScore(name,value,reachedLevel){
   }
 }
 function renderHighscores(useLocalFallback=false){
-  const scores=(useLocalFallback ? getLocalHighscores() : onlineScores).slice(0,20);
+  const scores=normalizeScores(useLocalFallback ? getLocalHighscores() : onlineScores);
   const medals=["🥇","🥈","🥉"];
 
   const rows=Array.from({length:20},(_,i)=>{
@@ -417,12 +421,12 @@ function renderHighscores(useLocalFallback=false){
     }
 
     const name=String(s.name||"---").toUpperCase().slice(0,20);
-    const scoreText=String(s.score||0).padStart(5,"0");
+    const scoreText=String(Number(s.score)||0).padStart(5,"0");
     const levelText=`Lv${Number(s.level)||1}`;
 
     return `<div class="scoreRow">
       <span>${rank}</span>
-      <span>${name}</span>
+      <span>${escapeHtml(name)}</span>
       <span>${scoreText}</span>
       <span>${levelText}</span>
     </div>`;
@@ -450,6 +454,8 @@ function showMainMenu(){
     document.body.classList.remove("attractMode");
     attractPrompt.classList.add("hidden");
   }
+  document.getElementById("roomsSection").classList.add("hidden");
+  refreshPersonalSummary();
   mainMenu.classList.remove("hidden");
   scoresSection.classList.add("hidden");
   helpSection.classList.add("hidden");
@@ -466,6 +472,9 @@ function showMainMenu(){
   updateMenuMusicIconVisibility();
 }
 function showMenuSection(section){
+  document.getElementById("roomsSection").classList.add("hidden");
+  document.body.classList.remove("scoreMode");
+  overlay.scrollTop=0;
   if(section===cafeSection)setMusicContext("cafe",{playNow:true});
   else if(section===historySection)setMusicContext("chronicles",{playNow:true});
   else if(section===hallSection)setMusicContext("special",{playNow:true});
@@ -577,19 +586,19 @@ document.addEventListener("touchcancel",()=>{
 
 async function registerCoarseLocation(){
   try{
-    if(sessionStorage.getItem("stampertjesGeoDone")==="1")return;
-    const r=await fetch("https://ipapi.co/json/",{cache:"no-store"});
+    if(sessionStore.getItem("stampertjesGeoDone")==="1")return;
+    const r=await gameFetch("https://ipapi.co/json/",{cache:"no-store"});
     if(!r.ok)return;
     const j=await r.json();
     const country=String(j.country_code||"").trim().toUpperCase().slice(0,2);
     const region=String(j.region||"").trim().slice(0,80);
     if(!country)return;
-    const save=await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_player_location`,{
+    const save=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/register_player_location`,{
       method:"POST",
       headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
       body:JSON.stringify({p_device_id:getStatsDeviceId(),p_country_code:country,p_region_name:region||null})
     });
-    if(save.ok)sessionStorage.setItem("stampertjesGeoDone","1");
+    if(save.ok)sessionStore.setItem("stampertjesGeoDone","1");
   }catch(_){}
 }
 setTimeout(registerCoarseLocation,1800);
@@ -602,7 +611,7 @@ activateButton(statsMenuBtn,async()=>{
   await loadOnlineStats();
 });
 activateButton(resetStatsBtn,async()=>{
-  localStorage.removeItem("stampertjesStats");
+  localStore.removeItem("stampertjesStats");
   const reset={...DEFAULT_STATS};
   saveStats(reset);
   renderStats();
@@ -650,7 +659,7 @@ function openMediaViewer({src,title,downloadKey=null}){
   mediaViewer.classList.remove("hidden");mediaViewer.setAttribute("aria-hidden","false");
 }
 function closeMediaViewer(){mediaViewer.classList.add("hidden");mediaViewer.setAttribute("aria-hidden","true");activeDownloadWallpaper=null;}
-async function registerWallpaperDownload(){if(!activeDownloadWallpaper)return;try{await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_wallpaper_download`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({p_device_id:getStatsDeviceId(),p_wallpaper_key:activeDownloadWallpaper})});}catch(_){}}
+async function registerWallpaperDownload(){if(!activeDownloadWallpaper)return;try{await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/register_wallpaper_download`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({p_device_id:getStatsDeviceId(),p_wallpaper_key:activeDownloadWallpaper})});}catch(_){}}
 mediaViewerClose.addEventListener("click",e=>{e.preventDefault();closeMediaViewer()});
 mediaViewer.addEventListener("click",e=>{if(e.target===mediaViewer)closeMediaViewer()});
 mediaViewerDownload.addEventListener("click",registerWallpaperDownload);
@@ -673,7 +682,7 @@ async function submitMerchInterest(interested){
   merchStatus.textContent=interested?"Interesse wordt genoteerd…":"Prima — misschien later!";
   if(!interested){
     try{
-      await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_merch_interest`,{
+      await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/register_merch_interest`,{
         method:"POST",
         headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
         body:JSON.stringify({
@@ -694,7 +703,7 @@ async function submitMerchInterest(interested){
     : getPlayerName();
 
   try{
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_merch_interest`,{
+    const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/register_merch_interest`,{
       method:"POST",
       headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
       body:JSON.stringify({
@@ -707,9 +716,9 @@ async function submitMerchInterest(interested){
       })
     });
     if(!response.ok)throw new Error(`${response.status}: ${await response.text()}`);
-    localStorage.setItem("stampertjesMerchDesign",merchChoice.design);
-    localStorage.setItem("stampertjesMerchSize",merchChoice.size);
-    localStorage.setItem("stampertjesMerchPersonalized",String(merchChoice.personalized));
+    localStore.setItem("stampertjesMerchDesign",merchChoice.design);
+    localStore.setItem("stampertjesMerchSize",merchChoice.size);
+    localStore.setItem("stampertjesMerchPersonalized",String(merchChoice.personalized));
     merchStatus.innerHTML=`✓ INTERESSE GENOTEERD<br><small>${merchChoice.design.toUpperCase()} · ${merchChoice.size}${merchChoice.personalized?` · ${escapeHtml(chosenName)}`:""}</small>`;
     tone(440,.07,"square",.025,660);
     setTimeout(()=>tone(660,.1,"square",.025,880),90);
@@ -734,9 +743,9 @@ activateButton(merchLaterBtn,()=>submitMerchInterest(false));
 
 activateButton(merchMenuBtn,()=>{
   stopAttractMode();
-  merchChoice.design=localStorage.getItem("stampertjesMerchDesign")||"classic";
-  merchChoice.size=localStorage.getItem("stampertjesMerchSize")||"L";
-  merchChoice.personalized=localStorage.getItem("stampertjesMerchPersonalized")==="true";
+  merchChoice.design=localStore.getItem("stampertjesMerchDesign")||"classic";
+  merchChoice.size=localStore.getItem("stampertjesMerchSize")||"L";
+  merchChoice.personalized=localStore.getItem("stampertjesMerchPersonalized")==="true";
   merchStatus.textContent="";
   updateMerchUI();
   showMenuSection(merchSection);
@@ -766,15 +775,15 @@ let statsSyncTimer=null;
 
 function getStats(){
   try{
-    const saved=JSON.parse(localStorage.getItem("stampertjesStats")||"{}");
-    return {...DEFAULT_STATS,...saved};
+    const saved=JSON.parse(localStore.getItem("stampertjesStats")||"{}");
+    return {...DEFAULT_STATS,...(saved&&typeof saved==="object"?saved:{}),achievements:Array.isArray(saved?.achievements)?[...saved.achievements]:[]};
   }catch{
-    return {...DEFAULT_STATS};
+    return {...DEFAULT_STATS,achievements:[]};
   }
 }
 
 function getStatsDeviceId(){
-  let id=localStorage.getItem("stampertjesDeviceId");
+  let id=localStore.getItem("stampertjesDeviceId");
   if(!id){
     if(window.crypto&&crypto.randomUUID){
       id=crypto.randomUUID();
@@ -785,20 +794,20 @@ function getStatsDeviceId(){
         return v.toString(16);
       });
     }
-    localStorage.setItem("stampertjesDeviceId",id);
+    localStore.setItem("stampertjesDeviceId",id);
   }
   return id;
 }
 
 function rememberPlayerName(value){
   const clean=String(value||"").trim().toUpperCase().slice(0,20);
-  if(clean)localStorage.setItem("stampertjesPlayerName",clean);
+  if(clean)localStore.setItem("stampertjesPlayerName",clean);
   return clean;
 }
 
 function getPlayerName(){
   return (
-    localStorage.getItem("stampertjesPlayerName") ||
+    localStore.getItem("stampertjesPlayerName") ||
     rememberPlayerName(nameInput?.value) ||
     rememberPlayerName(cafeName?.value) ||
     "SPELER"
@@ -806,12 +815,12 @@ function getPlayerName(){
 }
 
 function ensurePlayerName(){
-  const existing=String(localStorage.getItem("stampertjesPlayerName")||"").trim();
+  const existing=String(localStore.getItem("stampertjesPlayerName")||"").trim();
   if(existing && existing!=="SPELER")return existing;
 
   // Ask once on this device. Cancelling keeps the anonymous fallback.
-  if(localStorage.getItem("stampertjesNameAsked")==="1")return "SPELER";
-  localStorage.setItem("stampertjesNameAsked","1");
+  if(localStore.getItem("stampertjesNameAsked")==="1")return "SPELER";
+  localStore.setItem("stampertjesNameAsked","1");
 
   const entered=window.prompt("HOE MOGEN WE JE NOEMEN?\\n(maximaal 10 tekens — overslaan mag)");
   const clean=rememberPlayerName(entered);
@@ -835,6 +844,7 @@ function updateProgressStats(){
 }
 
 function saveStats(stats){
+  if(devTestActive)return;
   const clean={
     ...DEFAULT_STATS,
     ...stats,
@@ -847,7 +857,7 @@ function saveStats(stats){
     teddyFound:Boolean(stats.teddyFound),
     achievements:Array.isArray(stats.achievements)?stats.achievements:[]
   };
-  localStorage.setItem("stampertjesStats",JSON.stringify(clean));
+  localStore.setItem("stampertjesStats",JSON.stringify(clean));
   queueStatsSync(clean);
 }
 
@@ -871,7 +881,7 @@ async function syncOnlineStats(stats=getStats()){
     p_teddy_found:Boolean(stats.teddyFound)
   };
 
-  const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_player_stats`,{
+  const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/submit_player_stats`,{
     method:"POST",
     headers:{
       "apikey":SUPABASE_KEY,
@@ -897,6 +907,7 @@ function detectGamePlatform(){
 }
 
 async function updatePlayerContextOnline(){
+  if(devTestActive)return;
   try{
     const payload={
       p_device_id:getStatsDeviceId(),
@@ -905,7 +916,7 @@ async function updatePlayerContextOnline(){
       p_audio_mode:audioMode,
       p_game_version:CURRENT_VERSION
     };
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_player_context`,{
+    const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/update_player_context`,{
       method:"POST",
       headers:{
         "apikey":SUPABASE_KEY,
@@ -921,6 +932,7 @@ async function updatePlayerContextOnline(){
 }
 
 async function logGameEvent(eventType,extra={}){
+  if(devTestActive)return;
   try{
     const payload={
       p_device_id:getStatsDeviceId(),
@@ -932,7 +944,7 @@ async function logGameEvent(eventType,extra={}){
       p_platform:detectGamePlatform(),
       p_game_version:CURRENT_VERSION
     };
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/log_stampertjes_event`,{
+    const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/log_stampertjes_event`,{
       method:"POST",
       headers:{
         "apikey":SUPABASE_KEY,
@@ -949,8 +961,9 @@ async function logGameEvent(eventType,extra={}){
 }
 
 async function registerTeddyDiscovery(discoveryType){
+  if(devTestActive)return;
   try{
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_teddy_discovery`,{
+    const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/register_teddy_discovery`,{
       method:"POST",
       headers:{
         "apikey":SUPABASE_KEY,
@@ -999,12 +1012,12 @@ async function loadOnlineStats(){
     await syncOnlineStats(getStats());
 
     const [response,highscoreResponse]=await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_stats`,{
+      gameFetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_stats`,{
         method:"POST",
         headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
         body:"{}"
       }),
-      fetch(`${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=200`,{
+      gameFetch(`${SUPABASE_URL}/rest/v1/highscores?select=name,score,level,created_at&order=score.desc&limit=200`,{
         headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}
       })
     ]);
@@ -1226,7 +1239,7 @@ initCafeName();
 
 
 function getCafeDeviceId(){
-  let id=localStorage.getItem("stampertjesCafeDeviceId");
+  let id=localStore.getItem("stampertjesCafeDeviceId");
   if(!id){
     if(window.crypto&&crypto.randomUUID){
       id=crypto.randomUUID();
@@ -1237,12 +1250,12 @@ function getCafeDeviceId(){
         return v.toString(16);
       });
     }
-    localStorage.setItem("stampertjesCafeDeviceId",id);
+    localStore.setItem("stampertjesCafeDeviceId",id);
   }
   return id;
 }
 
-let cafeAdminCode=sessionStorage.getItem("stampertjesCafeAdminCode")||"";
+let cafeAdminCode=sessionStore.getItem("stampertjesCafeAdminCode")||"";
 let cafeEditingPostId=null;
 
 function isCafeAdmin(){
@@ -1252,7 +1265,7 @@ function isCafeAdmin(){
 
 async function verifyCafeAdminCode(code){
   try{
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/verify_stampertjes_admin`,{
+    const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/verify_stampertjes_admin`,{
       method:"POST",
       headers:{
         "apikey":SUPABASE_KEY,
@@ -1273,10 +1286,10 @@ async function verifyCafeAdminCode(code){
 function setCafeAdminMode(on,code=""){
   cafeAdminCode=on?String(code||""):"";
   if(cafeAdminCode){
-    sessionStorage.setItem("stampertjesCafeAdminCode",cafeAdminCode);
+    sessionStore.setItem("stampertjesCafeAdminCode",cafeAdminCode);
     cafeAdminStatus.classList.remove("hidden");
   }else{
-    sessionStorage.removeItem("stampertjesCafeAdminCode");
+    sessionStore.removeItem("stampertjesCafeAdminCode");
     cafeAdminStatus.classList.add("hidden");
   }
 }
@@ -1291,14 +1304,14 @@ function updateCafeSubmitState(){
 }
 
 function getLockedCafeName(){
-  return String(localStorage.getItem("stampertjesCafeLockedName")||"").trim();
+  return String(localStore.getItem("stampertjesCafeLockedName")||"").trim();
 }
 
 function lockCafeName(name){
   const clean=String(name||"").trim().toUpperCase().slice(0,20);
   if(!clean)return "";
-  localStorage.setItem("stampertjesCafeLockedName",clean);
-  localStorage.setItem("stampertjesPlayerName",clean);
+  localStore.setItem("stampertjesCafeLockedName",clean);
+  localStore.setItem("stampertjesPlayerName",clean);
   cafeName.value=clean;
   cafeName.readOnly=true;
   cafeName.classList.add("lockedName");
@@ -1308,11 +1321,11 @@ function lockCafeName(name){
 
 function initCafeName(){
   let locked=getLockedCafeName();
-  let saved=String(localStorage.getItem("stampertjesPlayerName")||"").trim();
+  let saved=String(localStore.getItem("stampertjesPlayerName")||"").trim();
 
   // Oude hardcoded standaardnaam uit eerdere testversies opruimen.
   if(saved.toUpperCase()==="GERT JAN"){
-    localStorage.removeItem("stampertjesPlayerName");
+    localStore.removeItem("stampertjesPlayerName");
     saved="";
   }
 
@@ -1378,7 +1391,7 @@ function formatCafeDate(value){
 
 async function fetchCafeCount(type=null){
   const filter=type?`&type=eq.${encodeURIComponent(type)}`:"";
-  const response=await fetch(
+  const response=await gameFetch(
     `${SUPABASE_URL}/rest/v1/community_posts?select=id${filter}`,
     {
       headers:{
@@ -1421,7 +1434,7 @@ async function loadCafePosts(){
   const statsPromise=loadCafeStats();
 
   try{
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_community_posts`,{
+    const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/get_community_posts`,{
       method:"POST",
       headers:{
         "apikey":SUPABASE_KEY,
@@ -1486,7 +1499,7 @@ function renderCafePosts(posts){
       const id=Number(btn.dataset.likeId);
       btn.disabled=true;
       try{
-        const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/like_community_post`,{
+        const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/like_community_post`,{
           method:"POST",
           headers:{
             "apikey":SUPABASE_KEY,
@@ -1517,7 +1530,7 @@ function renderCafePosts(posts){
           ? {p_post_id:id,p_admin_code:cafeAdminCode}
           : {p_post_id:id,p_device_id:getCafeDeviceId()};
 
-        const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${rpc}`,{
+        const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/${rpc}`,{
           method:"POST",
           headers:{
             "apikey":SUPABASE_KEY,
@@ -1639,7 +1652,7 @@ activateButton(cafeSubmitBtn,async()=>{
           p_message:message
         };
 
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${rpc}`,{
+    const response=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/${rpc}`,{
       method:"POST",
       headers:{
         "apikey":SUPABASE_KEY,
@@ -1668,7 +1681,7 @@ activateButton(cafeSubmitBtn,async()=>{
   }
 });
 
-const CURRENT_VERSION="2.25";
+const CURRENT_VERSION="2.26";
 
 // v2.22 richer analytics — failures never interrupt gameplay.
 const V222_SESSION_KEY="stampertjes_v222_session";
@@ -1677,8 +1690,9 @@ function v222BeginSession(){
   v222Session={startedAt:Date.now(),levelStartedAt:Date.now(),level:1,stamps:0,holes:0,apples:0,bonuses:0};
 }
 async function v222Metric(metric,value=1,extra={}){
+  if(devTestActive)return;
   try{
-    await fetch(`${SUPABASE_URL}/rest/v1/rpc/record_game_metric`,{
+    await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/record_game_metric`,{
       method:"POST",
       headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
       body:JSON.stringify({p_device_id:getStatsDeviceId(),p_metric:String(metric),p_value:Number(value)||0,p_extra:extra||{}})
@@ -1694,13 +1708,14 @@ function v222LevelComplete(levelNo){
   v222Metric("level_complete",seconds,{level:Number(levelNo)||v222Session.level});
 }
 function showUpdateOnce(){
-  const seen=localStorage.getItem("stampertjesSeenVersion");
+  if(DEV_TEST_MODE)return;
+  const seen=localStore.getItem("stampertjesSeenVersion");
   if(seen!==CURRENT_VERSION){
     updateOverlay.classList.remove("hidden");
   }
 }
 activateButton(closeUpdateBtn,()=>{
-  localStorage.setItem("stampertjesSeenVersion",CURRENT_VERSION);
+  localStore.setItem("stampertjesSeenVersion",CURRENT_VERSION);
   updateOverlay.classList.add("hidden");
   armAttractMode();
 });
@@ -1744,9 +1759,9 @@ activateButton(versionLabel,()=>{
 
     // The hidden menu Easter egg is worth 1000 real points, once per device.
     // Because the Easter egg lives in the menu, the bonus is applied to the next game.
-    if(localStorage.getItem("stampertjesTeddyEasterRewarded")!=="1"){
-      localStorage.setItem("stampertjesTeddyEasterRewarded","1");
-      localStorage.setItem("stampertjesPendingTeddyBonus","1000");
+    if(localStore.getItem("stampertjesTeddyEasterRewarded")!=="1"){
+      localStore.setItem("stampertjesTeddyEasterRewarded","1");
+      localStore.setItem("stampertjesPendingTeddyBonus","1000");
     }
 
     updatePlayerContextOnline();
@@ -1844,6 +1859,9 @@ function devTestSwitchLevel(delta){
 function openIntro(){
   document.body.classList.remove("gameplayActive");
   state="intro";
+  devTestActive=false;
+  document.getElementById("practiceBadge").classList.add("hidden");
+  document.getElementById("practiceEnd").classList.add("hidden");
   keys.left=keys.right=keys.up=keys.down=false;
   pauseOverlay.classList.add("hidden");
   pauseToggle.textContent="⏸ PAUZE";
@@ -1853,7 +1871,7 @@ function openIntro(){
   armAttractMode();
 }
 let startingGame=false;
-function startGame(){
+function startGame(practiceLevel=0){
   ensureGameplayControlsVisible();
   menuMusicIcon.classList.add("hidden");
   stopAttractMode();
@@ -1863,13 +1881,14 @@ function startGame(){
   startingGame=true;
   playMenuBtn.textContent="SPELEN";
   audio();
-  score=0;level=DEV_TEST_MODE?DEV_TEST_LEVEL:1;lives=3;
-  devTestActive=DEV_TEST_MODE;
+  score=0;level=practiceLevel|| (DEV_TEST_MODE?DEV_TEST_LEVEL:1);lives=3;
+  devTestActive=Boolean(practiceLevel)||DEV_TEST_MODE;
+  document.getElementById("practiceBadge").classList.toggle("hidden",!devTestActive);
   flawlessLevels=0;levelDeaths=0;state="play";
-  const pendingTeddyBonus=Math.max(0,Number(localStorage.getItem("stampertjesPendingTeddyBonus"))||0);
-  if(pendingTeddyBonus){
+  const pendingTeddyBonus=Math.max(0,Number(localStore.getItem("stampertjesPendingTeddyBonus"))||0);
+  if(pendingTeddyBonus&&!devTestActive){
     score+=pendingTeddyBonus;
-    localStorage.removeItem("stampertjesPendingTeddyBonus");
+    localStore.removeItem("stampertjesPendingTeddyBonus");
     effects.push({type:"score",x:145,y:90,t:120,text:`EASTER TEDDY +${pendingTeddyBonus}`});
   }
   if(!devTestActive)updateProgressStats();
@@ -1900,8 +1919,10 @@ function startGame(){
   clearStartZone();
   startFreeze=90;
   overlay.classList.add("hidden");
+  document.getElementById("roomsSection").classList.add("hidden");
+  document.getElementById("practiceEnd").classList.add("hidden");
   shareScoreBox.classList.add("hidden");
-  if(reachedMilestone)setTimeout(()=>showMilestone(reachedMilestone),320);
+  if(reachedMilestone)setTimeout(()=>{if(state==="play"&&getStats().gamesPlayed===reachedMilestone)showMilestone(reachedMilestone)},320);
   setTimeout(()=>{startingGame=false},250);
 }
 
@@ -1938,15 +1959,18 @@ function showGameOverPanel(){
     highscoreEntry.classList.add("hidden");
     shareScoreBox.classList.add("hidden");
     overlay.classList.remove("hidden");
-    menu.innerHTML=`<div class="menuTitle">🛠️ TEST LEVEL ${level} KLAAR</div>
+    mainMenu.classList.add("hidden");
+    const practiceEnd=document.getElementById("practiceEnd");
+    practiceEnd.classList.remove("hidden");
+    practiceEnd.innerHTML=`<div class="menuTitle">🏰 OEFENLEVEL ${level} KLAAR</div>
       <button id="devRetryBtn">↻ OPNIEUW</button>
       <button id="devPrevEndBtn">← VORIG LEVEL</button>
       <button id="devNextEndBtn">VOLGEND LEVEL →</button>
-      <button id="devExitBtn">DEVELOPER PORTAL</button>`;
+      <button id="devExitBtn">HOOFDMENU</button>`;
     document.getElementById("devRetryBtn")?.addEventListener("click",()=>{state="play";score=0;lives=3;spawnLevel();overlay.classList.add("hidden");document.body.classList.add("gameplayActive")});
     document.getElementById("devPrevEndBtn")?.addEventListener("click",()=>{state="play";overlay.classList.add("hidden");devTestSwitchLevel(-1)});
     document.getElementById("devNextEndBtn")?.addEventListener("click",()=>{state="play";overlay.classList.add("hidden");devTestSwitchLevel(1)});
-    document.getElementById("devExitBtn")?.addEventListener("click",()=>location.href="./admin.html");
+    document.getElementById("devExitBtn")?.addEventListener("click",openIntro);
     return;
   }
 
@@ -1980,13 +2004,13 @@ function showGameOverPanel(){
     playMenuBtn.textContent="OPNIEUW SPELEN";
   }
 }
-shareScoreBtn.addEventListener("pointerdown",e=>{e.preventDefault();shareCurrentScore();});
-startBtn.addEventListener("pointerdown",e=>{
+shareScoreBtn.addEventListener("click",e=>{e.preventDefault();shareCurrentScore();});
+startBtn.addEventListener("click",e=>{
   e.preventDefault();
   startBtn.textContent="START SPEL";
   startGame();
 });
-saveScoreBtn.addEventListener("pointerdown",async e=>{
+saveScoreBtn.addEventListener("click",async e=>{
   e.preventDefault();
   const name=(nameInput.value.trim()||"SPELER").toUpperCase().slice(0,20);
   rememberPlayerName(name);
@@ -2443,14 +2467,14 @@ async function setMusicContext(context,{playNow=true}={}){
 const MUSIC_VOLUME=.16;
 const GAMEPLAY_MUSIC_VOLUME=.11;
 let musicOn=true;
-let audioMode=localStorage.getItem("stampertjesAudioMode")||"all";
+let audioMode=localStore.getItem("stampertjesAudioMode")||"all";
 let fxOn=audioMode!=="off";
 let musicFadeFrame=null;
 let musicTimer=null;
 
-if(localStorage.getItem("stampertjesAudioMigration")!=="2.12"){
-  localStorage.setItem("stampertjesMusic","1");
-  localStorage.setItem("stampertjesAudioMigration","2.12");
+if(localStore.getItem("stampertjesAudioMigration")!=="2.12"){
+  localStore.setItem("stampertjesMusic","1");
+  localStore.setItem("stampertjesAudioMigration","2.12");
 }
 musicOn=audioMode==="all";
 
@@ -2497,7 +2521,7 @@ function stopMusic(){
 
 function setMusic(on){
   musicOn=Boolean(on);
-  localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
+  localStore.setItem("stampertjesMusic",musicOn?"1":"0");
   setMusicButton();
 
   if(musicOn){
@@ -2549,8 +2573,8 @@ function toggleMusicFromUser(){
   audioMode=audioMode==="all"?"fx":audioMode==="fx"?"off":"all";
   fxOn=audioMode!=="off";
   musicOn=audioMode==="all";
-  localStorage.setItem("stampertjesAudioMode",audioMode);
-  localStorage.setItem("stampertjesMusic",musicOn?"1":"0");
+  localStore.setItem("stampertjesAudioMode",audioMode);
+  localStore.setItem("stampertjesMusic",musicOn?"1":"0");
   setMusicButton();
   if(musicOn)startMusic(); else stopMusic();
   updatePlayerContextOnline();
@@ -2589,6 +2613,8 @@ menuSoundtrack.addEventListener("error",()=>{
 
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden){
+    releaseControls();
+    if(state==="play"){pauseLocked=false;togglePause();}
     menuSoundtrack.pause();
   }else if(musicOn){
     startMusic();
@@ -2619,7 +2645,8 @@ let pauseLocked=false;
 function togglePause(){
   if(musicOn&&!menuSoundtrack.paused)applyMusicVolume();
   if(pauseLocked)return;
-  if(state==="intro"||state==="gameover"||state==="transition")return;
+  if(state!=="play"&&state!=="paused")return;
+  keys.left=keys.right=keys.up=keys.down=false;
 
   pauseLocked=true;
 
@@ -2637,11 +2664,11 @@ function togglePause(){
     if(devTestActive){
       if(!devNav){
         devNav=document.createElement("div");devNav.id="devPauseNav";
-        devNav.innerHTML='<div class="devTestBadge">🛠️ TESTMODUS</div><button id="devPrevLevelBtn">← VORIG LEVEL</button><button id="devNextLevelBtn">VOLGEND LEVEL →</button><button id="devPortalBtn">DEVELOPER PORTAL</button>';
+        devNav.innerHTML='<div class="devTestBadge">🏰 OEFENMODUS</div><button id="devPrevLevelBtn">← VORIG LEVEL</button><button id="devNextLevelBtn">VOLGEND LEVEL →</button><button id="devPortalBtn">HOOFDMENU</button>';
         pauseMain.appendChild(devNav);
         document.getElementById("devPrevLevelBtn").onclick=()=>devTestSwitchLevel(-1);
         document.getElementById("devNextLevelBtn").onclick=()=>devTestSwitchLevel(1);
-        document.getElementById("devPortalBtn").onclick=()=>location.href="./admin.html";
+        document.getElementById("devPortalBtn").onclick=()=>openIntro();
       }
       devNav.classList.remove("hidden");
     }else if(devNav)devNav.classList.add("hidden");
@@ -2653,14 +2680,14 @@ function togglePause(){
   setTimeout(()=>{pauseLocked=false},180);
 }
 
-pauseToggle.addEventListener("pointerdown",e=>{
+pauseToggle.addEventListener("click",e=>{
   e.preventDefault();
   e.stopPropagation();
   togglePause();
 });
-pauseResumeBtn.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();togglePause();});
+pauseResumeBtn.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();togglePause();});
 
-pauseRestartBtn.addEventListener("pointerdown",e=>{
+pauseRestartBtn.addEventListener("click",e=>{
   e.preventDefault();e.stopPropagation();
   score=levelStartScore;
   lives=levelStartLives;
@@ -2676,19 +2703,19 @@ pauseRestartBtn.addEventListener("pointerdown",e=>{
   logGameEvent("level_restart",{level,score});
 });
 
-pauseStopBtn.addEventListener("pointerdown",e=>{
+pauseStopBtn.addEventListener("click",e=>{
   e.preventDefault();e.stopPropagation();
   pauseMain.classList.add("hidden");
   pauseConfirmStop.classList.remove("hidden");
 });
 
-pauseCancelStopBtn.addEventListener("pointerdown",e=>{
+pauseCancelStopBtn.addEventListener("click",e=>{
   e.preventDefault();e.stopPropagation();
   pauseConfirmStop.classList.add("hidden");
   pauseMain.classList.remove("hidden");
 });
 
-pauseConfirmStopBtn.addEventListener("pointerdown",e=>{
+pauseConfirmStopBtn.addEventListener("click",e=>{
   e.preventDefault();e.stopPropagation();
   const stoppedLevel=level,stoppedScore=score;
   keys.left=keys.right=keys.up=keys.down=false;
@@ -2696,7 +2723,7 @@ pauseConfirmStopBtn.addEventListener("pointerdown",e=>{
   pauseConfirmStop.classList.add("hidden");
   pauseMain.classList.remove("hidden");
   pauseToggle.textContent="⏸ PAUZE";
-  if(devTestActive){location.href="./admin.html";return;}
+  if(devTestActive){openIntro();return;}
   logGameEvent("game_abort",{level:stoppedLevel,score:stoppedScore});
   openIntro();
 });
@@ -2869,6 +2896,11 @@ function bind(id,key){
   ['pointerup','pointercancel','pointerleave','touchend'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[key]=false}));
 }
 bind("left","left");bind("right","right");bind("up","up");bind("down","down");
+function releaseControls(){keys.left=keys.right=keys.up=keys.down=false;}
+window.addEventListener("blur",()=>{
+  releaseControls();
+  if(state==="play"){pauseLocked=false;togglePause();}
+});
 let keyboardDetected=false;
 
 function isTypingTarget(target){
@@ -2888,7 +2920,8 @@ window.addEventListener("keydown",e=>{
   enableKeyboardMode();
 
   const controlKeys=["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," ","Spacebar","p","P","m","M","Escape"];
-  if(controlKeys.includes(e.key))e.preventDefault();
+  if(controlKeys.includes(e.key)&&!((e.key===" "||e.key==="Spacebar")&&e.target.closest?.("button,a")))e.preventDefault();
+  if((e.key===" "||e.key==="Spacebar")&&e.target.closest?.("button,a"))return;
 
   if(e.key==="ArrowLeft")keys.left=true;
   if(e.key==="ArrowRight")keys.right=true;
@@ -2908,25 +2941,14 @@ window.addEventListener("keydown",e=>{
   }
 
   if(e.key==="Escape"&&!e.repeat){
-    if(state==="paused"){
-      togglePause();
-    }
-    if(state==="play"||state==="transition"){
-      state="intro";
-      document.body.classList.remove("gameplayActive");
-      keys.left=keys.right=keys.up=keys.down=false;
-      pauseOverlay.classList.add("hidden");
-      overlay.classList.remove("hidden");
-      openIntro();
-      if(musicOn)startMenuMusic();
-    }else if(state==="intro"){
-      showMainMenu();
-    }
+    if(!mediaViewer.classList.contains("hidden")){mediaViewerClose.click();return;}
+    if(!hallRecordModal.classList.contains("hidden")){closeHallModal();return;}
+    if(state==="play"||state==="paused"){togglePause();return;}
+    if(state==="intro")showMainMenu();
   }
 });
 
 window.addEventListener("keyup",e=>{
-  if(isTypingTarget(e.target))return;
   if(e.key==="ArrowLeft")keys.left=false;
   if(e.key==="ArrowRight")keys.right=false;
   if(e.key==="ArrowUp")keys.up=false;
@@ -3315,6 +3337,8 @@ function updateEnemies(){
     const collide=Math.abs((player.x+12)-(e.x+14))<20&&Math.abs((player.y+14)-(e.y+12))<21;
     if(collide&&e.trapped<=0&&player.invulnerable<=0&&state==="play"){
       lives--;
+      levelDeaths++;
+      flawlessLevels=0;
       shake=11;
       const deathStats=getStats();
       deathStats.deaths=(Number(deathStats.deaths)||0)+1;
@@ -4169,8 +4193,10 @@ function draw(){
   }
   ctx.restore();
 }
-function loop(){update();draw();requestAnimationFrame(loop)}
-loop();
+// Simulation stays at 60 Hz on 60/120/144 Hz displays; discard long background gaps.
+const simulationClock=StampertjesRuntime.fixedStep(update);
+function loop(timestamp){simulationClock(timestamp);draw();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
 
 window.addEventListener("load",()=>{
   if(DEV_TEST_MODE)setTimeout(()=>startGame(),180);
