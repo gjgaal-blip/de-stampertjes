@@ -1,9 +1,14 @@
-# v2.22.3
-- [ ] Hoofdmenu toont STAMPERTJES SHIRT
-- [ ] Shirt-scherm opent en TERUG werkt
-- [ ] Drie ontwerpen zijn zichtbaar
-- [ ] Ontwerp, maat en personalisatie zijn selecteerbaar
-- [ ] Kasteelheld selecteert automatisch MET NAAM
-- [ ] Interesse opslaan werkt na SQL 008 + 009
-- [ ] Developer Portal Merch toont aantallen/maten/ontwerpen
-- [ ] SPELEN, muziek, Café, Hall of Fame en Teddy blijven werken
+# Kwaliteitscontroles v2.26
+
+De automatische resultaten staan in TEST-RESULTS.md. Dit blijft de aanvullende handmatige staging-checklist:
+
+- [ ] Nieuwe beheercode privé ingesteld indien de historische code nog actief was.
+- [ ] Supabase RLS en RPC-rechten gecontroleerd tegen de live configuratie.
+- [ ] Echte highscore opslaan en teruglezen in een staging-database.
+- [ ] Café-bericht plaatsen, bewerken en verwijderen in staging.
+- [ ] Merchandise-interesse opslaan en terugzien in staging-admin.
+- [ ] Audio beluisteren en schakelen op een fysieke iPhone/Android.
+- [ ] Touch vasthouden, multi-touch en draaien van een fysiek toestel.
+- [ ] Langere speelsessie door alle kamers; moeilijkheid en balans beoordelen.
+
+Browseremulatie is geen vervanging voor deze echte-device/backendcontroles. Automatische tests blokkeren externe diensten en kunnen hun echte beschikbaarheid niet aantonen.

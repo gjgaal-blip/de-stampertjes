@@ -3,11 +3,13 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<title>De Stampertjes v2.25</title>
-<link rel="stylesheet" href="game.css?v=2245">
+<title>De Stampertjes v2.26</title>
+<link rel="stylesheet" href="game.css?v=2260">
+<link rel="stylesheet" href="polish.css?v=2260">
+<link rel="manifest" href="manifest.json">
 
 </head>
 <body>
@@ -18,10 +20,10 @@
     <h1 id="gameTitle"><span class="titleBlock">▓▓</span> DE STAMPERTJES <span class="titleBlock">▓▓</span></h1>
     <div id="studioLine">A GJ STUDIOS GAME</div>
     <div id="versionMusicRow">
-      <div id="versionLabel">v2.25</div>
+      <div id="versionLabel">v2.26</div>
       <button id="menuMusicIcon" class="hidden" aria-label="Muziek aan of uit" title="Muziek aan of uit">🔊</button>
     </div>
-    <div id="betaBadge">🏰 v2.25 · VOLLEDIGE KLEURENUPDATE</div>
+    <div id="betaBadge">🏰 v2.26 · ONTDEK HET KASTEEL</div>
     <div id="castleSlogan">EEN KASTEEL DAT NOOIT HELEMAAL HETZELFDE IS.</div>
     <div id="dailyCastleMessage" class="dailyCastleMessage"></div>
     <p id="introText"><strong>Het kasteel is gevallen...</strong><br>Alleen een echte Stampertjes-held kan de Appelieten nog stoppen.</p>
@@ -32,8 +34,11 @@
       <div>TEDDY WAS HERE +1000</div>
     </div>
     <div id="mainMenu" class="mainMenuGroups compactMainMenu">
+      <div id="personalSummary" class="personalSummary" aria-label="Jouw records op dit apparaat"></div>
       <div class="menuHero">
         <button id="playMenuBtn">🎮 SPELEN</button>
+        <p class="playCaption">Een nieuw avontuur · begin bij level 1</p>
+        <button id="roomsMenuBtn" class="secondaryAction">🏰 ONTDEK DE 10 KAMERS</button>
       </div>
       <div class="menuGrid compactGrid">
         <button id="scoresMenuBtn">🏆 HIGHSCORES</button>
@@ -47,6 +52,14 @@
       </div>
     </div>
 
+    <section id="roomsSection" class="menuSection hidden" aria-labelledby="roomsHeading">
+      <div class="sectionEyebrow">JOUW KASTEELATLAS</div>
+      <h2 id="roomsHeading">Tien kamers. Tien avonturen.</h2>
+      <p>Kies een kamer om te oefenen. Oefenpotjes tellen niet mee voor je records, statistieken of de online ranglijst.</p>
+      <div id="roomsGrid" class="roomsGrid"></div>
+      <button class="backBtn" data-back>TERUG</button>
+    </section>
+    <div id="practiceEnd" class="hidden"></div>
     <div id="scoresSection" class="menuSection hidden">
       <h2>WERELDWIJDE TOP 20</h2>
       <div id="scoreList"></div>
@@ -93,6 +106,7 @@
 
       <div class="newsSectionBlock">
         <h3 class="newsSectionTitle">🏰 LAATSTE NIEUWS</h3>
+<article class="newsItem featured"><div class="newsVersion">🏰 v2.26 · ONTDEK HET KASTEEL</div><h3>Jouw eigen kasteelatlas</h3><p>Oefen iedere kamer, bekijk je records direct in het menu en speel op een gelijk tempo op elk scherm. Pauzeren en de bonus voor foutloze levels zijn verbeterd.</p></article>
 <article class="newsItem featured"><div class="newsVersion">🎨 v2.25 · VOLLEDIGE KLEURENUPDATE</div><h3>Het hele kasteel heeft kleur gekregen</h3><p>Alle tien kamers hebben nu hun eigen kleuren, architectuur en herkenbare details. Ook hoofdmenu, submenu’s, attract mode en doodscherm zijn in dezelfde gekleurde pixelstijl gebracht.</p></article>
 <article class="newsItem featured"><div class="newsVersion">📚 v2.25 · VOLLEDIGE KLEURENUPDATE</div><h3>De Bibliotheek krijgt een echte indeling</h3><p>De kamer is rustiger opgebouwd met staande boekenkasten, vrije ladderzones, houten galerijen en een eigen leeshoek. Dit ontwerp wordt de kwaliteitsproef voor de andere kasteelkamers.</p></article>
 <article class="newsItem featured"><div class="newsVersion">🧱 v2.25 · VOLLEDIGE KLEURENUPDATE</div><h3>Rustiger, logischer en beter speelbaar</h3><p>Bibliotheek, Wijnkelder en Wapenzaal zijn opnieuw ingericht. Ladders blijven vrij zichtbaar en decoratie staat of hangt voortaan op logische plekken.</p></article>
@@ -363,16 +377,16 @@
   </div>
 </div>
 <div id="updateOverlay" class="hidden"><div id="updateCard">
-      <div class="updateKicker">🏰 v2.25 · VOLLEDIGE KLEURENUPDATE</div>
+      <div class="updateKicker">🏰 v2.26 · ONTDEK HET KASTEEL</div>
       <h2>Het hele kasteel staat in kleur</h2>
       <div class="updateIntro">Alle tien kamers hebben nu een eigen kleurenpalet en herkenbare sfeer.</div>
       <div class="updateList">
-        <div>✓ Alle 10 kamers volledig in kleur</div>
-        <div>✓ Ieder level een duidelijk eigen thema</div>
-        <div>✓ Hoofdmenu, submenu’s en demo in kleur</div>
-        <div>✓ Doodscherm en animaties in kleur</div>
+        <div>✓ Kies zelf een kamer in de nieuwe oefenmodus</div>
+        <div>✓ Jouw persoonlijke records direct in beeld</div>
+        <div>✓ Rustiger menu en betere toetsenbordbediening</div>
+        <div>✓ Eerlijke spelsnelheid en veilig pauzeren</div>
       </div>
-      <div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.25</button></div>
+      <div class="updateAction"><button id="closeUpdateBtn">SPEEL v2.26</button></div>
     </div></div>
 
 <div id="deathOverlay" class="hidden">
@@ -383,7 +397,7 @@
   </div>
 </div>
 
-<div id="pauseOverlay" class="hidden">
+<div id="pauseOverlay" class="hidden" role="dialog" aria-modal="true" aria-label="Spel gepauzeerd">
   <div id="pauseCard">
     <div id="pauseMain">
       <h2>⏸ GEPAUZEERD</h2>
@@ -408,16 +422,17 @@
 </div>
 <div id="wrap">
   <div id="title">DE STAMPERTJES</div>
-  <canvas id="game" width="480" height="382"></canvas>
+  <div id="practiceBadge" class="practiceBadge hidden">OEFENMODUS · GEEN RECORDS</div>
+  <canvas id="game" width="480" height="382" tabindex="0" aria-label="Speelveld. Pijltjes om te bewegen, spatie om te stampen, P om te pauzeren."></canvas>
   <div id="controlLabels">
     <span>KLIMMEN</span><span></span><span>LOPEN</span>
   </div>
   <div id="controls">
-    <button id="up">▲</button>
-    <button id="down">▼</button>
+    <button id="up" aria-label="Omhoog klimmen">▲</button>
+    <button id="down" aria-label="Omlaag klimmen">▼</button>
     <button id="stamp">STAMP</button>
-    <button id="left">◀</button>
-    <button id="right">▶</button>
+    <button id="left" aria-label="Naar links lopen">◀</button>
+    <button id="right" aria-label="Naar rechts lopen">▶</button>
   </div>
   <div id="gameOptions">
     <button id="pauseToggle">⏸ PAUZE</button>
@@ -426,8 +441,10 @@
   <div id="keyboardHint">Pijltjes = bewegen • Spatie = stampen • P = pauze • M = muziek</div>
   <div class="small">3× stampen voor een gat. Stamp daarna de gevangen appel weg.</div>
 </div>
-<script src="config.js?v=2245"></script>
-<script src="game.js?v=2245" defer></script>
+<script src="runtime.js?v=2260"></script>
+<script src="config.js?v=2260"></script>
+<script src="game.js?v=2260" defer></script>
+<script src="castle-atlas.js?v=2260" defer></script>
 
 </body>
 </html>

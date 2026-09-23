@@ -1,3 +1,6 @@
+const localStore=StampertjesRuntime.storage("localStorage");
+const sessionStore=StampertjesRuntime.storage("sessionStorage");
+const gameFetch=StampertjesRuntime.fetchWithTimeout;
 const SUPABASE_URL=window.STAMPERTJES_CONFIG.supabaseUrl;
 const SUPABASE_KEY=window.STAMPERTJES_CONFIG.supabaseKey;
 console.info("De Stampertjes Developer Portal BUILD 2245 geladen");
@@ -11,7 +14,7 @@ const bonusAnalytics=$("bonusAnalytics"),platformAnalytics=$("platformAnalytics"
 const recentEvents=$("recentEvents"),posts=$("posts"),cafeStatus=$("cafeStatus");
 const teddyEncounterList=$("teddyEncounterList"),teddyEasterList=$("teddyEasterList");
 
-let activeAdminCode=sessionStorage.getItem("stampertjesAdminPortalCode")||"";
+let activeAdminCode=sessionStore.getItem("stampertjesAdminPortalCode")||"";
 let dashboardPlayers=[];
 
 function esc(v){
@@ -22,7 +25,7 @@ function date(v){if(!v)return "-";try{return new Date(v).toLocaleString("nl-NL")
 function shortId(v){return v?String(v).slice(0,8):"—"}
 
 async function rpc(name,body={}){
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{
+  const res=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{
     method:"POST",
     headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
     body:JSON.stringify(body)
@@ -42,7 +45,7 @@ async function login(){
   try{
     if(!(await verify(code))){loginStatus.textContent="Onjuiste beheercode.";return}
     activeAdminCode=code;
-    sessionStorage.setItem("stampertjesAdminPortalCode",code);
+    sessionStore.setItem("stampertjesAdminPortalCode",code);
     loginCard.classList.add("hidden");portal.classList.remove("hidden");
     await refreshAll();
     await refreshNewDashboard();
@@ -281,7 +284,7 @@ $("launchDevLevelBtn")?.addEventListener("click",()=>{
   location.href=`./index.html?devlevel=${level}&devtest=1`;
 });
 logoutBtn?.addEventListener("click",()=>{
-  sessionStorage.removeItem("stampertjesAdminPortalCode");activeAdminCode="";
+  sessionStore.removeItem("stampertjesAdminPortalCode");activeAdminCode="";
   portal.classList.add("hidden");loginCard.classList.remove("hidden");
   adminCode.value="";loginStatus.textContent="Uitgelogd.";
 });
@@ -508,14 +511,14 @@ async function refreshNewDashboard(){
     try{
       if(await verify(activeAdminCode)){
         loginCard.classList.add("hidden");portal.classList.remove("hidden");await refreshAll();await refreshNewDashboard();
-      }else sessionStorage.removeItem("stampertjesAdminPortalCode");
+      }else sessionStore.removeItem("stampertjesAdminPortalCode");
     }catch(err){console.warn(err)}
   }
 })();
 async function loadV222Analytics(){
   const el=document.getElementById("v222Analytics"); if(!el)return;
   try{
-    const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_v222_analytics`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},body:"{}"});
+    const r=await gameFetch(`${SUPABASE_URL}/rest/v1/rpc/get_v222_analytics`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},body:"{}"});
     if(!r.ok)throw new Error(String(r.status));
     const d=await r.json();
     const countries=Object.entries(d.countries||{}).map(([k,v])=>`${k}: ${v}`).join(" · ")||"nog geen landen vastgelegd";
@@ -526,6 +529,6 @@ loadV222Analytics();
 
 document.documentElement.dataset.adminBuild="2245";
 const buildMark=document.getElementById("loginStatus");
-if(buildMark && !sessionStorage.getItem("stampertjesAdminPortalCode")){
+if(buildMark && !sessionStore.getItem("stampertjesAdminPortalCode")){
   buildMark.textContent="Portal build 2222 geladen · klaar om in te loggen.";
 }
