@@ -60,7 +60,7 @@ security definer
 set search_path=public
 as $$
 begin
-  if p_key is distinct from 'MijnStampertjes2026!' then
+  if public.verify_stampertjes_admin(p_key) is not true then
     raise exception 'unauthorized';
   end if;
 

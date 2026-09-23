@@ -3,12 +3,14 @@
 ## Fixed in this branch
 
 - Highscore names and numeric fields no longer interpolate untrusted HTML.
-- The legacy SQL migration and its text copy no longer contain a fixed admin credential or overwrite an existing one. Fresh installations get a random server-generated code.
+- The legacy SQL migration and its text copy no longer contain a fixed admin credential or overwrite an existing one. Fresh installations get a random server-generated code. Merchandise migrations 008/009 now call the configured admin verifier instead of comparing against the historical fixed code.
 - Automated tests mock external services before page load, so fixtures cannot create production records.
 
 ## Action needed before production rollout
 
 A fixed admin code was previously committed to this public repository. Removing it from the current files does **not** remove it from Git history or invalidate it in Supabase. Treat the old code as exposed. In the authenticated Supabase dashboard, replace the stored admin code with a newly generated private value and invalidate any sessions using the old value. Do not paste the new value into this repository, a pull request or chat.
+
+**Merchandise endpoint:** existing deployments also need the reviewed `014_v226_merch_admin_auth.sql` migration, because rotating the configured code alone does not fix the old hardcoded check in `admin_get_merch_summary`. Migration 014 replaces that function without changing its signature or data. Do not rerun all historical migrations as an upgrade.
 
 No live admin login was attempted and no SQL migration was executed during this review. Whether the historical code is still active is unknown. Review access/activity logs if it was used in production.
 

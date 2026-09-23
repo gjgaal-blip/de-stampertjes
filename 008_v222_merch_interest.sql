@@ -28,7 +28,7 @@ grant execute on function public.register_merch_interest(uuid,boolean,boolean,te
 create or replace function public.admin_get_merch_summary(p_key text)
 returns jsonb language plpgsql stable security definer set search_path=public as $$
 begin
- if p_key is distinct from 'MijnStampertjes2026!' then raise exception 'unauthorized'; end if;
+ if public.verify_stampertjes_admin(p_key) is not true then raise exception 'unauthorized'; end if;
  return jsonb_build_object(
   'interested',(select count(*) from public.merch_interest where interested),
   'personalized',(select count(*) from public.merch_interest where interested and personalized),

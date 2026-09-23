@@ -43,4 +43,10 @@ npm run test:browser
 
 ## Voor publicatie
 
-Lees **SECURITY-NOTES.md**. De oude vaste beheercode stond openbaar in eerdere commits; verwijderen uit bestanden vervangt de code in Supabase niet. Er zijn tijdens deze update geen databasemigraties uitgevoerd. De nieuwe oefenmodus heeft geen nieuwe databasevelden nodig.
+Lees **SECURITY-NOTES.md**. De oude vaste beheercode stond openbaar in eerdere commits; verwijderen uit bestanden vervangt de code in Supabase niet. Er zijn tijdens deze update geen databasemigraties uitgevoerd. De nieuwe oefenmodus heeft geen nieuwe databasevelden nodig. Voor bestaande installaties herstelt `014_v226_merch_admin_auth.sql` de afzonderlijke oude beheercodecontrole van het merchandise-overzicht; pas die na review in Supabase toe.
+
+## Voorbeeld van v2.26
+
+![Vernieuwd hoofdmenu](docs/screenshots/menu.png)
+
+[Atlas](docs/screenshots/atlas.png) · [Bibliotheekkamer](docs/screenshots/library-room.png)
