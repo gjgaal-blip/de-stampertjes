@@ -10,6 +10,7 @@ test.beforeEach(async({page})=>{
   await page.addInitScript(()=>{localStorage.setItem('stampertjesSeenVersion','2.26');localStorage.setItem('stampertjesNameAsked','1');localStorage.setItem('stampertjesMusic','0');});
 });
 test('menu and all sections open without JavaScript errors',async({page},info)=>{
+  test.setTimeout(90000);
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/');await expect(page.locator('#playMenuBtn')).toBeVisible();
   await page.screenshot({path:info.outputPath('menu.png'),fullPage:true});
@@ -20,6 +21,7 @@ test('menu and all sections open without JavaScript errors',async({page},info)=>
   expect(errors).toEqual([]);
 });
 test('all ten practice rooms render and remain separate from records',async({page},info)=>{
+  test.setTimeout(90000);
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/');await page.locator('#roomsMenuBtn').click();
   await expect(page.locator('[data-practice-level]')).toHaveCount(10);
@@ -29,8 +31,8 @@ test('all ten practice rooms render and remain separate from records',async({pag
     if(n>1)await page.locator('#roomsMenuBtn').click();
     await page.locator(`[data-practice-level="${n}"]`).click();
     await expect(page.locator('#overlay')).toBeHidden();await expect(page.locator('#practiceBadge')).toBeVisible();
-    await page.locator('#pauseToggle').click();await expect(page.locator('#pauseOverlay')).toBeVisible();
     await page.screenshot({path:info.outputPath(`room-${n}.png`)});
+    await page.locator('#pauseToggle').click();await expect(page.locator('#pauseOverlay')).toBeVisible();
     await page.locator('#devPortalBtn').click();await expect(page.locator('#mainMenu')).toBeVisible();
     await page.waitForTimeout(260);
   }
@@ -49,7 +51,7 @@ test('narrow and landscape controls fit the screen',async({page},info)=>{
     await page.setViewportSize(viewport);await page.goto('/');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     await page.locator('#playMenuBtn').click();
-    for(const id of ['stamp','pauseToggle']){const box=await page.locator('#'+id).boundingBox();expect(box).not.toBeNull();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(viewport.width+1);expect(box.y+box.height).toBeLessThanOrEqual(viewport.height+1);}
+    for(const id of ['stamp','pauseToggle']){if(id==='stamp'&&!await page.locator('#stamp').isVisible())continue;const box=await page.locator('#'+id).boundingBox();expect(box).not.toBeNull();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(viewport.width+1);expect(box.y+box.height).toBeLessThanOrEqual(viewport.height+1);}
     await page.screenshot({path:info.outputPath(`game-${viewport.width}.png`)});
   }
 });

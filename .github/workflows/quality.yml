@@ -1,7 +1,5 @@
 name: Game quality
 on:
-  push:
-    branches: [codex/stampertjes-quality-upgrade]
   pull_request:
 permissions:
   contents: read

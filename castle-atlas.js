@@ -42,7 +42,7 @@ const pauseFocusObserver=new MutationObserver(()=>{
   if(!pauseOverlay.classList.contains('hidden')){
     const target=pauseConfirmStop.classList.contains('hidden')?pauseResumeBtn:pauseCancelStopBtn;
     target.focus();
-  }else if(state==='play')pauseToggle.focus();
+  }else if(state==='play')c.focus({preventScroll:true});
 });
 pauseFocusObserver.observe(pauseOverlay,{attributes:true,attributeFilter:['class']});
 pauseFocusObserver.observe(pauseConfirmStop,{attributes:true,attributeFilter:['class']});

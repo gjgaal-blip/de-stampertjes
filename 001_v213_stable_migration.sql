@@ -2,8 +2,9 @@
 -- Veilig voor een bestaande database.
 -- Verwijdert geen Café-berichten, highscores of statistieken.
 --
--- Beheercode:
--- MijnStampertjes2026!
+-- Een nieuwe installatie krijgt een willekeurige beheercode.
+-- Lees die uitsluitend in de beveiligde Supabase SQL-editor.
+-- Een bestaande code wordt nooit door deze migratie overschreven.
 
 begin;
 
@@ -15,15 +16,15 @@ create table if not exists public.stampertjes_admin_settings (
 alter table public.stampertjes_admin_settings
   add column if not exists admin_code text;
 
-update public.stampertjes_admin_settings
-set admin_code='MijnStampertjes2026!'
-where id=1;
-
 insert into public.stampertjes_admin_settings(id,admin_code)
-select 1,'MijnStampertjes2026!'
+select 1, gen_random_uuid()::text || gen_random_uuid()::text
 where not exists (
   select 1 from public.stampertjes_admin_settings where id=1
 );
+
+update public.stampertjes_admin_settings
+set admin_code=gen_random_uuid()::text || gen_random_uuid()::text
+where id=1 and (admin_code is null or admin_code='');
 
 alter table public.stampertjes_admin_settings
   alter column admin_code set not null;
@@ -275,4 +276,3 @@ grant execute on function public.admin_delete_community_post(bigint,text) to ano
 commit;
 
 -- Controle: moet TRUE teruggeven.
-select public.verify_stampertjes_admin('MijnStampertjes2026!') as admin_code_ok;

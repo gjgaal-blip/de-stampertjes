@@ -432,7 +432,7 @@ function renderHighscores(useLocalFallback=false){
     </div>`;
   });
 
-  scoreList.innerHTML=rows.join("");
+  scoreList.innerHTML=(useLocalFallback?'<p role="status" class="scoreNotice">Online scores zijn tijdelijk niet bereikbaar. Dit zijn je lokaal bewaarde scores.</p>':'')+rows.join("");
 }
 function qualifiesForHighscore(value){
   const scores=onlineScores.slice(0,20);
@@ -447,6 +447,7 @@ function updateMenuMusicIconVisibility(){
 }
 
 function showMainMenu(){
+  overlay.scrollTop=0;
   setMusicContext("menu",{playNow:true});
   document.body.classList.remove("scoreMode");
   document.body.classList.remove("gameplayActive");
@@ -1922,6 +1923,7 @@ function startGame(practiceLevel=0){
   document.getElementById("roomsSection").classList.add("hidden");
   document.getElementById("practiceEnd").classList.add("hidden");
   shareScoreBox.classList.add("hidden");
+  c.focus({preventScroll:true});
   if(reachedMilestone)setTimeout(()=>{if(state==="play"&&getStats().gamesPlayed===reachedMilestone)showMilestone(reachedMilestone)},320);
   setTimeout(()=>{startingGame=false},250);
 }
@@ -2163,6 +2165,7 @@ function drawIntroDust(x,y,size){
   ictx.beginPath();ictx.arc(x,y-size*.35,size*.55,0,Math.PI*2);ictx.fill();
 }
 function drawIntro(){
+  if(document.hidden||overlay.classList.contains("hidden")){requestAnimationFrame(drawIntro);return;}
   ictx.save();
   ictx.setTransform(introCanvas.width/INTRO_LOGICAL_W,0,0,introCanvas.height/INTRO_LOGICAL_H,0,0);
   introFrame++;
@@ -4195,7 +4198,7 @@ function draw(){
 }
 // Simulation stays at 60 Hz on 60/120/144 Hz displays; discard long background gaps.
 const simulationClock=StampertjesRuntime.fixedStep(update);
-function loop(timestamp){simulationClock(timestamp);draw();requestAnimationFrame(loop)}
+function loop(timestamp){simulationClock(timestamp);if(!document.hidden&&overlay.classList.contains("hidden"))draw();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 
 window.addEventListener("load",()=>{
